@@ -54,6 +54,31 @@
       pointer-events: none;
     }
 
+    .about-image::before {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 45%;
+      background: linear-gradient(to top, rgba(16, 14, 11, 0.72), transparent);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .about-image-title {
+      position: absolute;
+      bottom: 22px;
+      left: 22px;
+      right: 22px;
+      z-index: 2;
+      font-family: Alegreya, sans-serif;
+      font-size: 17px;
+      letter-spacing: 0.18em;
+      color: #e9e5dd;
+      line-height: 1.5;
+    }
+
     .about-pills {
       display: flex;
       flex-direction: column;
@@ -208,22 +233,12 @@
       <div class="about-left">
         <div class="about-image">
           <img src="images/Groß.jpeg" alt="Sofia Cartuccia">
+          <div class="about-image-title">Hi, I'm Sofia Cartuccia, a mixed-media artist.</div>
         </div>
         <div class="about-text-display" id="about-text-display"></div>
       </div>
 
       <div class="about-pills">
-       
-        <div class="about-pill">
-          <div class="about-pill-header ">
-            <span class="about-pill-title top">Hi, I’m Sofia Cartuccia, a mixed-media artist.</span>
-          </div>
-          <div class="about-pill-body">
-            <p>Sometimes they call me Sybil.</p>
-                    </div>
-        </div>
-
-
 
         <div class="about-pill">
           <div class="about-pill-header">
