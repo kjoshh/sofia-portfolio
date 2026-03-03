@@ -18,15 +18,15 @@
   <style>
 .archive-grid {
   padding: 80px 4px 4px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+  columns: 4;
+  column-gap: 4px;
 }
 @media (max-width: 767px) {
-  .archive-grid { grid-template-columns: repeat(2, 1fr); }
+  .archive-grid { columns: 2; }
 }
 .archive-grid-item {
-  overflow: hidden;
+  break-inside: avoid;
+  margin-bottom: 4px;
   cursor: pointer;
   display: block;
 }
