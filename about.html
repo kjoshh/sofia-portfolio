@@ -84,10 +84,7 @@
       margin-bottom: 0;
     }
 
-    .about-pill.locked {
-      background-color: rgba(41, 40, 35, 0.58);
-      backdrop-filter: blur(20px);
-    }
+
 
     .about-pill {
 
@@ -108,7 +105,6 @@
 
       backdrop-filter: blur(20px);
       background-color: rgba(41, 40, 35, 0.58);
-      transform: translateY(-2px);
     }
 
     .about-pill-header {
@@ -276,7 +272,6 @@
       const pills = document.querySelectorAll(".about-pill");
       const display = document.getElementById("about-text-display");
       let hideTimeout;
-      let lockedPill = null;
       let currentAnim = null;
 
       // Split element's text nodes into word <span>s for GSAP stagger
@@ -328,27 +323,12 @@
         if (!body) return;
 
         pill.addEventListener("mouseenter", () => {
-          if (lockedPill && lockedPill !== pill) return;
           clearTimeout(hideTimeout);
           showText(body);
         });
 
         pill.addEventListener("mouseleave", () => {
-          if (lockedPill) return;
           hideTimeout = setTimeout(hideText, 80);
-        });
-
-        pill.addEventListener("click", () => {
-          if (lockedPill === pill) {
-            lockedPill = null;
-            pill.classList.remove("locked");
-            hideText();
-          } else {
-            if (lockedPill) lockedPill.classList.remove("locked");
-            lockedPill = pill;
-            pill.classList.add("locked");
-            showText(body);
-          }
         });
       });
     });
