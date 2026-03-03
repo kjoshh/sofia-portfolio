@@ -226,7 +226,7 @@ const gall3ry = document.querySelector(".gall3ry");
 const gall3ryContainer = document.querySelector(".gall3ry-container");
 const imgPreviews = document.querySelector(".img-previews");
 const proNav = document.querySelector(".navbar._2.pro");
-gsap.set(proNav, { xPercent: -50, y: "-50vh" });
+gsap.set(proNav, { xPercent: -50, y: "calc(-50vh - 43.7px)" });
 let activeLayout = "layout-0-gall3ry";
 function switchLayout(newLayout) {
   if (newLayout === activeLayout) return;
@@ -277,7 +277,7 @@ function switchLayoutHandler(newLayout) {
     gsap.to(proNav, { xPercent: -50, y: 0, duration: 0.8, ease: "hop", delay: 0.2 });
   }
   if (newLayout === "layout-0-gall3ry") {
-    gsap.to(proNav, { xPercent: -50, y: "-50vh", duration: 0.8, ease: "hop" });
+    gsap.to(proNav, { xPercent: -50, y: "calc(-50vh - 43.7px)", duration: 0.8, ease: "hop" });
   }
   activeLayout = newLayout;
   if (newLayout === "layout-2-gall3ry") {
