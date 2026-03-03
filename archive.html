@@ -213,8 +213,8 @@ zoomInBtn.addEventListener("click", (e) => {
     const rect = img.getBoundingClientRect();
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
-    const distX = (rect.left + rect.width / 2 - centerX) / 100;
-    const distY = (rect.top + rect.height / 2 - centerY) / 100;
+    const distX = (rect.left + rect.width / 2 - currentX - centerX) / 100;
+    const distY = (rect.top + rect.height / 2 - currentY - centerY) / 100;
     // LEVEL 1
 if (zoomLevel === 1) {
   const strength = getSpreadStrength();
