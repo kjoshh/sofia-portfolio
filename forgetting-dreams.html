@@ -276,6 +276,9 @@ function switchLayoutHandler(newLayout) {
   if (previousLayout === "layout-0-gall3ry") {
     gsap.to(proNav, { xPercent: -50, y: 0, duration: 0.8, ease: "hop", delay: 0.2 });
   }
+  if (newLayout === "layout-0-gall3ry") {
+    gsap.to(proNav, { xPercent: -50, y: "-50vh", duration: 0.8, ease: "hop" });
+  }
   activeLayout = newLayout;
   if (newLayout === "layout-2-gall3ry") {
     gsap.to(imgPreviews, {
@@ -291,6 +294,11 @@ function switchLayoutHandler(newLayout) {
     });
     gsap.set(gall3ry, { clearProps: "y" });
   }}
+document.querySelector(".logotext.project").addEventListener("click", (e) => {
+  e.preventDefault();
+  items.forEach(i => i.classList.remove("active"));
+  switchLayout("layout-0-gall3ry");
+});
 items.forEach((item) => {
   item.addEventListener("click", () => {
     if (!item.id) return;
