@@ -23,26 +23,28 @@
       padding: 140px 8vw 80px;
       box-sizing: border-box;
       display: flex;
-      align-items: top;
       justify-content: center;
-      top:10vh;
+      top: 10vh;
     }
 
     .about-layout {
-      
+      position: relative;
       width: 100%;
-      max-width: 1150px;
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-      column-gap: 60px;
-      align-items: stretch;
+      max-width: 1200px;
     }
 
+    /* ── Image: centred at 70% width ── */
     .about-image {
-
-      width: 120%;
+      width: 750px;
+      margin: 0 auto;
       position: relative;
       overflow: hidden;
+      display: block;
+    }
+
+    .about-image img {
+      width: 100%;
+      display: block;
     }
 
     .about-image::after {
@@ -54,46 +56,68 @@
       pointer-events: none;
     }
 
-    .about-image::before {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 45%;
-      background: linear-gradient(to top, rgba(16, 14, 11, 0.72), transparent);
-      z-index: 1;
-      pointer-events: none;
-    }
-
+    /* ── Heading: left side, overlapping over the image ── */
     .about-image-title {
       position: absolute;
-      bottom: 22px;
-      left: 22px;
-      right: 22px;
+      top: 8%;
+      left: 3%;
+      width: 20%;
       z-index: 2;
       font-family: Alegreya, sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.15em;
+      color: #e9e5dd;
+      line-height: 1.6;
+    }
+
+    /* ── Pills: right side, overlapping over the image ── */
+    .about-pills {
+      position: absolute;
+      top: 18%;
+      right: 0;
+      width: 22.5%;
+      display: flex;
+      flex-direction: column;
+      /* gap: 14px; */
+      z-index: 2;
+    }
+
+    .about-pill {
+      border-radius: 22px;
+      position: relative;
+      padding: 14px 22px;
+      color: #e9e5dd;
+      font-family: Alegreya, sans-serif;
+      cursor: default;
+      overflow: hidden;
+      transition: background-color 0.25s ease;
+    }
+
+    .about-pill:hover {
+      backdrop-filter: blur(20px);
+      background-color: rgba(41, 40, 35, 0.58);
+    }
+
+    .about-pill-header {
+      display: flex;
+      align-items: baseline;
+    }
+
+    .about-pill-title {
       font-size: 17px;
       letter-spacing: 0.18em;
-      color: #e9e5dd;
-      line-height: 1.5;
+      color: #d7d7d7;
     }
 
-    .about-pills {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      position: relative;
+    .about-pill-body {
+      display: none;
     }
 
-    .about-left {
-      display: flex;
-      flex-direction: column;
-    }
-
+    /* ── Text display: below image, centred under it ── */
     .about-text-display {
-      margin-top: 20px;
-      min-height: 90px;
+      width: 750px;
+      margin: 24px auto 0;
+      min-height: 80px;
       font-family: Alegreya, sans-serif;
       font-size: 16px;
       line-height: 1.7;
@@ -109,102 +133,38 @@
       margin-bottom: 0;
     }
 
-
-
-    .about-pill {
-
-      border-radius: 22px;
-      position: relative;
-      padding: 14px 22px;
-      max-width: 430px;
-      color: #e9e5dd;
-      font-family: Alegreya, sans-serif;
-      cursor: default;
-      overflow: hidden;
-      transition:
-        background-color 0.25s ease,
-        transform 0.25s ease;
-    }
-
-    .about-pill:hover {
-
-      backdrop-filter: blur(20px);
-      background-color: rgba(41, 40, 35, 0.58);
-    }
-
-    .about-pill-header {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .about-pill-title {
-      font-size: 17px;
-      letter-spacing: 0.22em;
-      color: #d7d7d7;
-      white-space: nowrap;
-    }
-
-
-    .about-pill-title.top {
-
-      white-space: wrap;
-    }
-
-    .about-pill-body {
-      display: none;
-    }
-
-    .about-pill-meta {
-      font-size: 11px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #867d74;
-      margin-bottom: 4px;
-    }
-
-    @media screen and (max-width: 980px) {
-      .about-wrapper {
-        padding: 120px 6vw 70px;
-      }
-
+    @media screen and (max-width: 900px) {
       .about-layout {
-        grid-template-columns: minmax(0, 1fr);
-        row-gap: 28px;
+        padding-top: 40vw;
       }
 
       .about-image {
-        min-height: 320px;
-        background-attachment: scroll;
+        width: 90%;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .about-image-title {
+        position: relative;
+        top: auto;
+        left: auto;
+        width: 100%;
+        font-size: 16px;
+        margin-bottom: 20px;
       }
 
       .about-pills {
-        align-items: flex-start;
-      }
-    }
-
-    @media screen and (max-width: 520px) {
-      .about-wrapper {
-        padding: 110px 18px 60px;
+        position: relative;
+        top: auto;
+        right: auto;
+        width: 100%;
+        margin-top: 16px;
       }
 
-      .about-pill {
-        max-width: 100%;
-        padding: 12px 18px;
-      }
-
-      .about-pill-title {
-        font-size: 9.5px;
-        letter-spacing: 0.2em;
-      }
-
-      .about-pill-snippet {
-        font-size: 14px;
-      }
-
-      .about-pill-body {
-        font-size: 14px;
+      .about-text-display {
+        width: 100%;
       }
     }
   </style>
@@ -230,13 +190,14 @@
 
   <div class="about-wrapper">
     <div class="about-layout">
-      <div class="about-left">
-        <div class="about-image">
-          <img src="images/Groß.jpeg" alt="Sofia Cartuccia">
-          <div class="about-image-title">Hi, I'm Sofia Cartuccia, a mixed-media artist.</div>
-        </div>
-        <div class="about-text-display" id="about-text-display"></div>
+
+      <div class="about-image">
+        <img src="images/Groß.jpeg" alt="Sofia Cartuccia">
       </div>
+
+      <div class="about-image-title">Hi, I'm Sofia Cartuccia, a mixed-media artist.</div>
+
+      <div class="about-text-display" id="about-text-display"></div>
 
       <div class="about-pills">
 
@@ -273,6 +234,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
