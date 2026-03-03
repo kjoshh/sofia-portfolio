@@ -68,6 +68,16 @@
       letter-spacing: 0.15em;
       color: #e9e5dd;
       line-height: 1.6;
+      border-radius: 22px;
+      padding: 14px 22px;
+      cursor: default;
+      overflow: hidden;
+      transition: background-color 0.25s ease;
+    }
+
+    .about-image-title:hover {
+      backdrop-filter: blur(20px);
+      background-color: rgba(41, 40, 35, 0.58);
     }
 
     /* ── Pills: right side, overlapping over the image ── */
@@ -195,7 +205,10 @@
         <img src="images/Groß.jpeg" alt="Sofia Cartuccia">
       </div>
 
-      <div class="about-image-title">Hi, I'm Sofia Cartuccia, a mixed-media artist.</div>
+      <div class="about-image-title">
+        Hi, I'm Sofia Cartuccia, a mixed-media artist.
+        <div class="about-pill-body"><p>Sometimes they call me Sybil.</p></div>
+      </div>
 
       <div class="about-text-display" id="about-text-display"></div>
 
@@ -296,7 +309,7 @@
         gsap.to(display, { opacity: 0, duration: 0.2, ease: "power2.in" });
       }
 
-      // Single listener on the container — no per-pill boundary issues
+      // Pills container
       pillsContainer.addEventListener("mouseover", (e) => {
         const pill = e.target.closest(".about-pill");
         if (!pill || pill === currentPill) return;
@@ -307,8 +320,23 @@
       });
 
       pillsContainer.addEventListener("mouseout", (e) => {
-        // Only hide when the cursor truly leaves the whole container
         if (pillsContainer.contains(e.relatedTarget)) return;
+        hideTimeout = setTimeout(hideText, 100);
+      });
+
+      // Heading title — same behaviour
+      const titleEl = document.querySelector(".about-image-title");
+      const titleBody = titleEl.querySelector(".about-pill-body");
+
+      titleEl.addEventListener("mouseover", (e) => {
+        if (currentPill === titleEl) return;
+        clearTimeout(hideTimeout);
+        currentPill = titleEl;
+        showText(titleBody);
+      });
+
+      titleEl.addEventListener("mouseout", (e) => {
+        if (titleEl.contains(e.relatedTarget)) return;
         hideTimeout = setTimeout(hideText, 100);
       });
     });
