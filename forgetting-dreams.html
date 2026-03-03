@@ -226,13 +226,7 @@ const gall3ry = document.querySelector(".gall3ry");
 const gall3ryContainer = document.querySelector(".gall3ry-container");
 const imgPreviews = document.querySelector(".img-previews");
 const proNav = document.querySelector(".navbar._2.pro");
-// Move nav to top immediately (layout-0 is the initial state)
-// Explicitly set all transform components so GSAP owns the full transform,
-// preventing any conflict with the CSS translate(-50%, -50%).
-// x:0 + xPercent:-50 = translateX(-50%) = horizontal centering
-// yPercent:0 + y:(offset) = place near top of viewport
-const navRect = proNav.getBoundingClientRect();
-gsap.set(proNav, { x: 0, xPercent: -50, yPercent: 0, y: 19 - navRect.top });
+gsap.set(proNav, { xPercent: -50, y: "-50vh" });
 let activeLayout = "layout-0-gall3ry";
 function switchLayout(newLayout) {
   if (newLayout === activeLayout) return;
@@ -280,7 +274,7 @@ function switchLayoutHandler(newLayout) {
     }
   });
   if (previousLayout === "layout-0-gall3ry") {
-    gsap.to(proNav, { x: 0, xPercent: -50, y: 0, yPercent: -50, duration: 0.8, ease: "hop", delay: 0.2 });
+    gsap.to(proNav, { xPercent: -50, y: 0, duration: 0.8, ease: "hop", delay: 0.2 });
   }
   activeLayout = newLayout;
   if (newLayout === "layout-2-gall3ry") {
