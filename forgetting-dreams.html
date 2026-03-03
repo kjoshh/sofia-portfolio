@@ -123,11 +123,11 @@ object-fit: contain;
 }
 .gall3ry.layout-0-gall3ry {
   position: relative;
-  top: 50%;
+  top: 52.5%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 30vw;
-  height: 30vw;
+  width: 5vw;
+  height: 100%;
 }
 .gall3ry.layout-0-gall3ry .imgholder {
   position: absolute;
@@ -226,7 +226,7 @@ const gall3ry = document.querySelector(".gall3ry");
 const gall3ryContainer = document.querySelector(".gall3ry-container");
 const imgPreviews = document.querySelector(".img-previews");
 const proNav = document.querySelector(".navbar._2.pro");
-gsap.set(proNav, { xPercent: -50, y: "-50vh" });
+gsap.set(proNav, { xPercent: -50, y: "-55vh",yPercent: 50 });
 let activeLayout = "layout-0-gall3ry";
 function switchLayout(newLayout) {
   if (newLayout === activeLayout) return;
@@ -235,6 +235,7 @@ function switchLayout(newLayout) {
       scrollTo: { y: 0 },
       duration: 0.5,
       ease: "power3.out",
+      
       onComplete: () => switchLayoutHandler(newLayout),
     });
   } else {
@@ -262,22 +263,22 @@ function switchLayoutHandler(newLayout) {
 };
   }
   if (previousLayout === "layout-0-gall3ry") {
-    staggerOption = { each: 0.04, from: "random" };
+    staggerOption = { each: 0.025, from: "start" };
   }
   Flip.from(state, {
     duration: 1.5,
     ease: "hop",
     stagger: staggerOption,
-    absolute: true,
+    absolute: previousLayout !== "layout-0-gall3ry",
     onComplete: () => {
       lenis.resize();
     }
   });
   if (previousLayout === "layout-0-gall3ry") {
-    gsap.to(proNav, { xPercent: -50, y: 0, duration: 0.8, ease: "hop", delay: 0.2 });
+    gsap.to(proNav, { xPercent: -50, y: 0, yPercent: 0, duration: 0.75, ease: "power4.inOut", delay: 0.75 });
   }
   if (newLayout === "layout-0-gall3ry") {
-    gsap.to(proNav, { xPercent: -50, y: "-50vh", duration: 0.8, ease: "hop" });
+    gsap.to(proNav, { xPercent: -50, y: "-55vh", yPercent: 50, duration: 1.5, ease: "power4.inOut", delay: 0.75 });
   }
   activeLayout = newLayout;
   if (newLayout === "layout-2-gall3ry") {
@@ -292,7 +293,7 @@ function switchLayoutHandler(newLayout) {
       autoAlpha: 0,
       duration: 0.3,
     });
-    gsap.set(gall3ry, { clearProps: "y" });
+    // gsap.set(gall3ry, { clearProps: "y" });
   }}
 document.querySelector(".logotext.project").addEventListener("click", (e) => {
   e.preventDefault();
