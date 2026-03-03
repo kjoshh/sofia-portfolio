@@ -229,19 +229,18 @@ function switchLayoutHandler(newLayout) {
   });
   activeLayout = newLayout;
   if (newLayout === "layout-2-gall3ry") {
-    gsap.to([imgPreviews, minimap], {
+    gsap.to(imgPreviews, {
       autoAlpha: 1,
       duration: 0.3,
       delay: 0.5,
     });
-  } 
+  }
   else {
-    gsap.to([imgPreviews, minimap], {
+    gsap.to(imgPreviews, {
       autoAlpha: 0,
       duration: 0.3,
     });
     gsap.set(gall3ry, { clearProps: "y" });
-    gsap.set(minimap, { clearProps: "y" });
   }}
 items.forEach((item) => {
   item.addEventListener("click", () => {
