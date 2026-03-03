@@ -141,6 +141,21 @@
       margin-bottom: 0;
     }
 
+    .corner {
+      position: fixed;
+      z-index: 100;
+      font-family: Alegreya, sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      color: #867d74;
+      pointer-events: none;
+    }
+
+    .corner-tl { top: 26px;    left: 3vw;  }
+    .corner-tr { top: 26px;    right: 3vw; text-align: right; }
+    .corner-bl { bottom: 26px; left: 3vw;  }
+    .corner-br { bottom: 26px; right: 3vw; text-align: right; }
+
     @media screen and (max-width: 900px) {
       .about-layout {
         padding-top: 40vw;
@@ -249,6 +264,11 @@
     </div>
   </div>
 
+  <div class="corner corner-tl">@sybil_sometimes</div>
+  <div class="corner corner-tr">Italy &nbsp;—&nbsp; <span id="italy-time"></span></div>
+  <div class="corner corner-bl">+39 335 609 3992</div>
+  <div class="corner corner-br">sofia.cartuccia89@gmail.com</div>
+
   <div class="noiselayer"></div>
   <div class="noise"></div>
 
@@ -339,6 +359,19 @@
         hideTimeout = setTimeout(hideText, 100);
       });
     });
+  </script>
+  <script>
+    (function () {
+      const el = document.getElementById("italy-time");
+      const fmt = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/Rome",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+      function tick() { el.textContent = fmt.format(new Date()); }
+      tick();
+      setInterval(tick, 1000);
+    })();
   </script>
 </body>
 </html>
