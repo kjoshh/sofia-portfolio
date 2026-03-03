@@ -72,10 +72,11 @@
       padding: 14px 22px;
       cursor: default;
       overflow: hidden;
+      transition: opacity 0.2s ease;
     }
 
-    .about-image-title:hover .about-pill-title {
-      color: #f5f4ef;
+    .about-image-title:hover {
+      opacity: 0.5;
     }
 
     /* ── Pills: right side, overlapping over the image ── */
@@ -98,10 +99,11 @@
       font-family: Alegreya, sans-serif;
       cursor: default;
       overflow: hidden;
+      transition: opacity 0.2s ease;
     }
 
-    .about-pill:hover .about-pill-title {
-      color: #f5f4ef;
+    .about-pill:hover {
+      opacity: 0.5;
     }
 
     .about-pill-header {
@@ -261,27 +263,6 @@
       let currentAnim = null;
       let currentPill = null;
 
-      // ── Letter scramble ──
-      const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-      function scramble(el) {
-        const original = el.dataset.original || el.textContent;
-        el.dataset.original = original;
-        if (el._raf) cancelAnimationFrame(el._raf);
-        const duration = Math.min(600, Math.max(220, original.replace(/\s/g, "").length * 18));
-        const start = performance.now();
-        function tick(now) {
-          const p = Math.min((now - start) / duration, 1);
-          const revealed = Math.floor(p * original.length);
-          el.textContent = original.split("").map((ch, i) => {
-            if (i < revealed) return ch;
-            if (/[\s'",.–\-!?()]/.test(ch)) return ch;
-            return CHARS[Math.floor(Math.random() * CHARS.length)];
-          }).join("");
-          if (p < 1) { el._raf = requestAnimationFrame(tick); }
-          else { el.textContent = original; delete el._raf; }
-        }
-        el._raf = requestAnimationFrame(tick);
-      }
 
       function splitWords(el) {
         const spans = [];
@@ -333,7 +314,6 @@
         if (!pill || pill === currentPill) return;
         clearTimeout(hideTimeout);
         currentPill = pill;
-        scramble(pill.querySelector(".about-pill-title"));
         const body = pill.querySelector(".about-pill-body");
         if (body) showText(body);
       });
@@ -351,7 +331,6 @@
         if (currentPill === titleEl) return;
         clearTimeout(hideTimeout);
         currentPill = titleEl;
-        scramble(titleEl.querySelector(".about-pill-title"));
         showText(titleBody);
       });
 
