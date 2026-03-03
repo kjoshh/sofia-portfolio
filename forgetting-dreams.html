@@ -100,6 +100,46 @@ object-fit: contain;
   right: 125px;
   width: 20vw;
 }
+#hover-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 50vw;
+  height: 65vh;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  z-index: 1;
+}
+#hover-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 1;
+}
+.gall3ry {
+  position: relative;
+  z-index: 2;
+}
+.gall3ry.layout-0-gall3ry {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30vw;
+  height: 30vw;
+}
+.gall3ry.layout-0-gall3ry .imgholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.gall3ry.layout-0-gall3ry .imgholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 /* lenis */
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
@@ -138,14 +178,15 @@ object-fit: contain;
         </nav>
         <nav role="navigation" class="nav-menu w-nav-menu">
           <a id="layout-2-gall3ry" href="#" class="nav-link _3 _6 other seq w-nav-link">Sequence</a>
-          <a id="layout-1-gall3ry" href="#" class="nav-link _3 _6 other over active w-nav-link">Overview</a>
+          <a id="layout-1-gall3ry" href="#" class="nav-link _3 _6 other over w-nav-link">Overview</a>
           <a id="layout-3-gall3ry" href="#" class="nav-link _3 _6 info w-nav-link">Info</a>
         </nav>
       </div>
     </div>
   </div>
   <div class="gall3ry-container">
-    <div class="gall3ry layout-1-gall3ry">
+    <div id="hover-preview"><img src="" alt=""></div>
+    <div class="gall3ry layout-0-gall3ry">
       <div id="img1" class="imgholder hovv"><img src="images/Forgettingdreams-1.jpg" loading="lazy" sizes="(max-width: 1600px) 100vw, 1600px" srcset="images/Forgettingdreams-1-p-500.jpg 500w, images/Forgettingdreams-1-p-800.jpg 800w, images/Forgettingdreams-1-p-1080.jpg 1080w, images/Forgettingdreams-1.jpg 1600w" alt="" class="pro-img hovv"></div>
       <div id="img2" class="imgholder hovv"><img src="images/Forgettingdreams-2.jpg" loading="lazy" data-wf-target="[[[&quot;69a2d65ee92fb49d852a6687&quot;,&quot;ae835cb3-16c7-08e4-181a-fc2bcb2ed47e&quot;],[]]]" sizes="(max-width: 1600px) 100vw, 1600px" alt="" srcset="images/Forgettingdreams-2-p-500.jpg 500w, images/Forgettingdreams-2-p-800.jpg 800w, images/Forgettingdreams-2-p-1080.jpg 1080w, images/Forgettingdreams-2.jpg 1600w" class="pro-img hovv"></div>
       <div id="img3" class="imgholder hovv"><img src="images/Forgettingdreams-3.jpg" loading="lazy" sizes="(max-width: 1600px) 100vw, 1600px" srcset="images/Forgettingdreams-3-p-500.jpg 500w, images/Forgettingdreams-3-p-800.jpg 800w, images/Forgettingdreams-3-p-1080.jpg 1080w, images/Forgettingdreams-3.jpg 1600w" alt="" class="pro-img hovv"></div>
@@ -184,7 +225,11 @@ const items = document.querySelectorAll(".nav-link");
 const gall3ry = document.querySelector(".gall3ry");
 const gall3ryContainer = document.querySelector(".gall3ry-container");
 const imgPreviews = document.querySelector(".img-previews");
-let activeLayout = "layout-1-gall3ry";
+const proNav = document.querySelector(".navbar._2.pro");
+// Move nav to top immediately (layout-0 is the initial state)
+const navRect = proNav.getBoundingClientRect();
+gsap.set(proNav, { y: 19 - navRect.top });
+let activeLayout = "layout-0-gall3ry";
 function switchLayout(newLayout) {
   if (newLayout === activeLayout) return;
  if (activeLayout === "layout-2-gall3ry" && lenis.scroll > 0) {
@@ -218,6 +263,9 @@ function switchLayoutHandler(newLayout) {
   ease: "power3.in"   // 🔥 startet langsam, wird schneller
 };
   }
+  if (previousLayout === "layout-0-gall3ry") {
+    staggerOption = { each: 0.04, from: "random" };
+  }
   Flip.from(state, {
     duration: 1.5,
     ease: "hop",
@@ -227,6 +275,9 @@ function switchLayoutHandler(newLayout) {
       lenis.resize();
     }
   });
+  if (previousLayout === "layout-0-gall3ry") {
+    gsap.to(proNav, { y: 0, duration: 0.8, ease: "hop", delay: 0.2 });
+  }
   activeLayout = newLayout;
   if (newLayout === "layout-2-gall3ry") {
     gsap.to(imgPreviews, {
@@ -251,6 +302,34 @@ items.forEach((item) => {
     item.classList.add("active");
     // switch layout
     switchLayout(item.id);
+  });
+});
+const hoverPreview = document.getElementById("hover-preview");
+const hoverPreviewImg = hoverPreview.querySelector("img");
+
+gsap.set(hoverPreview, { xPercent: -50, yPercent: -50 });
+
+const leftTo = gsap.quickTo(hoverPreview, "left", { duration: 0.6, ease: "power3.out" });
+const topTo = gsap.quickTo(hoverPreview, "top", { duration: 0.6, ease: "power3.out" });
+
+window.addEventListener("mousemove", (e) => {
+  if (activeLayout !== "layout-1-gall3ry") return;
+  leftTo(e.clientX);
+  topTo(e.clientY);
+});
+
+document.querySelectorAll(".imgholder").forEach((holder) => {
+  const smallImg = holder.querySelector("img");
+  holder.addEventListener("mouseenter", (e) => {
+    if (activeLayout !== "layout-1-gall3ry") return;
+    hoverPreviewImg.src = smallImg.src;
+    gsap.set(hoverPreview, { left: e.clientX, top: e.clientY });
+    gsap.to(hoverPreview, { autoAlpha: 1, duration: 0.15 });
+    gsap.to(smallImg, { opacity: 0, duration: 0.15 });
+  });
+  holder.addEventListener("mouseleave", () => {
+    gsap.to(hoverPreview, { autoAlpha: 0, duration: 0.15 });
+    gsap.to(smallImg, { opacity: 1, duration: 0.15 });
   });
 });
 </script>
