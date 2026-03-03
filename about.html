@@ -269,12 +269,12 @@
   <script src="https://unpkg.co/gsap@3/dist/gsap.min.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const pills = document.querySelectorAll(".about-pill");
+      const pillsContainer = document.querySelector(".about-pills");
       const display = document.getElementById("about-text-display");
       let hideTimeout;
       let currentAnim = null;
+      let currentPill = null;
 
-      // Split element's text nodes into word <span>s for GSAP stagger
       function splitWords(el) {
         const spans = [];
         function walk(node) {
@@ -314,22 +314,25 @@
       }
 
       function hideText() {
+        currentPill = null;
         if (currentAnim) currentAnim.kill();
         gsap.to(display, { opacity: 0, duration: 0.2, ease: "power2.in" });
       }
 
-      pills.forEach(pill => {
+      // Single listener on the container — no per-pill boundary issues
+      pillsContainer.addEventListener("mouseover", (e) => {
+        const pill = e.target.closest(".about-pill");
+        if (!pill || pill === currentPill) return;
+        clearTimeout(hideTimeout);
+        currentPill = pill;
         const body = pill.querySelector(".about-pill-body");
-        if (!body) return;
+        if (body) showText(body);
+      });
 
-        pill.addEventListener("mouseenter", () => {
-          clearTimeout(hideTimeout);
-          showText(body);
-        });
-
-        pill.addEventListener("mouseleave", () => {
-          hideTimeout = setTimeout(hideText, 80);
-        });
+      pillsContainer.addEventListener("mouseout", (e) => {
+        // Only hide when the cursor truly leaves the whole container
+        if (pillsContainer.contains(e.relatedTarget)) return;
+        hideTimeout = setTimeout(hideText, 100);
       });
     });
   </script>
