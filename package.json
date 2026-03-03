@@ -1,0 +1,24 @@
+{
+  "name": "sofia-portfolio-base",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "browser-sync start --server --files '**/*.html, css/*.css, js/*.js' --index index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kjoshh/sofia-portfolio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kjoshh/sofia-portfolio/issues"
+  },
+  "homepage": "https://github.com/kjoshh/sofia-portfolio#readme",
+  "devDependencies": {
+    "browser-sync": "^3.0.4"
+  }
+}
