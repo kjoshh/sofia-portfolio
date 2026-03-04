@@ -29,6 +29,8 @@
   opacity: 1;
   color: #d7d7d7;
   cursor: default;
+  cursor: pointer;
+  
 }
 
 .logotext.project:hover {
@@ -443,12 +445,26 @@
   opacity: .5;
   pointer-events: none;
   mix-blend-mode: soft-light;
-  background-image: url('../images/grain.jpg');
+  background-image: url('../images/Sofia Assets/Noise.png');
   background-position: 50%;
   background-size: 1250px;
   background-attachment: fixed;
   width: 100vw;
   height: auto;
+  min-height: 100svh;
+  position: fixed;
+  inset: 0% auto auto 0%;
+}
+
+.dust {
+  opacity: .6;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  background-image: url('../images/Sofia Assets/BGDust.png');
+  background-position: 50%;
+  background-size: 1250px;
+  background-attachment: fixed;
+  width: 100vw;
   min-height: 100svh;
   position: fixed;
   inset: 0% auto auto 0%;
