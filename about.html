@@ -60,23 +60,6 @@
       background-color: rgba(18, 16, 12, 0.92);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      overflow: hidden;
-    }
-
-    .about-nav-backdrop {
-      position: absolute;
-      inset: 0;
-      background-image: url("images/Sofia Assets/Backdrop.png");
-      background-size: cover;
-      background-position: center;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      pointer-events: none;
-      mix-blend-mode: screen;
-    }
-
-    .about-nav:hover .about-nav-backdrop {
-      opacity: 0.35;
     }
 
     .about-nav-logo {
@@ -193,6 +176,23 @@
       opacity: 0.5;
     }
 
+    .about-pill-backdrop {
+      position: absolute;
+      inset: 0;
+      background-image: url("images/Sofia Assets/Backdrop.png");
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      border-radius: 22px;
+    }
+
+    .about-pill:hover .about-pill-backdrop {
+      opacity: 0.5;
+    }
+
     .about-pill-header {
       display: flex;
       align-items: baseline;
@@ -303,7 +303,6 @@ cursor: pointer;
   
 
   <nav class="about-nav">
-    <div class="about-nav-backdrop"></div>
     <a href="index.html" class="about-nav-logo">Sofia Cartuccia</a>
     <div class="about-nav-links">
       <a href="forgetting-dreams.html">Projects</a>
@@ -329,6 +328,7 @@ cursor: pointer;
       <div class="about-pills">
 
         <div class="about-pill">
+          <div class="about-pill-backdrop"></div>
           <div class="about-pill-header">
             <span class="about-pill-title">About</span>
           </div>
@@ -340,6 +340,7 @@ cursor: pointer;
         </div>
 
         <div class="about-pill">
+          <div class="about-pill-backdrop"></div>
           <div class="about-pill-header">
             <span class="about-pill-title">Selected Exhibitions</span>
           </div>
@@ -353,6 +354,7 @@ cursor: pointer;
         </div>
 
         <div class="about-pill">
+          <div class="about-pill-backdrop"></div>
           <div class="about-pill-header">
             <span class="about-pill-title">Selected Publications</span>
           </div>
