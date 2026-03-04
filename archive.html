@@ -23,22 +23,21 @@ width: calc((100% - 236px) / 60);
 </style>
 </head>
 <body class="body">
-  <div class="header">
-    <div class="wrapedu">
-      <div data-animation="default" data-collapse="medium" data-duration="400" data-easing="ease" data-easing2="ease" role="banner" class="navbar _3 _6 w-nav">
-        <div class="wrapin">
-          <nav role="navigation" class="logo w-nav-menu">
-            <a href="index.html" class="logotext w-nav-link">Sofia Cartuccia</a>
-          </nav>
-          <nav role="navigation" class="nav-menu w-nav-menu">
-            <a href="forgetting-dreams.html" class="nav-link _3 _6 w-nav-link">Projects</a>
-            <a href="archive.html" aria-current="page" class="nav-link _3 _6 w-nav-link w--current">Archive</a>
-            <a href="about.html" class="nav-link _3 _6 w-nav-link">About</a>
-          </nav>
-        </div>
-      </div>
+  <style>
+    .about-nav { position: fixed; top: 0; left: 0; right: 0; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 3vw; z-index: 1000; background-color: rgba(18, 16, 12, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .about-nav-logo { font-family: Alegreya, sans-serif; font-size: 15px; letter-spacing: 0.18em; color: #e9e5dd; text-decoration: none; }
+    .about-nav-links { display: flex; gap: 28px; align-items: center; }
+    .about-nav-links a { font-family: Alegreya, sans-serif; font-size: 13px; letter-spacing: 0.18em; color: #867d74; text-decoration: none; transition: color 0.2s ease; }
+    .about-nav-links a:hover, .about-nav-links a.active { color: #e9e5dd; }
+  </style>
+  <nav class="about-nav">
+    <a href="index.html" class="about-nav-logo">Sofia Cartuccia</a>
+    <div class="about-nav-links">
+      <a href="forgetting-dreams.html">Projects</a>
+      <a href="archive.html" class="active">Archive</a>
+      <a href="about.html">About</a>
     </div>
-  </div>
+  </nav>
   <div class="pads">
     <div id="zoom-out" class="zoom-button active"><img src="images/search-minus-stroke-rounded.svg" loading="lazy" alt="" class="zzz"></div>
     <div id="zoom-in" class="zoom-button"><img src="images/search-add-stroke-rounded.svg" loading="lazy" alt="" class="zzz"></div>
