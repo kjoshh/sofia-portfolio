@@ -44,50 +44,8 @@
   background-image: url("images/Noise.png");
 
 }
-    .about-nav, .cornern {
+    .cornern {
       transition: opacity 200ms ease;
-    }
-
-    .about-nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 3vw;
-      z-index: 1000;
-      background-color: rgba(18, 16, 12, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-
-    .about-nav-logo {
-      font-family: Alegreya, sans-serif;
-      font-size: 15px;
-      letter-spacing: 0.18em;
-      color: #e9e5dd;
-      text-decoration: none;
-    }
-
-    .about-nav-links {
-      display: flex;
-      gap: 28px;
-      align-items: center;
-    }
-
-    .about-nav-links a {
-      font-family: Alegreya, sans-serif;
-      font-size: 13px;
-      letter-spacing: 0.18em;
-      color: #867d74;
-      text-decoration: none;
-      transition: color 0.2s ease;
-    }
-
-    .about-nav-links a:hover,
-    .about-nav-links a.active {
-      color: #e9e5dd;
     }
 
     .about-layout {
@@ -142,13 +100,6 @@
     .about-image-title:hover {
       opacity: 0.5;
     }
-    .nav-link._3._6{
-      opacity: .9 !important;
-    }
-    .nav-link._3._6.active{
-      opacity: .6 !important;
-    }
-    
     /* ── Pills: right side, overlapping over the image ── */
     .about-pills {
       position: absolute;
@@ -173,7 +124,7 @@
     }
 
     .about-pill:hover {
-      opacity: 0.5;
+      opacity: 1;
     }
 
     .about-pill-backdrop {
@@ -190,7 +141,7 @@
     }
 
     .about-pill:hover .about-pill-backdrop {
-      opacity: 0.5;
+      opacity: 1;
     }
 
     .about-pill-header {
@@ -286,8 +237,8 @@ cursor: pointer;
 
       .about-pills {
         position: relative;
-        top: auto;
-        right: auto;
+        top: 21%;
+        right: 10px;
         width: 100%;
         margin-top: 16px;
       }
@@ -302,14 +253,18 @@ cursor: pointer;
   <div class="nois3"></div>
   
 
-  <nav class="about-nav">
-    <a href="index.html" class="about-nav-logo">Sofia Cartuccia</a>
-    <div class="about-nav-links">
-      <a href="forgetting-dreams.html">Projects</a>
-      <a href="archive.html">Archive</a>
-      <a href="about.html" class="active">About</a>
+  <div data-animation="default" data-collapse="medium" data-duration="400" data-easing="ease" data-easing2="ease" role="banner" class="navbar _3 _6 w-nav">
+    <div class="wrapin">
+      <nav role="navigation" class="logo w-nav-menu">
+        <a href="index.html" class="logotext w-nav-link">Sofia Cartuccia</a>
+      </nav>
+      <nav role="navigation" class="nav-menu w-nav-menu">
+        <a href="forgetting-dreams.html" class="nav-link _3 _6 w-nav-link">Projects</a>
+        <a href="archive.html" class="nav-link _3 _6 w-nav-link">Archive</a>
+        <a href="about.html" class="nav-link _3 _6 active w-nav-link">About</a>
+      </nav>
     </div>
-  </nav>
+  </div>
 
   <div class="about-wrapper">
     <div class="about-layout">
@@ -430,7 +385,7 @@ cursor: pointer;
         gsap.to(display, { opacity: 0, duration: 0.2, ease: "power2.in" });
       }
       const cornerr = document.querySelector(".cornern"); // Variable heißt "corner"
-      const head = document.querySelector(".about-nav");
+      const head = document.querySelector(".navbar");
 
       // Pills container
       pillsContainer.addEventListener("mouseover", (e) => {
