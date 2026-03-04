@@ -27,6 +27,52 @@
       top: 10vh;
     }
 
+    .about-nav, .cornern {
+      transition: opacity 200ms ease;
+    }
+
+    .about-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 3vw;
+      z-index: 1000;
+      background-color: rgba(18, 16, 12, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .about-nav-logo {
+      font-family: Alegreya, sans-serif;
+      font-size: 15px;
+      letter-spacing: 0.18em;
+      color: #e9e5dd;
+      text-decoration: none;
+    }
+
+    .about-nav-links {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .about-nav-links a {
+      font-family: Alegreya, sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      color: #867d74;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .about-nav-links a:hover,
+    .about-nav-links a.active {
+      color: #e9e5dd;
+    }
+
     .about-layout {
       position: relative;
       width: 100%;
@@ -68,6 +114,7 @@
       letter-spacing: 0.15em;
       color: #e9e5dd;
       line-height: 1.6;
+
       border-radius: 22px;
       padding: 14px 22px;
       cursor: default;
@@ -78,7 +125,13 @@
     .about-image-title:hover {
       opacity: 0.5;
     }
-
+    .nav-link._3._6{
+      opacity: .9 !important;
+    }
+    .nav-link._3._6.active{
+      opacity: .6 !important;
+    }
+    
     /* ── Pills: right side, overlapping over the image ── */
     .about-pills {
       position: absolute;
@@ -141,20 +194,39 @@
       margin-bottom: 0;
     }
 
-    .corner {
-      position: fixed;
-      z-index: 100;
-      font-family: Alegreya, sans-serif;
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      color: #867d74;
-      pointer-events: none;
-    }
+ 
+      .cornern {
+	position: fixed;
+	z-index: 100;
+	font-family: Alegreya, sans-serif;
+	font-size: 14px;
+	color: #d7d7d7;
+	pointer-events: auto;
+	bottom: 0;
+	width: 100vw;
+	left: 0;
+	display: flex;
+	flex-direction: row;
+	align-items: space;
+	gap: 15px;
+  letter-spacing: .1em;
+	justify-content: left;
+	padding: 18.89px 2vw;
+}
 
-    .corner-tl { top: 26px;    left: 3vw;  }
-    .corner-tr { top: 26px;    right: 3vw; text-align: right; }
-    .corner-bl { bottom: 26px; left: 3vw;  }
-    .corner-br { bottom: 26px; right: 3vw; text-align: right; }
+
+.corner{
+  position: relative;
+  opacity: 0.75;
+cursor: pointer;
+
+
+
+}
+    .corner-tr{
+      margin-right: 15px;
+      opacity: 1;
+    }
 
     @media screen and (max-width: 900px) {
       .about-layout {
@@ -194,22 +266,14 @@
 </head>
 <body class="body">
 
-  <div class="header">
-    <div class="wrapedu">
-      <div data-animation="default" data-collapse="medium" data-duration="400" data-easing="ease" data-easing2="ease" role="banner" class="navbar _3 _6 w-nav">
-        <div class="wrapin">
-          <nav role="navigation" class="logo w-nav-menu">
-            <a href="index.html" class="logotext w-nav-link">Sofia Cartuccia</a>
-          </nav>
-          <nav role="navigation" class="nav-menu w-nav-menu">
-            <a href="forgetting-dreams.html" class="nav-link _3 _6 w-nav-link">Projects</a>
-            <a href="archive.html" class="nav-link _3 _6 w-nav-link">Archive</a>
-            <a href="about.html" aria-current="page" class="nav-link _3 _6 w-nav-link" style="opacity:1;color:#f5f4ef;">About</a>
-          </nav>
-        </div>
-      </div>
+  <nav class="about-nav">
+    <a href="index.html" class="about-nav-logo">Sofia Cartuccia</a>
+    <div class="about-nav-links">
+      <a href="forgetting-dreams.html">Projects</a>
+      <a href="archive.html">Archive</a>
+      <a href="about.html" class="active">About</a>
     </div>
-  </div>
+  </nav>
 
   <div class="about-wrapper">
     <div class="about-layout">
@@ -263,12 +327,13 @@
 
     </div>
   </div>
+<div class="cornern">
+  <div class="corner corner-tr">Italy, <span id="italy-time"></span></div>
+  <div class="corner corner-br">Email</div>
+  <div class="corner corner-bl">Phone</div>
 
-  <div class="corner corner-tl">@sybil_sometimes</div>
-  <div class="corner corner-tr">Italy &nbsp;—&nbsp; <span id="italy-time"></span></div>
-  <div class="corner corner-bl">+39 335 609 3992</div>
-  <div class="corner corner-br">sofia.cartuccia89@gmail.com</div>
-
+  <div class="corner corner-tl">Instagram</div>
+</div>
   <div class="noiselayer"></div>
   <div class="noise"></div>
 
@@ -327,18 +392,28 @@
         if (currentAnim) currentAnim.kill();
         gsap.to(display, { opacity: 0, duration: 0.2, ease: "power2.in" });
       }
+      const cornerr = document.querySelector(".cornern"); // Variable heißt "corner"
+      const head = document.querySelector(".about-nav");
 
       // Pills container
       pillsContainer.addEventListener("mouseover", (e) => {
+
+        cornerr.style.opacity = 0.25; // muss exakt gleich geschrieben sein
+
+        head.style.opacity = 0.25; // muss exakt gleich geschrieben sein
         const pill = e.target.closest(".about-pill");
         if (!pill || pill === currentPill) return;
         clearTimeout(hideTimeout);
+
         currentPill = pill;
         const body = pill.querySelector(".about-pill-body");
         if (body) showText(body);
       });
 
       pillsContainer.addEventListener("mouseout", (e) => {
+        cornerr.style.opacity = 1; // muss exakt gleich geschrieben sein
+
+head.style.opacity = 1; // muss exakt gleich geschrieben sein
         if (pillsContainer.contains(e.relatedTarget)) return;
         hideTimeout = setTimeout(hideText, 100);
       });
@@ -348,6 +423,9 @@
       const titleBody = titleEl.querySelector(".about-pill-body");
 
       titleEl.addEventListener("mouseover", (e) => {
+        cornerr.style.opacity = 0.25; // muss exakt gleich geschrieben sein
+
+head.style.opacity = 0.25; // muss exakt gleich geschrieben sein
         if (currentPill === titleEl) return;
         clearTimeout(hideTimeout);
         currentPill = titleEl;
@@ -355,6 +433,9 @@
       });
 
       titleEl.addEventListener("mouseout", (e) => {
+        cornerr.style.opacity = 1; // muss exakt gleich geschrieben sein
+
+head.style.opacity = 1; // muss exakt gleich geschrieben sein
         if (titleEl.contains(e.relatedTarget)) return;
         hideTimeout = setTimeout(hideText, 100);
       });
