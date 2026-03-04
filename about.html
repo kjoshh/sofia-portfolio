@@ -127,21 +127,17 @@
       opacity: 1;
     }
 
-    .about-pill-backdrop {
+    .about-pills-slider {
       position: absolute;
-      inset: 0;
+      left: 0;
+      right: 0;
       background-image: url("images/Sofia Assets/Backdrop.png");
       background-size: cover;
       background-position: center;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      pointer-events: none;
       mix-blend-mode: screen;
+      pointer-events: none;
       border-radius: 22px;
-    }
-
-    .about-pill:hover .about-pill-backdrop {
-      opacity: 1;
+      transition: top 0.35s cubic-bezier(0.4, 0, 0.2, 1), height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .about-pill-header {
@@ -281,9 +277,9 @@ cursor: pointer;
       <div class="about-text-display" id="about-text-display"></div>
 
       <div class="about-pills">
+        <div class="about-pills-slider"></div>
 
         <div class="about-pill">
-          <div class="about-pill-backdrop"></div>
           <div class="about-pill-header">
             <span class="about-pill-title">About</span>
           </div>
@@ -295,7 +291,6 @@ cursor: pointer;
         </div>
 
         <div class="about-pill">
-          <div class="about-pill-backdrop"></div>
           <div class="about-pill-header">
             <span class="about-pill-title">Selected Exhibitions</span>
           </div>
@@ -309,7 +304,6 @@ cursor: pointer;
         </div>
 
         <div class="about-pill">
-          <div class="about-pill-backdrop"></div>
           <div class="about-pill-header">
             <span class="about-pill-title">Selected Publications</span>
           </div>
@@ -384,17 +378,26 @@ cursor: pointer;
         if (currentAnim) currentAnim.kill();
         gsap.to(display, { opacity: 0, duration: 0.2, ease: "power2.in" });
       }
-      const cornerr = document.querySelector(".cornern"); // Variable heißt "corner"
+      const cornerr = document.querySelector(".cornern");
       const head = document.querySelector(".navbar");
+      const slider = document.querySelector(".about-pills-slider");
+
+      // Init slider to first pill
+      const firstPill = pillsContainer.querySelector(".about-pill");
+      slider.style.top = firstPill.offsetTop + "px";
+      slider.style.height = firstPill.offsetHeight + "px";
 
       // Pills container
       pillsContainer.addEventListener("mouseover", (e) => {
 
-        cornerr.style.opacity = 0.25; // muss exakt gleich geschrieben sein
+        cornerr.style.opacity = 0.25;
 
-        head.style.opacity = 0.25; // muss exakt gleich geschrieben sein
+        head.style.opacity = 0.25;
         const pill = e.target.closest(".about-pill");
         if (!pill || pill === currentPill) return;
+
+        slider.style.top = pill.offsetTop + "px";
+        slider.style.height = pill.offsetHeight + "px";
         clearTimeout(hideTimeout);
 
         currentPill = pill;
