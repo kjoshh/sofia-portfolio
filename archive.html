@@ -347,7 +347,7 @@ body { cursor: none; }
           Math.hypot(w - cx, cy),
           Math.hypot(cx, h - cy),
           Math.hypot(w - cx, h - cy)
-        ) * 1.15;
+        ) * 1.25;
         const r = radius * maxR;
         ctx.save();
         ctx.beginPath();
@@ -365,7 +365,7 @@ body { cursor: none; }
         ctx.restore();
       }
 
-      const lerpSpeed = targetRadius > radius ? 0.0175 : 0.15;
+      const lerpSpeed = targetRadius > radius ? 0.0175 + radius * 0.04 : 0.25;
       radius += (targetRadius - radius) * lerpSpeed;
       time += 0.15;
 
