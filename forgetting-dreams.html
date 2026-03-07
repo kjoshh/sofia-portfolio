@@ -63,7 +63,7 @@
 .gall3ry.layout-1-gall3ry .imgholder {
   position: relative;
   width: auto;
-  height: 14vw;
+  height: 13.5vw;
 display: flex;
 align-items: center;
 justify-content: center;
@@ -288,6 +288,11 @@ transform: rotate(-90deg);
 .lb-next { top: 50%; right: 12px; transform: translateY(-50%); }
 .lb-close { top: 16px; right: 20px; font-size: 1.4rem; }
 .layout-1-gall3ry .imgholder { cursor: pointer; }
+body:has(.lb-overlay.open) .header {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
 </style>
 </head>
 <body class="body">
