@@ -20,8 +20,8 @@
 /* body { cursor: none; } */
 .cursor {
   position: fixed;
-  width: 22.5px;
-  height: 22.5px;
+  width: 17.5px;
+  height: 17.5px;
   border-radius: 50%;
   background: #e9e5dd;
   pointer-events: none;
@@ -30,10 +30,7 @@
   z-index: 2147483647;
   mix-blend-mode: difference;
 }
-.cursor.hov {
-  width: 25px;
-  height: 25px;
-}
+
 
 /* ── Dust / noise overlays ── */
 .dusti {
@@ -228,7 +225,7 @@
           <nav role="navigation" class="nav-menu w-nav-menu">
             <a href="forgetting-dreams.html" class="nav-link _3 _6 w-nav-link">Projects</a>
             <a href="archive.html" aria-current="page" class="nav-link _3 _6 active w-nav-link w--current">Archive</a>
-            <a href="#" class="nav-link _3 _6 w-nav-link">About</a>
+            <a href="about.html" class="nav-link _3 _6 w-nav-link">About</a>
           </nav>
         </div>
       </div>
@@ -458,10 +455,6 @@ document.addEventListener("mousemove", (e) => { mouseX = e.clientX; mouseY = e.c
   cursor.style.borderRadius = `${r(0)}% ${r(1)}% ${r(2)}% ${r(3)}% / ${r(4)}% ${r(5)}% ${r(6)}% ${r(7)}%`;
   requestAnimationFrame(cursorLoop);
 })();
-items.forEach((item) => {
-  item.addEventListener("mouseenter", () => cursor.classList.add("hov"));
-  item.addEventListener("mouseleave", () => cursor.classList.remove("hov"));
-});
 
 /* ── Staggered IntersectionObserver fade-in ── */
 const observer = new IntersectionObserver((entries) => {
