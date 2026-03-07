@@ -71,9 +71,9 @@ function switchLayoutHandler(newLayout) {
   const previousLayout = activeLayout;
   const imgholders = Array.from(gall3ry.querySelectorAll(".imgholder"));
 
-  // Kill any in-progress animations and clear stale transforms before measuring
+  // Kill any in-progress animations and clear all stale inline styles before measuring
   gsap.killTweensOf(imgholders);
-  gsap.set(imgholders, { clearProps: "x,y,transform" });
+  gsap.set(imgholders, { clearProps: "all" });
 
   if (previousLayout === "layout-3-gall3ry") {
     // Imgholders are position:absolute in layout-3 — GSAP Flip mishandles the
