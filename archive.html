@@ -30,6 +30,10 @@
   z-index: 2147483647;
   mix-blend-mode: difference;
 }
+.cursor.hover {
+  width: 55px;
+  height: 55px;
+}
 
 
 /* ── Dust / noise overlays ── */
@@ -457,8 +461,8 @@ document.addEventListener("mousemove", (e) => { mouseX = e.clientX; mouseY = e.c
 })();
 
 document.querySelectorAll("a, button, [role='button']").forEach(el => {
-  el.addEventListener("mouseenter", () => cursor.classList.add("hov"));
-  el.addEventListener("mouseleave", () => cursor.classList.remove("hov"));
+  el.addEventListener("mouseenter", () => cursor.classList.add("hover"));
+  el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
 });
 
 /* ── Staggered IntersectionObserver fade-in ── */
