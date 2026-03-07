@@ -39,9 +39,8 @@ const proNav = document.querySelector(".navbar._2.pro");
 
 let splitInfo = null;
 if (infoPara) {
-  splitInfo = new SplitText(infoPara, { type: "chars,words" });
-  gsap.set(splitInfo.words, { display: "inline-block" });
-  gsap.set(splitInfo.chars, { opacity: 0 });
+  splitInfo = new SplitText(infoPara, { type: "lines" });
+  gsap.set(splitInfo.lines, { opacity: 0, y: 8 });
 }
 
 gsap.set(proNav, { xPercent: -50, y: "-44vh", yPercent: 50 });
@@ -112,16 +111,16 @@ function switchLayoutHandler(newLayout) {
       textContainer.style.display = "block";
       gsap.set(textContainer, { autoAlpha: 1 });
       if (splitInfo) {
-        gsap.fromTo(splitInfo.chars,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.02, stagger: 0.0025, delay: 0.5, ease: "none" }
+        gsap.fromTo(splitInfo.lines,
+          { opacity: 0, y: 8 },
+          { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.4, ease: "power2.out" }
         );
       }
     }
   } else {
     if (textContainer) {
-      if (splitInfo) gsap.killTweensOf(splitInfo.chars);
-      gsap.set(splitInfo ? splitInfo.chars : [], { opacity: 0 });
+      if (splitInfo) gsap.killTweensOf(splitInfo.lines);
+      gsap.set(splitInfo ? splitInfo.lines : [], { opacity: 0, y: 8 });
       gsap.to(textContainer, { autoAlpha: 0, duration: 0.2, onComplete: () => { textContainer.style.display = "none"; } });
     }
   }
