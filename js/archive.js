@@ -1,3 +1,8 @@
+/* ── Lenis smooth scroll ── */
+const lenis = new Lenis();
+(function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(0);
+
+
 /* ── Organic film-negative ink spread ── */
 (function () {
   document.querySelectorAll(".archive-grid-item").forEach(item => {
