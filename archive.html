@@ -452,6 +452,9 @@ document.addEventListener("mousemove", (e) => { mouseX = e.clientX; mouseY = e.c
   const wy = (cnoise(0, curTime * 1.1 + 50) - 0.5) * 6;
   cursor.style.left = (curX + wx) + "px";
   cursor.style.top  = (curY + wy) + "px";
+  const s = curTime * 0.7;
+  const r = (i) => Math.round(35 + cnoise(s + i * 7.3, i * 3.1) * 30);
+  cursor.style.borderRadius = `${r(0)}% ${r(1)}% ${r(2)}% ${r(3)}% / ${r(4)}% ${r(5)}% ${r(6)}% ${r(7)}%`;
   requestAnimationFrame(cursorLoop);
 })();
 items.forEach((item) => {
