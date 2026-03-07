@@ -26,7 +26,7 @@ body { cursor: none; }
   background: #e9e5dd;
   pointer-events: none;
   transform: translate(-50%, -50%);
-  transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease;
+  transition: width 0.2s ease, height 0.2s ease;
   z-index: 999999;
   mix-blend-mode: difference;
 }
@@ -430,12 +430,30 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") showNext();
 });
 
-/* ── Custom cursor ── */
+/* ── Custom cursor with wobble ── */
 const cursor = document.getElementById("cursor");
-document.addEventListener("mousemove", (e) => {
-  cursor.style.left = e.clientX + "px";
-  cursor.style.top = e.clientY + "px";
-});
+let mouseX = 0, mouseY = 0, curX = 0, curY = 0, curTime = 0;
+function cfract(x) { return x - Math.floor(x); }
+function chash(px, py) { return cfract(Math.sin(px * 127.1 + py * 311.7) * 43758.5453); }
+function cnoise(px, py) {
+  const ix = Math.floor(px), iy = Math.floor(py);
+  const fx = px - ix, fy = py - iy;
+  const ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
+  return chash(ix,iy) + (chash(ix+1,iy)-chash(ix,iy))*ux
+       + (chash(ix,iy+1)-chash(ix,iy))*uy
+       + (chash(ix,iy)-chash(ix+1,iy)-chash(ix,iy+1)+chash(ix+1,iy+1))*ux*uy;
+}
+document.addEventListener("mousemove", (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+(function cursorLoop() {
+  curX += (mouseX - curX) * 0.18;
+  curY += (mouseY - curY) * 0.18;
+  curTime += 0.025;
+  const wx = (cnoise(curTime * 1.1, 0) - 0.5) * 6;
+  const wy = (cnoise(0, curTime * 1.1 + 50) - 0.5) * 6;
+  cursor.style.left = (curX + wx) + "px";
+  cursor.style.top  = (curY + wy) + "px";
+  requestAnimationFrame(cursorLoop);
+})();
 items.forEach((item) => {
   item.addEventListener("mouseenter", () => cursor.classList.add("hov"));
   item.addEventListener("mouseleave", () => cursor.classList.remove("hov"));
