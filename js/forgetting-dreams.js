@@ -68,44 +68,29 @@ function switchLayout(newLayout) {
 
 function switchLayoutHandler(newLayout) {
   const previousLayout = activeLayout;
+  const state = Flip.getState(gall3ry.querySelectorAll(".imgholder"));
+  gall3ry.classList.remove(activeLayout);
+  gall3ry.classList.add(newLayout);
 
-  // Leaving info layout: hide text, skip Flip (all images were stacked), fade in at new positions
-  if (previousLayout === "layout-3-gall3ry") {
-    gsap.killTweensOf(infoLines);
-    gsap.set(infoLines, { opacity: 0, y: 10 });
-    gsap.set(textContainer, { autoAlpha: 0 });
-    textContainer.style.display = "none";
-
-    const imgholders = gall3ry.querySelectorAll(".imgholder");
-    gsap.set(imgholders, { opacity: 0 });
-    gall3ry.classList.remove(activeLayout);
-    gall3ry.classList.add(newLayout);
-    gsap.to(imgholders, { opacity: 1, duration: 0.6, stagger: 0.03, ease: "power2.out", onComplete: () => { lenis.resize(); } });
-  } else {
-    const state = Flip.getState(gall3ry.querySelectorAll(".imgholder"));
-    gall3ry.classList.remove(activeLayout);
-    gall3ry.classList.add(newLayout);
-
-    let staggerOption = 0.025;
-    if (previousLayout === "layout-1-gall3ry" && newLayout === "layout-2-gall3ry") {
-      staggerOption = { each: 0.025, from: "end", ease: "power3.in" };
-    }
-    if (previousLayout === "layout-0-gall3ry") {
-      staggerOption = { each: 0.05, from: "end" };
-    }
-
-    const flipEase = (previousLayout === "layout-0-gall3ry" && newLayout === "layout-2-gall3ry")
-      ? "power1.inOut"
-      : "hop";
-
-    Flip.from(state, {
-      duration: 1.5,
-      ease: flipEase,
-      stagger: staggerOption,
-      absolute: true,
-      onComplete: () => { lenis.resize(); }
-    });
+  let staggerOption = 0.025;
+  if (previousLayout === "layout-1-gall3ry" && newLayout === "layout-2-gall3ry") {
+    staggerOption = { each: 0.025, from: "end", ease: "power3.in" };
   }
+  if (previousLayout === "layout-0-gall3ry") {
+    staggerOption = { each: 0.05, from: "end" };
+  }
+
+  const flipEase = (previousLayout === "layout-0-gall3ry" && newLayout === "layout-2-gall3ry")
+    ? "power1.inOut"
+    : "hop";
+
+  Flip.from(state, {
+    duration: 1.5,
+    ease: flipEase,
+    stagger: staggerOption,
+    absolute: true,
+    onComplete: () => { lenis.resize(); }
+  });
 
   if (previousLayout === "layout-0-gall3ry") {
     gsap.to(img100, { opacity: 0, duration: 0.1, ease: "power4.inOut", delay: 0 });
@@ -135,6 +120,12 @@ function switchLayoutHandler(newLayout) {
         { opacity: 0, y: 10 },
         { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, delay: 0.5, ease: "power2.out" }
       );
+    }
+  } else {
+    if (textContainer) {
+      gsap.killTweensOf(infoLines);
+      gsap.set(infoLines, { opacity: 0, y: 10 });
+      gsap.to(textContainer, { autoAlpha: 0, duration: 0.3, onComplete: () => { textContainer.style.display = "none"; } });
     }
   }
 }
