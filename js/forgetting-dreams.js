@@ -81,18 +81,19 @@ function switchLayoutHandler(newLayout) {
 
   let staggerOption = 0.025;
   if (previousLayout === "layout-1-gall3ry" && newLayout === "layout-2-gall3ry") {
-    staggerOption = { each: 0.025, from: "end", ease: "power3.in" };
+    staggerOption = {duration:2, each: 0.05, from: "end", ease: "power3.Out" };
   }
   if (previousLayout === "layout-0-gall3ry") {
     staggerOption = { each: 0.05, from: "end" };
   }
+
 
   const flipEase = (previousLayout === "layout-0-gall3ry" && newLayout === "layout-2-gall3ry")
     ? "power1.inOut"
     : "hop";
 
   Flip.from(state, {
-    duration: 1.5,
+    duration: 1.75,
     ease: flipEase,
     stagger: staggerOption,
     absolute: true,
@@ -100,12 +101,12 @@ function switchLayoutHandler(newLayout) {
   });
 
   if (previousLayout === "layout-0-gall3ry") {
-    gsap.to(img100, { opacity: 0, duration: 0.1, ease: "power4.inOut", delay: 0 });
-    gsap.to(proNav, { xPercent: -50, y: 0, yPercent: 0, duration: 0.75, ease: "power4.inOut", delay: 0.75 });
+    gsap.to(img100, { opacity: 0, duration: 0.2, ease: "power4.inOut", delay: 0 });
+    gsap.to(proNav, { xPercent: -50, y: 0, yPercent: 0, duration: 2, ease: "power4.inOut", delay: 0 });
   }
   if (newLayout === "layout-0-gall3ry") {
     gsap.to(img100, { opacity: 1, duration: 0.5, ease: "power4.inOut", delay: 0 });
-    gsap.to(proNav, { xPercent: -50, y: "-45vh", yPercent: 50, duration: 1.5, ease: "power4.inOut", delay: 0.75 });
+    gsap.to(proNav, { xPercent: -50, y: "-45vh", yPercent: 50, duration: 2, ease: "power4.inOut", delay: 0 });
     proNav.classList.add("transparent");
   } else {
     proNav.classList.remove("transparent");
@@ -131,8 +132,17 @@ function switchLayoutHandler(newLayout) {
   } else {
     if (textContainer) {
       gsap.killTweensOf(infoLines);
-      gsap.set(infoLines, { opacity: 0, y: 10 });
-      gsap.to(textContainer, { autoAlpha: 0, duration: 0.3, onComplete: () => { textContainer.style.display = "none"; } });
+      gsap.to(infoLines, {
+        opacity: 0, y: 10,
+        duration: 0.3,
+        stagger: { each: 0.04, from: "end" },
+        ease: "power2.in",
+        onComplete: () => {
+          gsap.set(infoLines, { opacity: 0, y: 10 });
+          textContainer.style.display = "none";
+          gsap.set(textContainer, { autoAlpha: 0 });
+        }
+      });
     }
   }
 }
