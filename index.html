@@ -27,6 +27,11 @@
       transform: translate(-50%, -50%);
       z-index: 2147483647;
       mix-blend-mode: difference;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .cursor.hover {
+      width: 33px;
+      height: 33px;
     }
     .dusti{
   width:100vw;
@@ -82,6 +87,10 @@
            + (chash(ix,iy)-chash(ix+1,iy)-chash(ix,iy+1)+chash(ix+1,iy+1))*ux*uy;
     }
     document.addEventListener("mousemove", (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+    document.querySelectorAll("a, button, [role='button']").forEach(el => {
+      el.addEventListener("mouseenter", () => cursor.classList.add("hover"));
+      el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
+    });
     (function loop() {
       curX += (mouseX - curX) * 0.13;
       curY += (mouseY - curY) * 0.13;
