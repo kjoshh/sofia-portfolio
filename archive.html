@@ -31,19 +31,8 @@
   mix-blend-mode: difference;
 }
 .cursor.hov {
-  width: 22.5px;
-  height: 22.5px;
-}
-.cursor-dot {
-  position: fixed;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #e9e5dd;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  z-index: 1000000;
-  mix-blend-mode: difference;
+  width: 25px;
+  height: 25px;
 }
 
 /* ── Dust / noise overlays ── */
@@ -117,7 +106,7 @@
   display: block;
   position: relative;
   overflow: hidden;
-  cursor: none;
+  /* cursor: none; */
 
   /* entry state */
   opacity: 0;
@@ -204,7 +193,7 @@
   border: none;
   color: #ffffff99;
   font-size: 1.6rem;
-  cursor: none;
+  cursor: default;
   padding: 20px;
   line-height: 1;
   font-family: Alegreya, sans-serif;
@@ -223,7 +212,7 @@
 <body class="body">
   <!-- Custom cursor -->
   <div class="cursor" id="cursor"></div>
-  <div class="cursor-dot" id="cursor-dot"></div>
+
 
   <div class="dusti"></div>
   <div class="nois3"></div>
@@ -455,16 +444,11 @@ function cnoise(px, py) {
        + (chash(ix,iy+1)-chash(ix,iy))*uy
        + (chash(ix,iy)-chash(ix+1,iy)-chash(ix,iy+1)+chash(ix+1,iy+1))*ux*uy;
 }
-const cursorDot = document.getElementById("cursor-dot");
-document.addEventListener("mousemove", (e) => {
-  mouseX = e.clientX; mouseY = e.clientY;
-  cursorDot.style.left = e.clientX + "px";
-  cursorDot.style.top  = e.clientY + "px";
-});
+document.addEventListener("mousemove", (e) => { mouseX = e.clientX; mouseY = e.clientY; });
 (function cursorLoop() {
-  curX += (mouseX - curX) * 0.18;
-  curY += (mouseY - curY) * 0.18;
-  curTime += 0.035;
+  curX += (mouseX - curX) * 0.13;
+  curY += (mouseY - curY) * 0.13;
+  curTime += 0.02;
   const wx = (cnoise(curTime * 1.1, 0) - 0.5) * 2;
   const wy = (cnoise(0, curTime * 1.1 + 50) - 0.5) * 2;
   cursor.style.left = (curX + wx) + "px";
