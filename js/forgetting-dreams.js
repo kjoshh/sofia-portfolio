@@ -43,6 +43,7 @@ textContainer.style.display = "block";
 const infoLines = [];
 infoParas.forEach(p => {
   const split = new SplitText(p, { type: "lines" });
+  p.style.maxWidth = "";
   infoLines.push(...split.lines);
 });
 gsap.set(infoLines, { opacity: 0, y: 10 });
@@ -105,6 +106,7 @@ function switchLayoutHandler(newLayout) {
       ease: flipEase,
       stagger: staggerOption,
       absolute: true,
+      clearProps: "all",
       onComplete: () => { lenis.resize(); }
     });
   }
