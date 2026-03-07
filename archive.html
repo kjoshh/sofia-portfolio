@@ -123,7 +123,7 @@ body { cursor: none; }
   width: 100%;
   height: auto;
   display: block;
-  filter: grayscale(0.4);
+  /* filter: grayscale(0.4); */
   transition: filter 0.5s ease;
 }
 .archive-grid-item:hover img {
@@ -136,14 +136,19 @@ body { cursor: none; }
   position: absolute;
   inset: 0;
   background: transparent;
-  backdrop-filter: invert(1) sepia(0.5) contrast(0.95);
-  -webkit-backdrop-filter: invert(1) sepia(0.5) contrast(0.95);
+  filter: ;
+  backdrop-filter: invert(1) sepia(0.65) contrast(0.85)saturate(0.85);
+  -webkit-backdrop-filter: invert(1) sepia(0.75) contrast(0.95);
   transform: translateY(100%);
   transition: transform 0.5s ease;
   pointer-events: none;
 }
 .archive-grid-item:hover::after {
   transform: translateY(0);
+}
+.archive-grid-item.bw::after {
+  backdrop-filter: invert(1) contrast(0.85);
+  -webkit-backdrop-filter: invert(1) contrast(0.85);
 }
 
 /* ── Image number overlay ── */
@@ -253,25 +258,25 @@ body { cursor: none; }
     <div class="archive-grid-item" data-full="images/sofia_archive-21.jpg"><img src="images/sofia_archive-21.jpg" loading="lazy" alt=""><span class="img-num">006</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-11.jpg"><img src="images/sofia_archive-11-p-800.jpg" loading="lazy" alt=""><span class="img-num">007</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-14.jpg"><img src="images/sofia_archive-14-p-800.jpg" loading="lazy" alt=""><span class="img-num">008</span></div>
-    <div class="archive-grid-item" data-full="images/sofia_archive-42.jpg"><img src="images/sofia_archive-42-p-800.jpg" loading="lazy" alt=""><span class="img-num">009</span></div>
-    <div class="archive-grid-item" data-full="images/sofia_archive-36.jpg"><img src="images/sofia_archive-36-p-800.jpg" loading="lazy" alt=""><span class="img-num">010</span></div>
-    <div class="archive-grid-item" data-full="images/sofia_archive-37.jpg"><img src="images/sofia_archive-37-p-800.jpg" loading="lazy" alt=""><span class="img-num">011</span></div>
-    <div class="archive-grid-item" data-full="images/sofia_archive-38.jpg"><img src="images/sofia_archive-38-p-800.jpg" loading="lazy" alt=""><span class="img-num">012</span></div>
+    <div class="archive-grid-item bw" data-full="images/sofia_archive-42.jpg"><img src="images/sofia_archive-42-p-800.jpg" loading="lazy" alt=""><span class="img-num">009</span></div>
+    <div class="archive-grid-item bw" data-full="images/sofia_archive-36.jpg"><img src="images/sofia_archive-36-p-800.jpg" loading="lazy" alt=""><span class="img-num">010</span></div>
+    <div class="archive-grid-item bw" data-full="images/sofia_archive-37.jpg"><img src="images/sofia_archive-37-p-800.jpg" loading="lazy" alt=""><span class="img-num">011</span></div>
+    <div class="archive-grid-item bw" data-full="images/sofia_archive-38.jpg"><img src="images/sofia_archive-38-p-800.jpg" loading="lazy" alt=""><span class="img-num">012</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-24.jpg"><img src="images/sofia_archive-24.jpg" loading="lazy" alt=""><span class="img-num">013</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-34.jpg"><img src="images/sofia_archive-34-p-800.jpg" loading="lazy" alt=""><span class="img-num">014</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-18.jpg"><img src="images/sofia_archive-18.jpg" loading="lazy" alt=""><span class="img-num">015</span></div>
-    <div class="archive-grid-item" data-full="images/sofia_archive-16.jpg"><img src="images/sofia_archive-16-p-800.jpg" loading="lazy" alt=""><span class="img-num">016</span></div>
+    <div class="archive-grid-item bw" data-full="images/sofia_archive-16.jpg"><img src="images/sofia_archive-16-p-800.jpg" loading="lazy" alt=""><span class="img-num">016</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-25.jpg"><img src="images/sofia_archive-25.jpg" loading="lazy" alt=""><span class="img-num">017</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-3.jpg"><img src="images/sofia_archive-3-p-800.jpg" loading="lazy" alt=""><span class="img-num">018</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-5.jpg"><img src="images/sofia_archive-5-p-800.jpg" loading="lazy" alt=""><span class="img-num">019</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-41.jpg"><img src="images/sofia_archive-41-p-800.jpg" loading="lazy" alt=""><span class="img-num">020</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-4.jpg"><img src="images/sofia_archive-4-p-800.jpg" loading="lazy" alt=""><span class="img-num">021</span></div>
-    <div class="archive-grid-item" data-full="images/sofia_archive-39.jpg"><img src="images/sofia_archive-39-p-800.jpg" loading="lazy" alt=""><span class="img-num">022</span></div>
+    <div class="archive-grid-item bw" data-full="images/sofia_archive-39.jpg"><img src="images/sofia_archive-39-p-800.jpg" loading="lazy" alt=""><span class="img-num">022</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-7.jpg"><img src="images/sofia_archive-7-p-800.jpg" loading="lazy" alt=""><span class="img-num">023</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-2.jpg"><img src="images/sofia_archive-2-p-800.jpg" loading="lazy" alt=""><span class="img-num">024</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-8.jpg"><img src="images/sofia_archive-8-p-800.jpg" loading="lazy" alt=""><span class="img-num">025</span></div>
-    <div class="archive-grid-item" data-full="images/sofia_archive-1.jpg"><img src="images/sofia_archive-1-p-800.jpg" loading="lazy" alt=""><span class="img-num">026</span></div>
-    <div class="archive-grid-item" data-full="images/sofia_archive-40.jpg"><img src="images/sofia_archive-40-p-800.jpg" loading="lazy" alt=""><span class="img-num">027</span></div>
+    <div class="archive-grid-item bw" data-full="images/sofia_archive-1.jpg"><img src="images/sofia_archive-1-p-800.jpg" loading="lazy" alt=""><span class="img-num">026</span></div>
+    <div class="archive-grid-item bw" data-full="images/sofia_archive-40.jpg"><img src="images/sofia_archive-40-p-800.jpg" loading="lazy" alt=""><span class="img-num">027</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-12.jpg"><img src="images/sofia_archive-12-p-800.jpg" loading="lazy" alt=""><span class="img-num">028</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-9.jpg"><img src="images/sofia_archive-9-p-800.jpg" loading="lazy" alt=""><span class="img-num">029</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-35.jpg"><img src="images/sofia_archive-35-p-800.jpg" loading="lazy" alt=""><span class="img-num">030</span></div>
@@ -279,9 +284,9 @@ body { cursor: none; }
     <div class="archive-grid-item" data-full="images/sofia_archive-30.jpg"><img src="images/sofia_archive-30.jpg" loading="lazy" alt=""><span class="img-num">032</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-20.jpg"><img src="images/sofia_archive-20.jpg" loading="lazy" alt=""><span class="img-num">033</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-22.jpg"><img src="images/sofia_archive-22.jpg" loading="lazy" alt=""><span class="img-num">034</span></div>
-    <div class="archive-grid-item" data-full="images/sofia_archive-27.jpg"><img src="images/sofia_archive-27.jpg" loading="lazy" alt=""><span class="img-num">035</span></div>
+    <div class="archive-grid-item bw" data-full="images/sofia_archive-27.jpg"><img src="images/sofia_archive-27.jpg" loading="lazy" alt=""><span class="img-num">035</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-10.jpg"><img src="images/sofia_archive-10.jpg" loading="lazy" alt=""><span class="img-num">036</span></div>
-    <div class="archive-grid-item" data-full="images/sofia_archive-28.jpg"><img src="images/sofia_archive-28.jpg" loading="lazy" alt=""><span class="img-num">037</span></div>
+    <div class="archive-grid-item bw" data-full="images/sofia_archive-28.jpg"><img src="images/sofia_archive-28.jpg" loading="lazy" alt=""><span class="img-num">037</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-13.jpg"><img src="images/sofia_archive-13.jpg" loading="lazy" alt=""><span class="img-num">038</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-26.jpg"><img src="images/sofia_archive-26.jpg" loading="lazy" alt=""><span class="img-num">039</span></div>
     <div class="archive-grid-item" data-full="images/sofia_archive-23.jpg"><img src="images/sofia_archive-23.jpg" loading="lazy" alt=""><span class="img-num">040</span></div>

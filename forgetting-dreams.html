@@ -72,6 +72,12 @@ justify-content: center;
 width: 100%;
 height: 100%;
 object-fit: contain;
+transition: filter 0.4s ease;
+transition: all 400ms ease;
+}
+.gall3ry.layout-1-gall3ry .imgholder:hover img {
+  filter: brightness(0.8);
+  opacity: 0.8;
 }
 .gall3ry.layout-2-gall3ry {
   padding-top: 20vh;
@@ -273,24 +279,34 @@ transform: rotate(-90deg);
   position: fixed;
   background: none;
   border: none;
-  cursor: pointer;
+  cursor: default;
   padding: 20px;
   opacity: 0;
   transition: opacity 0.25s ease;
 }
 .lb-btn img {
   display: block;
-  width: 32px;
-  height: 32px;
+  width: 21px;
+  height: 21px;
   object-fit: contain;
-  filter: invert(1);
+  /* filter: invert(0.6); */
+}
+.lb-btn img{
+  opacity: 0.6;
+  transition: opacity 200ms ease;
+}
+ /* .lb-btn:hover{
+  opacity: 1;
+} */
+.lb-btn img:hover {
+  opacity: 1;
 }
 .lb-overlay.open:hover .lb-btn { opacity: 1; }
-.lb-btn:hover { opacity: 0.7; }
+.lb-btn:hover { opacity: 1; }
 .lb-prev { top: 50%; left: 12px; transform: translateY(-50%); }
 .lb-next { top: 50%; right: 12px; transform: translateY(-50%); }
 .lb-close { top: 16px; right: 20px; }
-.lb-close img { width: 24px; height: 24px; }
+.lb-close img { width: 25px; height: 25px; }
 .layout-1-gall3ry .imgholder { cursor: pointer; }
 body:has(.lb-overlay.open) .header {
   opacity: 0;
@@ -381,7 +397,7 @@ const items = document.querySelectorAll(".nav-link");
 const gall3ry = document.querySelector(".gall3ry");
 const gall3ryContainer = document.querySelector(".gall3ry-container");
 const img100 = document.getElementById("img100")
-const imgPreviews = document.querySelector(".img-previews");
+const imgPreviews = document.querySelector(".img-previews"); // may be null
 const proNav = document.querySelector(".navbar._2.pro");
 gsap.set(proNav, { xPercent: -50, y: "-44vh",yPercent: 50 });
 proNav.classList.add('transparent');
@@ -450,17 +466,10 @@ function switchLayoutHandler(newLayout) {
   }
   activeLayout = newLayout;
   if (newLayout === "layout-2-gall3ry") {
-    gsap.to(imgPreviews, {
-      autoAlpha: 1,
-      duration: 0.3,
-      delay: 0.5,
-    });
+    if (imgPreviews) gsap.to(imgPreviews, { autoAlpha: 1, duration: 0.3, delay: 0.5 });
   }
   else {
-    gsap.to(imgPreviews, {
-      autoAlpha: 0,
-      duration: 0.3,
-    });
+    if (imgPreviews) gsap.to(imgPreviews, { autoAlpha: 0, duration: 0.3 });
     // gsap.set(gall3ry, { clearProps: "y" });
   }}
 document.querySelector(".logotext.project").addEventListener("click", (e) => {
