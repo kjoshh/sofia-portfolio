@@ -71,6 +71,10 @@ function switchLayoutHandler(newLayout) {
   const previousLayout = activeLayout;
   const imgholders = Array.from(gall3ry.querySelectorAll(".imgholder"));
 
+  // Kill any in-progress animations and clear stale transforms before measuring
+  gsap.killTweensOf(imgholders);
+  gsap.set(imgholders, { clearProps: "x,y,transform" });
+
   if (previousLayout === "layout-3-gall3ry") {
     // Imgholders are position:absolute in layout-3 — GSAP Flip mishandles the
     // absolute→relative transition, so manually compute the deltas instead.
@@ -106,7 +110,6 @@ function switchLayoutHandler(newLayout) {
       ease: flipEase,
       stagger: staggerOption,
       absolute: true,
-      clearProps: "all",
       onComplete: () => { lenis.resize(); }
     });
   }
