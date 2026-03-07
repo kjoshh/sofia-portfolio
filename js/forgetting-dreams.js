@@ -37,12 +37,17 @@ const textContainer = document.querySelector(".text-container");
 const infoParas = document.querySelectorAll(".info-para");
 const proNav = document.querySelector(".navbar._2.pro");
 
-let infoLines = [];
+// Temporarily show container so SplitText can measure rendered lines
+textContainer.style.visibility = "hidden";
+textContainer.style.display = "block";
+const infoLines = [];
 infoParas.forEach(p => {
   const split = new SplitText(p, { type: "lines" });
   infoLines.push(...split.lines);
 });
-gsap.set(infoLines, { opacity: 0, y: 8 });
+gsap.set(infoLines, { opacity: 0, y: 10 });
+textContainer.style.display = "none";
+textContainer.style.visibility = "";
 
 gsap.set(proNav, { xPercent: -50, y: "-44vh", yPercent: 50 });
 proNav.classList.add("transparent");
@@ -111,17 +116,15 @@ function switchLayoutHandler(newLayout) {
     if (textContainer) {
       textContainer.style.display = "block";
       gsap.set(textContainer, { autoAlpha: 1 });
-      if (infoLines.length) {
-        gsap.fromTo(infoLines,
-          { opacity: 0, y: 8 },
-          { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, delay: 0.4, ease: "power2.out" }
-        );
-      }
+      gsap.fromTo(infoLines,
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, delay: 0.5, ease: "power2.out" }
+      );
     }
   } else {
     if (textContainer) {
       gsap.killTweensOf(infoLines);
-      gsap.set(infoLines, { opacity: 0, y: 8 });
+      gsap.set(infoLines, { opacity: 0, y: 10 });
       gsap.to(textContainer, { autoAlpha: 0, duration: 0.2, onComplete: () => { textContainer.style.display = "none"; } });
     }
   }
