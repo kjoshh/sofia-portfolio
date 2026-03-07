@@ -308,6 +308,7 @@ body { cursor: none; }
     const ctx = canvas.getContext("2d");
 
     let radius = 0, targetRadius = 0, time = Math.random() * 100, animId = null;
+    let originX = 0.5, originY = 0.5;
 
     // fBm noise — same algorithm as the about page WebGL shader
     function fract(x) { return x - Math.floor(x); }
@@ -327,8 +328,8 @@ body { cursor: none; }
     }
     function organicR(angle, r, t) {
       const bx = Math.cos(angle) * 3 + t * 0.4;
-      const by = Math.sin(angle) * 3 + t * 0.3;
-      return r * (1 + (turbulence(bx, by) - 0.4) * 0.55);
+      const by = Math.sin(angle) * 7 + t * 0.3;
+      return r * (1 + (turbulence(bx, by) - 0.7) * 0.45);
     }
 
     function draw() {
@@ -340,8 +341,13 @@ body { cursor: none; }
       ctx.clearRect(0, 0, w, h);
 
       if (radius > 0.001) {
-        const cx = w / 2, cy = h / 2;
-        const maxR = Math.sqrt(cx * cx + cy * cy) * 1.15;
+        const cx = originX * w, cy = originY * h;
+        const maxR = Math.max(
+          Math.hypot(cx, cy),
+          Math.hypot(w - cx, cy),
+          Math.hypot(cx, h - cy),
+          Math.hypot(w - cx, h - cy)
+        ) * 1.15;
         const r = radius * maxR;
         ctx.save();
         ctx.beginPath();
@@ -359,8 +365,9 @@ body { cursor: none; }
         ctx.restore();
       }
 
-      radius += (targetRadius - radius) * 0.03;
-      time += 0.25;
+      const lerpSpeed = targetRadius > radius ? 0.0175 : 0.15;
+      radius += (targetRadius - radius) * lerpSpeed;
+      time += 0.15;
 
       if (Math.abs(radius - targetRadius) > 0.001 || targetRadius > 0.001) {
         animId = requestAnimationFrame(draw);
@@ -369,7 +376,14 @@ body { cursor: none; }
       }
     }
 
-    item.addEventListener("mouseenter", () => { targetRadius = 1; if (!animId) animId = requestAnimationFrame(draw); });
+    item.addEventListener("mouseenter", (e) => {
+      const rect = item.getBoundingClientRect();
+      originX = (e.clientX - rect.left) / rect.width;
+      originY = (e.clientY - rect.top) / rect.height;
+      radius = 0;
+      targetRadius = 1;
+      if (!animId) animId = requestAnimationFrame(draw);
+    });
     item.addEventListener("mouseleave", () => { targetRadius = 0; if (!animId) animId = requestAnimationFrame(draw); });
   });
 })();
