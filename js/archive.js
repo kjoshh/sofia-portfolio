@@ -15,6 +15,7 @@
 
     let radius = 0, targetRadius = 0, time = Math.random() * 100, animId = null;
     let originX = 0.5, originY = 0.5;
+    let targetOriginX = 0.5, targetOriginY = 0.5;
 
     // fBm noise — same algorithm as the about page WebGL shader
     function fract(x) { return x - Math.floor(x); }
@@ -33,9 +34,9 @@
       return t;
     }
     function organicR(angle, r, t) {
-      const bx = Math.cos(angle) * 3 + t * 0.4;
+      const bx = Math.cos(angle) * 3 + t * 0.3;
       const by = Math.sin(angle) * 7 + t * 0.3;
-      return r * (1 + (turbulence(bx, by) - 0.7) * 0.45);
+      return r * (1 + (turbulence(bx, by) - 0.7) * 0.3);
     }
 
     function draw() {
@@ -73,6 +74,8 @@
 
       const lerpSpeed = targetRadius > radius ? 0.0175 + radius * 0.045 : 0.1;
       radius += (targetRadius - radius) * lerpSpeed;
+      originX += (targetOriginX - originX) * 0.08;
+      originY += (targetOriginY - originY) * 0.08;
       time += 0.15;
 
       if (Math.abs(radius - targetRadius) > 0.001 || targetRadius > 0.001) {
@@ -84,15 +87,19 @@
 
     item.addEventListener("mouseenter", (e) => {
       const rect = item.getBoundingClientRect();
-      originX = (e.clientX - rect.left) / rect.width;
-      originY = (e.clientY - rect.top) / rect.height;
+      const ex = (e.clientX - rect.left) / rect.width;
+      const ey = (e.clientY - rect.top) / rect.height;
+      originX = ex;
+      originY = ey;
+      targetOriginX = ex;
+      targetOriginY = ey;
       radius = 0;
       targetRadius = 1;
       if (!animId) animId = requestAnimationFrame(draw);
     });
     item.addEventListener("mouseleave", () => {
-      originX = 0.5;
-      originY = 0.5;
+      targetOriginX = 0.5;
+      targetOriginY = 0.5;
       targetRadius = 0;
       if (!animId) animId = requestAnimationFrame(draw);
     });
