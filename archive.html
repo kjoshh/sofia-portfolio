@@ -456,6 +456,11 @@ document.addEventListener("mousemove", (e) => { mouseX = e.clientX; mouseY = e.c
   requestAnimationFrame(cursorLoop);
 })();
 
+document.querySelectorAll("a, button, [role='button']").forEach(el => {
+  el.addEventListener("mouseenter", () => cursor.classList.add("hov"));
+  el.addEventListener("mouseleave", () => cursor.classList.remove("hov"));
+});
+
 /* ── Staggered IntersectionObserver fade-in ── */
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
