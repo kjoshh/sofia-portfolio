@@ -51,10 +51,9 @@ let activeLayout = "layout-0-gall3ry";
 function switchLayout(newLayout) {
   if (newLayout === activeLayout) return;
   if (activeLayout === "layout-2-gall3ry" && lenis.scroll > 0) {
-    gsap.to(window, {
-      scrollTo: { y: 0 },
-      duration: 0.5,
-      ease: "power3.out",
+    lenis.scrollTo(0, {
+      duration: 0.6,
+      easing: t => 1 - Math.pow(1 - t, 3),
       onComplete: () => switchLayoutHandler(newLayout),
     });
   } else {
@@ -115,7 +114,7 @@ function switchLayoutHandler(newLayout) {
       if (splitInfo) {
         gsap.fromTo(splitInfo.chars,
           { opacity: 0 },
-          { opacity: 1, duration: 0.02, stagger: 0.0075, delay: 0.5, ease: "none" }
+          { opacity: 1, duration: 0.02, stagger: 0.0025, delay: 0.5, ease: "none" }
         );
       }
     }
