@@ -71,7 +71,7 @@
         ctx.restore();
       }
 
-      const lerpSpeed = targetRadius > radius ? 0.0175 + radius * 0.04 : 0.25;
+      const lerpSpeed = targetRadius > radius ? 0.0175 + radius * 0.045 : 0.1;
       radius += (targetRadius - radius) * lerpSpeed;
       time += 0.15;
 
@@ -90,10 +90,9 @@
       targetRadius = 1;
       if (!animId) animId = requestAnimationFrame(draw);
     });
-    item.addEventListener("mouseleave", (e) => {
-      const rect = item.getBoundingClientRect();
-      originX = (e.clientX - rect.left) / rect.width;
-      originY = (e.clientY - rect.top) / rect.height;
+    item.addEventListener("mouseleave", () => {
+      originX = 0.5;
+      originY = 0.5;
       targetRadius = 0;
       if (!animId) animId = requestAnimationFrame(draw);
     });
