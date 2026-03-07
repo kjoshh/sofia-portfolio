@@ -309,12 +309,26 @@ body { cursor: none; }
 
     let radius = 0, targetRadius = 0, time = Math.random() * 100, animId = null;
 
+    // fBm noise — same algorithm as the about page WebGL shader
+    function fract(x) { return x - Math.floor(x); }
+    function hash(px, py) { return fract(Math.sin(px * 127.1 + py * 311.7) * 43758.5453); }
+    function noise(px, py) {
+      const ix = Math.floor(px), iy = Math.floor(py);
+      const fx = px - ix, fy = py - iy;
+      const ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
+      return hash(ix,iy) + (hash(ix+1,iy)-hash(ix,iy))*ux
+           + (hash(ix,iy+1)-hash(ix,iy))*uy
+           + (hash(ix,iy)-hash(ix+1,iy)-hash(ix,iy+1)+hash(ix+1,iy+1))*ux*uy;
+    }
+    function turbulence(px, py) {
+      let t = 0, w = 0.5;
+      for (let i = 0; i < 6; i++) { t += Math.abs(noise(px, py)) * w; px *= 2; py *= 2; w *= 0.5; }
+      return t;
+    }
     function organicR(angle, r, t) {
-      return r * (1
-        + Math.sin(angle * 4 + t * 0.9) * 0.09
-        + Math.sin(angle * 7 - t * 1.2) * 0.06
-        + Math.sin(angle * 11 + t * 0.6) * 0.04
-      );
+      const bx = Math.cos(angle) * 3 + t * 0.4;
+      const by = Math.sin(angle) * 3 + t * 0.3;
+      return r * (1 + (turbulence(bx, by) - 0.4) * 0.55);
     }
 
     function draw() {
@@ -345,8 +359,8 @@ body { cursor: none; }
         ctx.restore();
       }
 
-      radius += (targetRadius - radius) * 0.07;
-      time += 0.04;
+      radius += (targetRadius - radius) * 0.03;
+      time += 0.25;
 
       if (Math.abs(radius - targetRadius) > 0.001 || targetRadius > 0.001) {
         animId = requestAnimationFrame(draw);
