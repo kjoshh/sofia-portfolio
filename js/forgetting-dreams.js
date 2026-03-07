@@ -39,7 +39,8 @@ const proNav = document.querySelector(".navbar._2.pro");
 
 let splitInfo = null;
 if (infoPara) {
-  splitInfo = new SplitText(infoPara, { type: "chars" });
+  splitInfo = new SplitText(infoPara, { type: "chars,words" });
+  gsap.set(splitInfo.words, { display: "inline-block" });
   gsap.set(splitInfo.chars, { opacity: 0 });
 }
 
@@ -114,7 +115,7 @@ function switchLayoutHandler(newLayout) {
       if (splitInfo) {
         gsap.fromTo(splitInfo.chars,
           { opacity: 0 },
-          { opacity: 1, duration: 0.02, stagger: 0.015, delay: 0.5, ease: "none" }
+          { opacity: 1, duration: 0.02, stagger: 0.0075, delay: 0.5, ease: "none" }
         );
       }
     }
