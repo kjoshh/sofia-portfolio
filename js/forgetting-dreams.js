@@ -68,29 +68,46 @@ function switchLayout(newLayout) {
 
 function switchLayoutHandler(newLayout) {
   const previousLayout = activeLayout;
-  const state = Flip.getState(gall3ry.querySelectorAll(".imgholder"));
-  gall3ry.classList.remove(activeLayout);
-  gall3ry.classList.add(newLayout);
+  const imgholders = Array.from(gall3ry.querySelectorAll(".imgholder"));
 
-  let staggerOption = 0.025;
-  if (previousLayout === "layout-1-gall3ry" && newLayout === "layout-2-gall3ry") {
-    staggerOption = { each: 0.025, from: "end", ease: "power3.in" };
+  if (previousLayout === "layout-3-gall3ry") {
+    // Imgholders are position:absolute in layout-3 — GSAP Flip mishandles the
+    // absolute→relative transition, so manually compute the deltas instead.
+    const fromRects = imgholders.map(el => el.getBoundingClientRect());
+    gall3ry.classList.remove(previousLayout);
+    gall3ry.classList.add(newLayout);
+    imgholders.forEach((el, i) => {
+      const toRect = el.getBoundingClientRect();
+      const dx = fromRects[i].left - toRect.left;
+      const dy = fromRects[i].top - toRect.top;
+      gsap.fromTo(el, { x: dx, y: dy }, { x: 0, y: 0, duration: 1.5, ease: "hop", delay: i * 0.025, clearProps: "x,y" });
+    });
+    lenis.resize();
+  } else {
+    const state = Flip.getState(imgholders);
+    gall3ry.classList.remove(activeLayout);
+    gall3ry.classList.add(newLayout);
+
+    let staggerOption = 0.025;
+    if (previousLayout === "layout-1-gall3ry" && newLayout === "layout-2-gall3ry") {
+      staggerOption = { each: 0.025, from: "end", ease: "power3.in" };
+    }
+    if (previousLayout === "layout-0-gall3ry") {
+      staggerOption = { each: 0.05, from: "end" };
+    }
+
+    const flipEase = (previousLayout === "layout-0-gall3ry" && newLayout === "layout-2-gall3ry")
+      ? "power1.inOut"
+      : "hop";
+
+    Flip.from(state, {
+      duration: 1.5,
+      ease: flipEase,
+      stagger: staggerOption,
+      absolute: true,
+      onComplete: () => { lenis.resize(); }
+    });
   }
-  if (previousLayout === "layout-0-gall3ry") {
-    staggerOption = { each: 0.05, from: "end" };
-  }
-
-  const flipEase = (previousLayout === "layout-0-gall3ry" && newLayout === "layout-2-gall3ry")
-    ? "power1.inOut"
-    : "hop";
-
-  Flip.from(state, {
-    duration: 1.5,
-    ease: flipEase,
-    stagger: staggerOption,
-    absolute: true,
-    onComplete: () => { lenis.resize(); }
-  });
 
   if (previousLayout === "layout-0-gall3ry") {
     gsap.to(img100, { opacity: 0, duration: 0.1, ease: "power4.inOut", delay: 0 });
