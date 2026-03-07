@@ -25,8 +25,8 @@
 /* ── Wobble cursor ── */
 .cursor {
   position: fixed;
-  width: 22.5px;
-  height: 22.5px;
+  width: 17.5px;
+  height: 17.5px;
   border-radius: 50%;
   background: #e9e5dd;
   pointer-events: none;
@@ -36,8 +36,8 @@
   mix-blend-mode: difference;
 }
 .cursor.hover{
-  width: 53px;
-  height: 53px;
+  width: 55px;
+  height: 55px;
 }
 .imgholder {
   width: 100%;
@@ -328,7 +328,7 @@ transform: rotate(-90deg);
 .lb-next { top: 50%; right: 12px; transform: translateY(-50%); }
 .lb-close { top: 16px; right: 20px; }
 .lb-close img { width: 25px; height: 25px; }
-.layout-1-gall3ry .imgholder { cursor: pointer; }
+.layout-1-gall3ry .imgholder { cursor: default; }
 body:has(.lb-overlay.open) .header {
   opacity: 0;
   pointer-events: none;
@@ -419,8 +419,12 @@ body:has(.lb-overlay.open) .header {
          + (chash(ix,iy)-chash(ix+1,iy)-chash(ix,iy+1)+chash(ix+1,iy+1))*ux*uy;
   }
   document.addEventListener("mousemove", (e) => { mouseX = e.clientX; mouseY = e.clientY; });
-  document.querySelectorAll("a, button, .imgholder, [role='button']").forEach(el => {
+  document.querySelectorAll("a, button, [role='button']").forEach(el => {
     el.addEventListener("mouseenter", () => cursor.classList.add("hover"));
+    el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
+  });
+  document.querySelectorAll(".imgholder").forEach(el => {
+    el.addEventListener("mouseenter", () => { if (typeof activeLayout !== "undefined" && activeLayout === "layout-1-gall3ry") cursor.classList.add("hover"); });
     el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
   });
   (function loop() {
