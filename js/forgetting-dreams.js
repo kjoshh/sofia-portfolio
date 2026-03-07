@@ -34,7 +34,14 @@ const gall3ryContainer = document.querySelector(".gall3ry-container");
 const img100 = document.getElementById("img100");
 const imgPreviews = document.querySelector(".img-previews");
 const textContainer = document.querySelector(".text-container");
+const infoPara = document.querySelector(".info-para");
 const proNav = document.querySelector(".navbar._2.pro");
+
+let splitInfo = null;
+if (infoPara) {
+  splitInfo = new SplitText(infoPara, { type: "chars" });
+  gsap.set(splitInfo.chars, { opacity: 0 });
+}
 
 gsap.set(proNav, { xPercent: -50, y: "-44vh", yPercent: 50 });
 proNav.classList.add("transparent");
@@ -101,9 +108,22 @@ function switchLayoutHandler(newLayout) {
   }
 
   if (newLayout === "layout-3-gall3ry") {
-    if (textContainer) gsap.to(textContainer, { display: "block", autoAlpha: 1, duration: 0.5, delay: 0.4 });
+    if (textContainer) {
+      textContainer.style.display = "block";
+      gsap.set(textContainer, { autoAlpha: 1 });
+      if (splitInfo) {
+        gsap.fromTo(splitInfo.chars,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.02, stagger: 0.015, delay: 0.5, ease: "none" }
+        );
+      }
+    }
   } else {
-    if (textContainer) gsap.to(textContainer, { autoAlpha: 0, duration: 0.3, onComplete: () => { textContainer.style.display = "none"; } });
+    if (textContainer) {
+      if (splitInfo) gsap.killTweensOf(splitInfo.chars);
+      gsap.set(splitInfo ? splitInfo.chars : [], { opacity: 0 });
+      gsap.to(textContainer, { autoAlpha: 0, duration: 0.2, onComplete: () => { textContainer.style.display = "none"; } });
+    }
   }
 }
 
