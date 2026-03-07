@@ -90,7 +90,10 @@
       targetRadius = 1;
       if (!animId) animId = requestAnimationFrame(draw);
     });
-    item.addEventListener("mouseleave", () => {
+    item.addEventListener("mouseleave", (e) => {
+      const rect = item.getBoundingClientRect();
+      originX = (e.clientX - rect.left) / rect.width;
+      originY = (e.clientY - rect.top) / rect.height;
       targetRadius = 0;
       if (!animId) animId = requestAnimationFrame(draw);
     });
