@@ -627,10 +627,9 @@ body.about-page { overflow: hidden; }
   overflow: visible;
 }
 
-/* Index page — nav centered on screen */
+/* Index page — nav centered on screen (transform owned by GSAP) */
 .index-nav {
   top: 50% !important;
-  transform: translate(-50%, -50%) !important;
 }
 
 
