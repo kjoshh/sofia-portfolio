@@ -74,6 +74,10 @@ function drawSofiaBg(alpha) {
 function initCanvas() {
   eraseCanvas.width  = window.innerWidth;
   eraseCanvas.height = window.innerHeight;
+  // Re-apply after resize (canvas reset clears all context state)
+  ectx.lineJoin  = 'round';
+  ectx.lineCap   = 'round';
+  ectx.lineWidth = 180;
   drawSofiaBg(1);
   positionName();
 }
@@ -104,10 +108,6 @@ window.addEventListener('mousemove', (e) => {
 
 
 // ── Eraser (mousedown + drag, like the reference) ──
-ectx.lineJoin = 'round';
-ectx.lineCap  = 'round';
-ectx.lineWidth = 180;
-
 let isDrawing = false;
 let lastX = 0, lastY = 0;
 
@@ -158,9 +158,12 @@ function startRestore() {
 function doRestore() {
   restoreFrames++;
   if (restoreFrames > 90) {
-    // Snap fully restored
+    // Snap fully restored (re-apply context state after resize)
     eraseCanvas.width  = window.innerWidth;
     eraseCanvas.height = window.innerHeight;
+    ectx.lineJoin  = 'round';
+    ectx.lineCap   = 'round';
+    ectx.lineWidth = 180;
     drawSofiaBg(1);
     restoreFrames = 0;
     return;
