@@ -126,7 +126,7 @@ function switchLayoutHandler(newLayout) {
       gsap.set(textContainer, { autoAlpha: 1 });
       gsap.fromTo(infoLines,
         { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, delay: 0.5, ease: "power2.out" }
+        { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, delay: 0.25, ease: "power2.out" }
       );
     }
   } else {
@@ -134,8 +134,8 @@ function switchLayoutHandler(newLayout) {
       gsap.killTweensOf(infoLines);
       gsap.to(infoLines, {
         opacity: 0, y: 10,
-        duration: 0.3,
-        stagger: { each: 0.04, from: "end" },
+        duration: 0.2,
+        stagger: { each: 0.02, from: "end" },
         ease: "power2.in",
         onComplete: () => {
           gsap.set(infoLines, { opacity: 0, y: 10 });
@@ -216,7 +216,7 @@ function applyFontStagger(el) {
     });
   }
   el.addEventListener("mouseenter", () => { if (!el.classList.contains("active")) animateEl(true); });
-  el.addEventListener("mouseleave", () => animateEl(false));
+  el.addEventListener("mouseleave", () => { if (!el.classList.contains("active")) animateEl(false); });
 }
 
 [
