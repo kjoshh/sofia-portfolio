@@ -77,7 +77,7 @@ function initCanvas() {
   // Re-apply after resize (canvas reset clears all context state)
   ectx.lineJoin  = 'round';
   ectx.lineCap   = 'round';
-  ectx.lineWidth = 180;
+  ectx.lineWidth = 50;
   drawSofiaBg(1);
   positionName();
 }
@@ -163,7 +163,7 @@ function doRestore() {
     eraseCanvas.height = window.innerHeight;
     ectx.lineJoin  = 'round';
     ectx.lineCap   = 'round';
-    ectx.lineWidth = 180;
+    ectx.lineWidth = 50;
     drawSofiaBg(1);
     restoreFrames = 0;
     return;
