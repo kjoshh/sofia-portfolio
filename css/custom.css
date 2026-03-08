@@ -627,6 +627,12 @@ body.about-page { overflow: hidden; }
   overflow: visible;
 }
 
+/* Index page — nav centered on screen */
+.index-nav {
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
 
 
 
