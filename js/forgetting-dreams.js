@@ -223,6 +223,7 @@ function applyFontStagger(el) {
   ...document.querySelectorAll(".navbar._2.pro .nav-link"),
   ...document.querySelectorAll(".navbar.ttt .nav-link"),
   document.querySelector(".logotext.project"),
+  document.querySelector(".logotext:not(.project)"),
 ].forEach(applyFontStagger);
 
 
