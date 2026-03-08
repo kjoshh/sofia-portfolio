@@ -600,7 +600,33 @@ body.about-page { overflow: hidden; }
 
 
 
+.imgbg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+}
+.sofianamebg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.sofianame{
+  position: absolute;
 
+}
+.sofianame.one{
+  top: 50%;
+  left:20%;
+  width:20%;
+}
+.sofianame.two{
+  top: 50%;
+  left:50%;
+  width:20%;
+}
 .body {
   background-color: #292823;
   overflow: visible;
