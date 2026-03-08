@@ -1,242 +1,181 @@
-// ── Name image overlay ──
+// ── Name image overlay — tracks object-fit: cover position of bg image ──
 const NAME_X = 0.31;
 const NAME_Y = 0.72;
 const NAME_W = 0.37;
 
-const bgImg = document.querySelector('.sofianamebg');
-const name  = document.querySelector('.sofianame');
+const bg   = document.querySelector('.sofianamebg');
+const name = document.querySelector('.sofianame');
 
-bgImg.style.display = 'none'; // replaced by WebGL canvas
-name.style.zIndex   = '2';
+// Hide the original bg img — the erase canvas replicates it
+bg.style.display = 'none';
 
+// ── Sybil layer (revealed by erasing) ──
+const sybilBg = new Image();
+sybilBg.src = 'images/Sybilbg.jpg';
+sybilBg.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:5;pointer-events:none;';
+document.body.appendChild(sybilBg);
+
+const sybilName = new Image();
+sybilName.src = 'images/sybilsmtimg.png';
+sybilName.style.cssText = 'position:fixed;object-fit:contain;object-position:left top;display:block;z-index:6;pointer-events:none;';
+document.body.appendChild(sybilName);
+
+// ── Erase canvas (Sofia bg drawn here — destination-out reveals Sybil below) ──
+const eraseCanvas = document.createElement('canvas');
+eraseCanvas.style.cssText = 'position:fixed;inset:0;z-index:10;pointer-events:none;';
+document.body.appendChild(eraseCanvas);
+const ectx = eraseCanvas.getContext('2d');
+
+// Sofia name floats above the erase canvas
+name.style.zIndex = '13';
+
+// ── Position ──
 function positionName() {
-  const vw = innerWidth, vh = innerHeight;
-  const iw = bgImg.naturalWidth, ih = bgImg.naturalHeight;
-  if (!iw || !ih) return;
-  const sc = Math.max(vw/iw, vh/ih);
-  const rw = iw*sc, rh = ih*sc;
-  const ox = (vw-rw)/2, oy = (vh-rh)/2;
-  name.style.left  = (ox + NAME_X*rw) + 'px';
-  name.style.top   = (oy + NAME_Y*rh) + 'px';
-  name.style.width = (NAME_W*rw) + 'px';
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const imgW = bg.naturalWidth;
+  const imgH = bg.naturalHeight;
+  if (!imgW || !imgH) return;
+
+  const scale    = Math.max(vw / imgW, vh / imgH);
+  const renderedW = imgW * scale;
+  const renderedH = imgH * scale;
+  const offsetX   = (vw - renderedW) / 2;
+  const offsetY   = (vh - renderedH) / 2;
+
+  const left  = (offsetX + NAME_X * renderedW) + 'px';
+  const top   = (offsetY + NAME_Y * renderedH) + 'px';
+  const width = (NAME_W * renderedW) + 'px';
+
+  name.style.left  = left;
+  name.style.top   = top;
+  name.style.width = width;
+
+  sybilName.style.left  = left;
+  sybilName.style.top   = top;
+  sybilName.style.width = width;
 }
+
+function drawSofiaBg(alpha) {
+  if (!bg.naturalWidth) return;
+  const cw = eraseCanvas.width;
+  const ch = eraseCanvas.height;
+  const scale = Math.max(cw / bg.naturalWidth, ch / bg.naturalHeight);
+  const dw    = bg.naturalWidth  * scale;
+  const dh    = bg.naturalHeight * scale;
+  const dx    = (cw - dw) / 2;
+  const dy    = (ch - dh) / 2;
+  ectx.globalCompositeOperation = 'source-over';
+  ectx.globalAlpha = alpha;
+  ectx.drawImage(bg, dx, dy, dw, dh);
+  ectx.globalAlpha = 1;
+}
+
+function initCanvas() {
+  eraseCanvas.width  = window.innerWidth;
+  eraseCanvas.height = window.innerHeight;
+  drawSofiaBg(1);
+  positionName();
+}
+
+bg.decode
+  ? bg.decode().then(initCanvas)
+  : bg.addEventListener('load', initCanvas);
+
+window.addEventListener('resize', initCanvas);
+
 
 // ── Cursor parallax ──
-const moveX = gsap.quickTo(name, 'x', { duration: 1, ease: 'power2.out' });
-const moveY = gsap.quickTo(name, 'y', { duration: 1, ease: 'power2.out' });
-window.addEventListener('mousemove', e => {
-  moveX((e.clientX/innerWidth  - 0.5) * 2 * 18);
-  moveY((e.clientY/innerHeight - 0.5) * 2 * 18);
+const PARALLAX_STRENGTH = 18;
+
+const moveX  = gsap.quickTo(name,      'x', { duration: 1, ease: 'power2.out' });
+const moveY  = gsap.quickTo(name,      'y', { duration: 1, ease: 'power2.out' });
+const moveSX = gsap.quickTo(sybilName, 'x', { duration: 1, ease: 'power2.out' });
+const moveSY = gsap.quickTo(sybilName, 'y', { duration: 1, ease: 'power2.out' });
+
+window.addEventListener('mousemove', (e) => {
+  const dx = (e.clientX / window.innerWidth  - 0.5) * 2;
+  const dy = (e.clientY / window.innerHeight - 0.5) * 2;
+  moveX(dx * PARALLAX_STRENGTH);
+  moveY(dy * PARALLAX_STRENGTH);
+  moveSX(dx * PARALLAX_STRENGTH);
+  moveSY(dy * PARALLAX_STRENGTH);
 });
 
 
-// ── WebGL fluid distortion ──
-const glc = document.createElement('canvas');
-glc.style.cssText = 'position:fixed;inset:0;z-index:1;pointer-events:none;';
-document.body.appendChild(glc);
+// ── Eraser (mousedown + drag) ──
+let isDrawing = false;
+let lastX = 0, lastY = 0;
 
-const gl = glc.getContext('webgl');
+const BRUSH_R = 40; // outer radius of soft brush
 
-function resizeGL() {
-  glc.width  = innerWidth;
-  glc.height = innerHeight;
-  gl.viewport(0, 0, glc.width, glc.height);
-}
-resizeGL();
-window.addEventListener('resize', () => { resizeGL(); positionName(); updateCover(); });
-
-// ── Shaders ──
-function mkShader(type, src) {
-  const s = gl.createShader(type);
-  gl.shaderSource(s, src);
-  gl.compileShader(s);
-  return s;
-}
-function mkProg(vs, fs) {
-  const p = gl.createProgram();
-  gl.attachShader(p, mkShader(gl.VERTEX_SHADER, vs));
-  gl.attachShader(p, mkShader(gl.FRAGMENT_SHADER, fs));
-  gl.linkProgram(p);
-  return p;
+function eraseDot(x, y) {
+  const g = ectx.createRadialGradient(x, y, 0, x, y, BRUSH_R);
+  g.addColorStop(0,   'rgba(0,0,0,0.18)');
+  g.addColorStop(0.5, 'rgba(0,0,0,0.08)');
+  g.addColorStop(1,   'rgba(0,0,0,0)');
+  ectx.globalCompositeOperation = 'destination-out';
+  ectx.fillStyle = g;
+  ectx.beginPath();
+  ectx.arc(x, y, BRUSH_R, 0, Math.PI * 2);
+  ectx.fill();
 }
 
-// Standard WebGL UV: y=0 at bottom of screen
-const VS = `
-  attribute vec2 a;
-  varying vec2 v;
-  void main() { v = a*0.5+0.5; gl_Position = vec4(a,0.,1.); }
-`;
-
-// Velocity field simulation (ping-pong)
-// Velocity stored encoded: vel*0.5+0.5 to fit UNSIGNED_BYTE [0,1]
-const SIM_FS = `
-  precision highp float;
-  uniform sampler2D uF;
-  uniform vec2 uT;   // texel size
-  uniform vec2 uM;   // mouse UV (WebGL space, y flipped)
-  uniform vec2 uV;   // mouse velocity
-  varying vec2 v;
-
-  void main() {
-    // Diffuse: average of 5 neighbours
-    vec2 vel = (
-      texture2D(uF, v+vec2(uT.x,0.)).rg +
-      texture2D(uF, v-vec2(uT.x,0.)).rg +
-      texture2D(uF, v+vec2(0.,uT.y)).rg +
-      texture2D(uF, v-vec2(0.,uT.y)).rg +
-      texture2D(uF, v).rg
-    ) * 0.2;
-
-    // Decode from [0,1] → [-1,1]
-    vel = vel * 2.0 - 1.0;
-
-    // Decay
-    vel *= 0.965;
-
-    // Snap tiny values to zero (avoids UNSIGNED_BYTE quantization drift)
-    vel = abs(vel) < 0.004 ? vec2(0.) : vel;
-
-    // Inject mouse velocity
-    float d = length(v - uM);
-    vel += uV * smoothstep(0.14, 0.0, d);
-    vel = clamp(vel, -1., 1.);
-
-    // Encode back to [0,1]
-    gl_FragColor = vec4(vel*0.5+0.5, 0., 1.);
+function erase(e) {
+  if (!isDrawing) return;
+  // Stamp dots along the segment for smooth coverage
+  const dist  = Math.hypot(e.clientX - lastX, e.clientY - lastY);
+  const steps = Math.max(Math.ceil(dist / 6), 1);
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    eraseDot(lastX + (e.clientX - lastX) * t, lastY + (e.clientY - lastY) * t);
   }
-`;
-
-// Display: sample photo with UV displaced by velocity field
-const DISP_FS = `
-  precision highp float;
-  uniform sampler2D uPhoto, uF;
-  uniform vec2 uSc, uOff;
-  varying vec2 v;
-
-  void main() {
-    // Decode velocity
-    vec2 vel = texture2D(uF, v).rg * 2.0 - 1.0;
-
-    // Displace UV
-    vec2 uv = v + vel * 0.07;
-
-    // Map to photo UV space (object-fit: cover, UNPACK_FLIP_Y applied)
-    vec2 photoUV = clamp(uv * uSc + uOff, 0., 1.);
-    gl_FragColor = texture2D(uPhoto, photoUV);
-  }
-`;
-
-const simProg  = mkProg(VS, SIM_FS);
-const dispProg = mkProg(VS, DISP_FS);
-
-// ── Fullscreen quad ──
-const quad = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-
-function bindQuad(prog) {
-  const loc = gl.getAttribLocation(prog, 'a');
-  gl.enableVertexAttribArray(loc);
-  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  lastX = e.clientX;
+  lastY = e.clientY;
 }
 
-// ── Ping-pong FBOs for velocity field ──
-const SIM_RES = 256;
-
-function makeFBO() {
-  const tex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, SIM_RES, SIM_RES, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  const fbo = gl.createFramebuffer();
-  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  return { tex, fbo };
-}
-
-let read = makeFBO(), write = makeFBO();
-
-// ── Photo texture ──
-gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // match WebGL UV (y=0 at bottom)
-const photoTex = gl.createTexture();
-gl.bindTexture(gl.TEXTURE_2D, photoTex);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-// Object-fit cover uniforms (WebGL UV: y=0 at bottom)
-let coverSc = [1,1], coverOff = [0,0];
-function updateCover() {
-  const vw = innerWidth, vh = innerHeight;
-  const iw = bgImg.naturalWidth, ih = bgImg.naturalHeight;
-  if (!iw || !ih) return;
-  const sc = Math.max(vw/iw, vh/ih);
-  const rw = iw*sc, rh = ih*sc;
-  const ox = (vw-rw)/2, oy = (vh-rh)/2;
-  // uSc, uOff map WebGL UV (y=0 at bottom) → photo UV (y=0 at bottom, UNPACK_FLIP_Y)
-  coverSc  = [vw/rw, vh/rh];
-  coverOff = [-ox/rw, 1.0 - (vh - oy)/rh];
-}
-
-function onLoad() {
-  gl.bindTexture(gl.TEXTURE_2D, photoTex);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bgImg);
-  positionName();
-  updateCover();
-}
-
-bgImg.decode
-  ? bgImg.decode().then(onLoad)
-  : bgImg.addEventListener('load', onLoad);
-
-// ── Mouse input ──
-let mouse = [0.5, 0.5], vel = [0, 0];
-window.addEventListener('mousemove', e => {
-  const nx = e.clientX / innerWidth;
-  const ny = 1.0 - e.clientY / innerHeight; // flip Y for WebGL space
-  vel   = [(nx - mouse[0]) * 7, (ny - mouse[1]) * 7];
-  mouse = [nx, ny];
+window.addEventListener('mousedown', (e) => {
+  isDrawing = true;
+  lastX = e.clientX;
+  lastY = e.clientY;
+  stopRestore();
 });
 
-// ── Render loop ──
-function frame() {
-  requestAnimationFrame(frame);
+window.addEventListener('mousemove', erase);
 
-  // Simulation pass → write FBO
-  gl.bindFramebuffer(gl.FRAMEBUFFER, write.fbo);
-  gl.viewport(0, 0, SIM_RES, SIM_RES);
-  gl.useProgram(simProg);
-  bindQuad(simProg);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, read.tex);
-  gl.uniform1i(gl.getUniformLocation(simProg, 'uF'), 0);
-  gl.uniform2f(gl.getUniformLocation(simProg, 'uT'), 1/SIM_RES, 1/SIM_RES);
-  gl.uniform2f(gl.getUniformLocation(simProg, 'uM'), mouse[0], mouse[1]);
-  gl.uniform2f(gl.getUniformLocation(simProg, 'uV'), vel[0], vel[1]);
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+window.addEventListener('mouseup', () => {
+  if (!isDrawing) return;
+  isDrawing = false;
+  startRestore();
+});
 
-  [read, write] = [write, read];
-  vel = [0, 0];
 
-  // Display pass → screen
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.viewport(0, 0, glc.width, glc.height);
-  gl.useProgram(dispProg);
-  bindQuad(dispProg);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, photoTex);
-  gl.uniform1i(gl.getUniformLocation(dispProg, 'uPhoto'), 0);
-  gl.activeTexture(gl.TEXTURE1);
-  gl.bindTexture(gl.TEXTURE_2D, read.tex);
-  gl.uniform1i(gl.getUniformLocation(dispProg, 'uF'), 1);
-  gl.uniform2fv(gl.getUniformLocation(dispProg, 'uSc'),  coverSc);
-  gl.uniform2fv(gl.getUniformLocation(dispProg, 'uOff'), coverOff);
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+// ── Restore after mouseup ──
+let restoreRaf    = null;
+let restoreFrames = 0;
+
+function stopRestore() {
+  if (restoreRaf) {
+    cancelAnimationFrame(restoreRaf);
+    restoreRaf = null;
+  }
+  restoreFrames = 0;
 }
 
-frame();
+function startRestore() {
+  stopRestore();
+  doRestore();
+}
+
+function doRestore() {
+  restoreFrames++;
+  if (restoreFrames > 90) {
+    eraseCanvas.width  = window.innerWidth;
+    eraseCanvas.height = window.innerHeight;
+    drawSofiaBg(1);
+    restoreFrames = 0;
+    return;
+  }
+  drawSofiaBg(0.05);
+  restoreRaf = requestAnimationFrame(doRestore);
+}
