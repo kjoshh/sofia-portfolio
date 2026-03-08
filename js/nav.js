@@ -60,7 +60,7 @@ function applyFontStagger(el) {
   });
 
   // Set active/notactive on top nav links (excluding pro/layout nav)
-  document.querySelectorAll('.navbar:not(.pro) .nav-link._3._6').forEach(link => {
+  document.querySelectorAll('.main-nav .nav-link').forEach(link => {
     const href = (link.getAttribute('href') || '').split('/').pop();
     if (href === path) {
       link.classList.add('active');
@@ -134,7 +134,7 @@ function applyFontStagger(el) {
 
   // Apply font stagger + cross-hover to top nav links and logo (all pages)
   const topEls = [
-    ...document.querySelectorAll('.navbar:not(.pro) .nav-link._3._6'),
+    ...document.querySelectorAll('.main-nav .nav-link'),
     ...document.querySelectorAll('.logotext:not(.project)'),
   ].filter(Boolean);
 

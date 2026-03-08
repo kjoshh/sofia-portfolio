@@ -34,7 +34,7 @@ const gall3ryContainer = document.querySelector(".gall3ry-container");
 const img100 = document.getElementById("img100");
 const textContainer = document.querySelector(".text-container");
 const infoParas = document.querySelectorAll(".info-para");
-const proNav = document.querySelector(".navbar._2.pro");
+const proNav = document.querySelector(".pro-nav");
 
 // Temporarily show container so SplitText can measure rendered lines
 textContainer.style.visibility = "hidden";
@@ -175,7 +175,7 @@ window.addEventListener("mousemove", (e) => {
 
 /* ── Font stagger on layout nav hover (applyFontStagger is global from nav.js) ── */
 [
-  ...document.querySelectorAll(".navbar._2.pro .nav-link"),
+  ...document.querySelectorAll(".pro-nav .nav-link"),
   document.querySelector(".logotext.project"),
 ].forEach(applyFontStagger);
 
