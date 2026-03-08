@@ -616,19 +616,11 @@ body.about-page { overflow: hidden; }
 }
 
 .sofianame {
-  position: absolute;
-  width: 20%;
+  position: fixed;
   object-fit: contain;
   object-position: left top;
   display: block;
-}
-.sofianame.one {
-  left: 35%;
-  top: 62%;
-}
-.sofianame.two {
-  left: 47%;
-  top: 69%;
+  pointer-events: none;
 }
 .body {
   background-color: #292823;
