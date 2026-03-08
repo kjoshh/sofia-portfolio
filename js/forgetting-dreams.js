@@ -32,7 +32,6 @@ const items = document.querySelectorAll(".nav-link");
 const gall3ry = document.querySelector(".gall3ry");
 const gall3ryContainer = document.querySelector(".gall3ry-container");
 const img100 = document.getElementById("img100");
-const imgPreviews = document.querySelector(".img-previews");
 const textContainer = document.querySelector(".text-container");
 const infoParas = document.querySelectorAll(".info-para");
 const proNav = document.querySelector(".navbar._2.pro");
@@ -113,12 +112,6 @@ function switchLayoutHandler(newLayout) {
   }
 
   activeLayout = newLayout;
-
-  if (newLayout === "layout-2-gall3ry") {
-    if (imgPreviews) gsap.to(imgPreviews, { autoAlpha: 1, duration: 0.3, delay: 0.5 });
-  } else {
-    if (imgPreviews) gsap.to(imgPreviews, { autoAlpha: 0, duration: 0.3 });
-  }
 
   if (newLayout === "layout-3-gall3ry") {
     if (textContainer) {
