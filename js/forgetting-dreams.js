@@ -215,6 +215,8 @@ function applyFontStagger(el) {
       timers.push(t1);
     });
   }
+  el._staggerOff = () => animateEl(false);
+  el._staggerOn  = () => animateEl(true);
   el.addEventListener("mouseenter", () => { if (!el.classList.contains("active")) animateEl(true); });
   el.addEventListener("mouseleave", () => { if (!el.classList.contains("active")) animateEl(false); });
 }
@@ -225,6 +227,23 @@ function applyFontStagger(el) {
   document.querySelector(".logotext.project"),
   document.querySelector(".logotext:not(.project)"),
 ].forEach(applyFontStagger);
+
+// When hovering any top-nav link or logo, animate the active link back to normal
+const tttHoverEls = [
+  ...document.querySelectorAll(".navbar.ttt .nav-link"),
+  document.querySelector(".logotext:not(.project)"),
+].filter(Boolean);
+
+tttHoverEls.forEach(el => {
+  el.addEventListener("mouseenter", () => {
+    const active = document.querySelector(".navbar.ttt .nav-link.active");
+    if (active && active._staggerOff) active._staggerOff();
+  });
+  el.addEventListener("mouseleave", () => {
+    const active = document.querySelector(".navbar.ttt .nav-link.active");
+    if (active && active._staggerOn) active._staggerOn();
+  });
+});
 
 
 /* ── Lightbox (overview layout) ── */
