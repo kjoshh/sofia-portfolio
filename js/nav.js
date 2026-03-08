@@ -3,12 +3,9 @@ function applyFontStagger(el) {
   const original = el.textContent.trim();
   el.style.display = "inline-block";
   el.style.width = el.offsetWidth + "px";
-  el.style.height = el.offsetHeight + "px";
-  el.style.lineHeight = el.offsetHeight + "px";
   el.style.textAlign = "center";
   el.style.whiteSpace = "nowrap";
   el.style.overflow = "visible";
-  el.style.verticalAlign = "middle";
   el.textContent = "";
   const chars = original.split("").map(ch => {
     const span = document.createElement("span");
@@ -17,20 +14,23 @@ function applyFontStagger(el) {
     el.appendChild(span);
     return span;
   });
-  let timers = [];
   function animateEl(toPost) {
-    timers.forEach(t => clearTimeout(t));
-    timers = [];
     chars.forEach((span, i) => {
-      const t1 = setTimeout(() => {
-        span.classList.add("blinking");
-        const t2 = setTimeout(() => {
+      gsap.killTweensOf(span);
+      gsap.to(span, {
+        opacity: 0,
+        y: -6,
+        duration: 0.2,
+        delay: i * 0.03,
+        ease: "power2.in",
+        onComplete() {
           toPost ? span.classList.add("post-font") : span.classList.remove("post-font");
-          span.classList.remove("blinking");
-        }, 60);
-        timers.push(t2);
-      }, i * 25);
-      timers.push(t1);
+          gsap.fromTo(span,
+            { opacity: 0, y: 6 },
+            { opacity: 1, y: 0, duration: 0.2, ease: "power4.out" }
+          );
+        }
+      });
     });
   }
   el._staggerOff = () => animateEl(false);
@@ -141,22 +141,23 @@ function applyFontStagger(el) {
   topEls.forEach(el => {
     el._isCurrentPage = el.classList.contains('active');
     applyFontStagger(el);
+    if (el._isCurrentPage) {
+      el.querySelectorAll('.layout-nav-char').forEach(span => span.classList.add('post-font'));
+    }
   });
 
   topEls.forEach(el => {
     el.addEventListener('mouseenter', () => {
       topEls.forEach(other => {
         if (other !== el && other.classList.contains('active')) {
-          other.classList.remove('active');
-          other.classList.add('notactive');
+          if (other._staggerOff) other._staggerOff();
         }
       });
     });
     el.addEventListener('mouseleave', () => {
       topEls.forEach(other => {
         if (other !== el && other._isCurrentPage) {
-          other.classList.add('active');
-          other.classList.remove('notactive');
+          if (other._staggerOn) other._staggerOn();
         }
       });
     });

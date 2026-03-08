@@ -142,7 +142,7 @@ function switchLayoutHandler(newLayout) {
 
 document.querySelector(".logotext.project").addEventListener("click", (e) => {
   e.preventDefault();
-  items.forEach(i => i.classList.remove("active"));
+  updateProNavActive(document.querySelector(".logotext.project"));
   switchLayout("layout-0-gall3ry");
   proNav.classList.add("transparent");
 });
@@ -150,8 +150,7 @@ document.querySelector(".logotext.project").addEventListener("click", (e) => {
 items.forEach((item) => {
   item.addEventListener("click", () => {
     if (!item.id) return;
-    items.forEach(i => i.classList.remove("active"));
-    item.classList.add("active");
+    updateProNavActive(item);
     switchLayout(item.id);
   });
 });
@@ -173,11 +172,72 @@ window.addEventListener("mousemove", (e) => {
 });
 
 
-/* ── Font stagger on layout nav hover (applyFontStagger is global from nav.js) ── */
-[
+/* ── Font stagger + active/notactive + cross-hover on pro-nav (mirrors main nav) ── */
+const proNavEls = [
   ...document.querySelectorAll(".pro-nav .nav-link"),
   document.querySelector(".logotext.project"),
-].forEach(applyFontStagger);
+].filter(Boolean);
+
+proNavEls.forEach(el => {
+  el._isCurrentPage = false;
+  applyFontStagger(el);
+});
+
+proNavEls.forEach(el => {
+  el.addEventListener("mouseenter", () => {
+    proNavEls.forEach(other => {
+      if (other !== el && other.classList.contains("active")) {
+        if (other._staggerOff) other._staggerOff();
+      }
+    });
+  });
+  el.addEventListener("mouseleave", () => {
+    proNavEls.forEach(other => {
+      if (other !== el && other._isCurrentPage) {
+        if (other._staggerOn) other._staggerOn();
+      }
+    });
+  });
+});
+
+function updateProNavActive(activeEl) {
+  proNavEls.forEach(el => {
+    el._isCurrentPage = el === activeEl;
+    if (el === activeEl) {
+      el.classList.add("active");
+      el.classList.remove("notactive");
+      if (el._staggerOn && !el.querySelector('.layout-nav-char.post-font')) el._staggerOn();
+    } else {
+      el.classList.add("notactive");
+      el.classList.remove("active");
+      if (el._staggerOff && el.querySelector('.layout-nav-char.post-font')) el._staggerOff();
+    }
+  });
+}
+
+function clearProNavActive() {
+  proNavEls.forEach(el => {
+    el._isCurrentPage = false;
+    el.classList.remove("active", "notactive");
+    if (el._staggerOff) el._staggerOff();
+  });
+}
+
+// layout-0 is active on load — set post-font instantly, no animation
+(function () {
+  const logoEl = document.querySelector(".logotext.project");
+  proNavEls.forEach(el => {
+    el._isCurrentPage = el === logoEl;
+    if (el === logoEl) {
+      el.classList.add("active");
+      el.classList.remove("notactive");
+      el.querySelectorAll('.layout-nav-char').forEach(span => span.classList.add('post-font'));
+    } else {
+      el.classList.add("notactive");
+      el.classList.remove("active");
+    }
+  });
+})();
 
 
 /* ── Lightbox (overview layout) ── */
