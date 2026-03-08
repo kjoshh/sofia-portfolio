@@ -7,7 +7,7 @@ gsap.set(nav, { xPercent: -50, yPercent: -50 });
 const navMoveX = gsap.quickTo(nav, 'x', { duration: 0.9, ease: 'power3.out' });
 const navMoveY = gsap.quickTo(nav, 'y', { duration: 0.9, ease: 'power3.out' });
 
-const PARALLAX_STRENGTH = 10;
+const PARALLAX_STRENGTH = 12.5;
 
 window.addEventListener('mousemove', e => {
   const cx = innerWidth  / 2;
@@ -42,6 +42,48 @@ document.body.appendChild(hoverBg);
 
 // Preload all hover images
 Object.values(NAV_BG).forEach(src => { const i = new Image(); i.src = src; });
+
+// ── Logo text swap on About hover ──
+const logoEl       = document.querySelector('.logotext:not(.project)');
+const LOGO_DEFAULT = 'Sofia Cartuccia';
+const LOGO_SYBIL   = 'Sybil';
+
+function swapLogoText(newText) {
+  const spans = [...logoEl.querySelectorAll('.layout-nav-char')];
+  spans.forEach((span, i) => {
+    gsap.killTweensOf(span);
+    gsap.to(span, {
+      opacity: 0, y: -6,
+      duration: 0.15,
+      delay: i * 0.025,
+      ease: 'power2.in',
+      onComplete: i === spans.length - 1 ? () => {
+        // Rebuild char spans with new text
+        logoEl.innerHTML = '';
+        [...newText].forEach(ch => {
+          const s = document.createElement('span');
+          s.className = 'layout-nav-char post-font';
+          s.textContent = ch === ' ' ? '\u00A0' : ch;
+          logoEl.appendChild(s);
+        });
+        // Stagger new chars in from below
+        [...logoEl.querySelectorAll('.layout-nav-char')].forEach((s, j) => {
+          gsap.fromTo(s,
+            { opacity: 0, y: 6 },
+            { opacity: 1, y: 0, duration: 0.2, delay: j * 0.025, ease: 'power4.out' }
+          );
+        });
+      } : undefined,
+    });
+  });
+}
+
+const aboutLink = document.querySelector('.main-nav .nav-link[href="about.html"]');
+if (aboutLink) {
+  aboutLink.addEventListener('mouseenter', () => swapLogoText(LOGO_SYBIL));
+  aboutLink.addEventListener('mouseleave', () => swapLogoText(LOGO_DEFAULT));
+}
+
 
 let hoverTween = null;
 
