@@ -146,20 +146,4 @@ function applyFontStagger(el) {
     }
   });
 
-  topEls.forEach(el => {
-    el.addEventListener('mouseenter', () => {
-      topEls.forEach(other => {
-        if (other !== el && other.classList.contains('active')) {
-          if (other._staggerOff) other._staggerOff();
-        }
-      });
-    });
-    el.addEventListener('mouseleave', () => {
-      topEls.forEach(other => {
-        if (other !== el && other._isCurrentPage) {
-          if (other._staggerOn) other._staggerOn();
-        }
-      });
-    });
-  });
 })();

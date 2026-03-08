@@ -183,22 +183,6 @@ proNavEls.forEach(el => {
   applyFontStagger(el);
 });
 
-proNavEls.forEach(el => {
-  el.addEventListener("mouseenter", () => {
-    proNavEls.forEach(other => {
-      if (other !== el && other.classList.contains("active")) {
-        if (other._staggerOff) other._staggerOff();
-      }
-    });
-  });
-  el.addEventListener("mouseleave", () => {
-    proNavEls.forEach(other => {
-      if (other !== el && other._isCurrentPage) {
-        if (other._staggerOn) other._staggerOn();
-      }
-    });
-  });
-});
 
 function updateProNavActive(activeEl) {
   proNavEls.forEach(el => {
