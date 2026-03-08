@@ -49,9 +49,9 @@ window.addEventListener('mousemove', (e) => {
 
 
 // ── Analog paint trail ──
-const TRAIL_LENGTH  = 14;   // ghost frames to keep
-const TRAIL_OPACITY = 0.22; // max opacity of the oldest ghost
-const TRAIL_JITTER  = 10;   // px of rough displacement on older frames
+const TRAIL_LENGTH  = 15;   // ghost frames to keep
+const TRAIL_OPACITY = 0.52; // max opacity of the oldest ghost
+const TRAIL_JITTER  = 5;   // px of rough displacement on older frames
 
 const trailCanvas = document.createElement('canvas');
 trailCanvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:3;';
@@ -90,4 +90,40 @@ gsap.ticker.add(() => {
       pos.w, pos.h
     );
   });
+});
+
+
+// ── SVG liquid distortion filter ──
+const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+svgEl.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
+svgEl.innerHTML = `<defs>
+  <filter id="liq" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+    <feTurbulence id="liqT" type="fractalNoise" baseFrequency="0.018 0.011" numOctaves="4" seed="3" result="noise"/>
+    <feDisplacementMap id="liqD" in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</defs>`;
+document.body.appendChild(svgEl);
+
+const liqT = document.getElementById('liqT');
+const liqD = document.getElementById('liqD');
+
+name.style.filter       = 'url(#liq)';
+trailCanvas.style.filter = 'url(#liq)';
+
+let velMag = 0, pmx = 0, pmy = 0;
+
+gsap.ticker.add((time) => {
+  const t = time * 0.18;
+  liqT.setAttribute('baseFrequency',
+    `${(0.018 + Math.sin(t) * 0.004).toFixed(4)} ${(0.011 + Math.cos(t * 1.3) * 0.003).toFixed(4)}`
+  );
+  const cur = parseFloat(liqD.getAttribute('scale')) || 10;
+  liqD.setAttribute('scale', (cur + (10 + velMag * 30 - cur) * 0.07).toFixed(2));
+  velMag *= 0.88;
+});
+
+window.addEventListener('mousemove', e => {
+  velMag = Math.min(Math.hypot(e.clientX - pmx, e.clientY - pmy) / 30, 1);
+  pmx = e.clientX;
+  pmy = e.clientY;
 });
