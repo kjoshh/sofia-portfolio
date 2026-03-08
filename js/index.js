@@ -17,89 +17,81 @@ window.addEventListener('mousemove', e => {
 });
 
 
-// ── Nav hover — swap background image ──
-// Map each nav link href → background image to show on hover
+// ── Nav hover — swap background image (slide in from bottom) ──
 const NAV_BG = {
+  'index.html':             'images/0017_17A.jpg',
   'forgetting-dreams.html': 'images/Forgettingdreams-1.jpg',
   'archive.html':           'images/sofia_archive-31.jpg',
   'about.html':             'images/Sybilbg.jpg',
 };
 
-// Hover image sits on top of the default bg
-const hoverBg = new Image();
-hoverBg.style.cssText = [
-  'position:fixed',
-  'inset:0',
-  'width:100%',
-  'height:100%',
-  'object-fit:cover',
-  'object-position:center',
-  'opacity:0',
-  'pointer-events:none',
-  'z-index:1',
-].join(';');
-document.body.appendChild(hoverBg);
+// Overflow-hidden wrapper clips the sliding images
+const bgWrap = document.createElement('div');
+bgWrap.style.cssText = 'position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:1;';
+document.body.appendChild(bgWrap);
+
+function makeBgLayer() {
+  const img = document.createElement('img');
+  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;';
+  bgWrap.appendChild(img);
+  gsap.set(img, { yPercent: 100 });
+  return img;
+}
+
+const bgLayers = [makeBgLayer(), makeBgLayer()];
+let bgFront = 0;
+let bgVisible = false;
+let bgCurrentSrc = null;
+
+const defaultBg = document.querySelector('.imgbg');
 
 // Preload all hover images
 Object.values(NAV_BG).forEach(src => { const i = new Image(); i.src = src; });
 
-// ── Logo text swap on About hover ──
-const logoEl       = document.querySelector('.logotext:not(.project)');
-const LOGO_DEFAULT = 'Sofia Cartuccia';
-const LOGO_SYBIL   = 'Sybil';
 
-function swapLogoText(newText) {
-  const spans = [...logoEl.querySelectorAll('.layout-nav-char')];
-  spans.forEach((span, i) => {
-    gsap.killTweensOf(span);
-    gsap.to(span, {
-      opacity: 0, y: -6,
-      duration: 0.15,
-      delay: i * 0.025,
-      ease: 'power2.in',
-      onComplete: i === spans.length - 1 ? () => {
-        // Rebuild char spans with new text
-        logoEl.innerHTML = '';
-        [...newText].forEach(ch => {
-          const s = document.createElement('span');
-          s.className = 'layout-nav-char post-font';
-          s.textContent = ch === ' ' ? '\u00A0' : ch;
-          logoEl.appendChild(s);
-        });
-        // Stagger new chars in from below
-        [...logoEl.querySelectorAll('.layout-nav-char')].forEach((s, j) => {
-          gsap.fromTo(s,
-            { opacity: 0, y: 6 },
-            { opacity: 1, y: 0, duration: 0.2, delay: j * 0.025, ease: 'power4.out' }
-          );
-        });
-      } : undefined,
-    });
+function slideBg(src) {
+  if (src === bgCurrentSrc) return;
+  bgCurrentSrc = src;
+  const next = bgVisible ? 1 - bgFront : 0;
+  const out  = bgVisible ? bgFront : null;
+  bgLayers[next].src = src;
+  gsap.killTweensOf(bgLayers);
+  gsap.set(bgLayers[next], { yPercent: 100 });
+  gsap.to(bgLayers[next], { yPercent: 0, duration: 0.9, ease: 'power3.inOut' });
+  if (out !== null) {
+    gsap.to(bgLayers[out], { yPercent: -100, duration: 0.9, ease: 'power3.inOut' });
+  } else if (defaultBg) {
+    gsap.to(defaultBg, { yPercent: -100, duration: 0.9, ease: 'power3.inOut' });
+  }
+  bgFront = next;
+  bgVisible = true;
+}
+
+const navHoverEls = [
+  ...document.querySelectorAll('.main-nav .nav-link'),
+  document.querySelector('.main-nav .logotext:not(.project)'),
+].filter(Boolean);
+
+function setNavActive(activeEl) {
+  navHoverEls.forEach(el => {
+    if (el === activeEl) {
+      el.classList.add('active');
+      el.classList.remove('notactive');
+    } else {
+      const wasActive = el.classList.contains('active');
+      el.classList.remove('active');
+      el.classList.add('notactive');
+      if (wasActive && el._staggerOff) el._staggerOff();
+    }
   });
 }
 
-const aboutLink = document.querySelector('.main-nav .nav-link[href="about.html"]');
-if (aboutLink) {
-  aboutLink.addEventListener('mouseenter', () => swapLogoText(LOGO_SYBIL));
-  aboutLink.addEventListener('mouseleave', () => swapLogoText(LOGO_DEFAULT));
-}
-
-
-let hoverTween = null;
-
-document.querySelectorAll('.main-nav .nav-link').forEach(link => {
-  const href = (link.getAttribute('href') || '').split('/').pop();
+navHoverEls.forEach(el => {
+  const href = (el.getAttribute('href') || '').split('/').pop() || 'index.html';
   const src  = NAV_BG[href];
   if (!src) return;
-
-  link.addEventListener('mouseenter', () => {
-    hoverBg.src = src;
-    if (hoverTween) hoverTween.kill();
-    hoverTween = gsap.to(hoverBg, { opacity: 1, duration: 0.5, ease: 'power2.inOut' });
-  });
-
-  link.addEventListener('mouseleave', () => {
-    if (hoverTween) hoverTween.kill();
-    hoverTween = gsap.to(hoverBg, { opacity: 0, duration: 0.5, ease: 'power2.inOut' });
+  el.addEventListener('mouseenter', () => {
+    slideBg(src);
+    setNavActive(el);
   });
 });
