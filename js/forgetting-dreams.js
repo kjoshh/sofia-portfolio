@@ -180,75 +180,11 @@ window.addEventListener("mousemove", (e) => {
 });
 
 
-/* ── Font stagger on nav hover ── */
-function applyFontStagger(el) {
-  const original = el.textContent.trim();
-  el.style.display = "inline-block";
-  el.style.width = el.offsetWidth + "px";
-  el.style.height = el.offsetHeight + "px";
-  el.style.lineHeight = el.offsetHeight + "px";
-  el.style.textAlign = "center";
-  el.style.whiteSpace = "nowrap";
-  el.style.overflow = "visible";
-  el.style.verticalAlign = "middle";
-  el.textContent = "";
-  const chars = original.split("").map(ch => {
-    const span = document.createElement("span");
-    span.className = "layout-nav-char";
-    span.textContent = ch === " " ? "\u00A0" : ch;
-    el.appendChild(span);
-    return span;
-  });
-  let timers = [];
-  function animateEl(toPost) {
-    timers.forEach(t => clearTimeout(t));
-    timers = [];
-    chars.forEach((span, i) => {
-      const t1 = setTimeout(() => {
-        span.classList.add("blinking");
-        const t2 = setTimeout(() => {
-          toPost ? span.classList.add("post-font") : span.classList.remove("post-font");
-          span.classList.remove("blinking");
-        }, 60);
-        timers.push(t2);
-      }, i * 25);
-      timers.push(t1);
-    });
-  }
-  el._staggerOff = () => animateEl(false);
-  el._staggerOn  = () => animateEl(true);
-  el.addEventListener("mouseenter", () => { if (!el.classList.contains("active")) animateEl(true); });
-  el.addEventListener("mouseleave", () => { if (!el.classList.contains("active")) animateEl(false); });
-
-  // If active on load, immediately set chars to post-font state
-  if (el.classList.contains("active")) {
-    chars.forEach(span => span.classList.add("post-font"));
-  }
-}
-
+/* ── Font stagger on layout nav hover (applyFontStagger is global from nav.js) ── */
 [
   ...document.querySelectorAll(".navbar._2.pro .nav-link"),
-  ...document.querySelectorAll(".navbar.ttt .nav-link"),
   document.querySelector(".logotext.project"),
-  document.querySelector(".logotext:not(.project)"),
 ].forEach(applyFontStagger);
-
-// When hovering any top-nav link or logo, animate the active link back to normal
-const tttHoverEls = [
-  ...document.querySelectorAll(".navbar.ttt .nav-link"),
-  document.querySelector(".logotext:not(.project)"),
-].filter(Boolean);
-
-tttHoverEls.forEach(el => {
-  el.addEventListener("mouseenter", () => {
-    const active = document.querySelector(".navbar.ttt .nav-link.active");
-    if (active && active._staggerOff) active._staggerOff();
-  });
-  el.addEventListener("mouseleave", () => {
-    const active = document.querySelector(".navbar.ttt .nav-link.active");
-    if (active && active._staggerOn) active._staggerOn();
-  });
-});
 
 
 /* ── Lightbox (overview layout) ── */
