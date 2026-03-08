@@ -219,6 +219,11 @@ function applyFontStagger(el) {
   el._staggerOn  = () => animateEl(true);
   el.addEventListener("mouseenter", () => { if (!el.classList.contains("active")) animateEl(true); });
   el.addEventListener("mouseleave", () => { if (!el.classList.contains("active")) animateEl(false); });
+
+  // If active on load, immediately set chars to post-font state
+  if (el.classList.contains("active")) {
+    chars.forEach(span => span.classList.add("post-font"));
+  }
 }
 
 [
