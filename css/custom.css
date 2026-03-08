@@ -472,7 +472,7 @@ body.about-page { overflow: hidden; }
   margin-bottom: 0;
   font-family: Post;
   cursor: pointer;
-  opacity: 0;
+  opacity: 1;
   transition: opacity 0.2s ease;
   user-select: none;
 }
