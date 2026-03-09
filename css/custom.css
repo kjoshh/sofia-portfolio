@@ -545,7 +545,7 @@ body.about-page { overflow: hidden; }
   border-radius: 1.39em;
   flex-flow: row;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 0.818em 0.982em;
   display: flex;
   position: absolute;
@@ -633,7 +633,7 @@ body.about-page { overflow: hidden; }
 
 /* Index page — nav centered on screen (transform owned by GSAP) */
 .index-nav {
-  top: 27.5% !important;
+  top: calc(27.5% - 22px) !important;
   font-size: 16px;
 }
 .baxckdroppi{
@@ -843,37 +843,21 @@ body.about-page { overflow: hidden; }
 
 /* ── Index nav dropdown ── */
 .nav-dropdown-wrap {
-  position: relative;
-}
-
-/* Transparent bridge fills the gap so mouseleave doesn't fire mid-travel */
-.nav-dropdown-wrap::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  height: 0.6em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .nav-dropdown {
-  position: fixed;
+  overflow: hidden;
+  max-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.4em;
-  padding: 0.818em 0.982em;
-  background-color: #29282385;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 1.39em;
-  pointer-events: none;
   white-space: nowrap;
-  opacity: 0;
-  font-size: 14.5px;
 }
 
 .nav-dropdown-item {
   opacity: 0;
-  transform: translateY(-4px);
 }

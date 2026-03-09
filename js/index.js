@@ -2,7 +2,7 @@
 const nav = document.querySelector('.main-nav');
 
 // GSAP owns the transform — base centering via xPercent/yPercent
-gsap.set(nav, { xPercent: -50, yPercent: -50 });
+gsap.set(nav, { xPercent: -50, yPercent: 0 });
 
 const navMoveX = gsap.quickTo(nav, 'x', { duration: 0.9, ease: 'power3.out' });
 const navMoveY = gsap.quickTo(nav, 'y', { duration: 0.9, ease: 'power3.out' });
@@ -148,59 +148,20 @@ const dropdown      = document.getElementById('projects-dropdown');
 const dropdownItems = dropdown ? [...dropdown.querySelectorAll('.nav-dropdown-item')] : [];
 
 if (dropdownWrap && dropdown) {
-  // Move to body so its backdrop-filter doesn't compound with the nav pill
-  document.body.appendChild(dropdown);
+  const fullHeight = () => {
+    dropdown.style.maxHeight = 'none';
+    const h = dropdown.scrollHeight;
+    dropdown.style.maxHeight = '0';
+    return h;
+  };
 
-  // GSAP owns the transform — x/y for positioning, scaleY for animation
-  gsap.set(dropdown, { scaleY: 0.85, transformOrigin: 'top center' });
+  dropdownWrap.addEventListener('mouseenter', () => {
+    gsap.to(dropdown, { maxHeight: fullHeight(), duration: 0.25, ease: 'power2.out' });
+    gsap.to(dropdownItems, { opacity: 1, duration: 0.2, stagger: 0.06, delay: 0.05, ease: 'power2.out' });
+  });
 
-  function positionDropdown() {
-    const rect = dropdownWrap.getBoundingClientRect();
-    gsap.set(dropdown, {
-      x: rect.left + rect.width / 2,
-      y: rect.bottom + 8,
-      xPercent: -50,
-    });
-  }
-
-  let closeTween   = null;
-  let closeTimeout = null;
-  let wrapHovered  = false;
-  let dropHovered  = false;
-
-  function openDropdown() {
-    if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
-    if (closeTween) closeTween.kill();
-    positionDropdown();
-    dropdown.style.pointerEvents = 'auto';
-    gsap.to(dropdown, { opacity: 1, scaleY: 1, duration: 0.25, ease: 'power2.out' });
-    gsap.to(dropdownItems, {
-      opacity: 1, y: 0,
-      duration: 0.25, ease: 'power2.out',
-      stagger: 0.06,
-      delay: 0.05,
-    });
-  }
-
-  function closeDropdown() {
-    dropdown.style.pointerEvents = 'none';
-    closeTween = gsap.to(dropdown, { opacity: 0, scaleY: 0.85, duration: 0.2, ease: 'power2.in' });
-    gsap.to(dropdownItems, {
-      opacity: 0, y: -4,
-      duration: 0.15, ease: 'power2.in',
-      stagger: { each: 0.03, from: 'end' },
-    });
-  }
-
-  function maybeClose() {
-    // Small delay to let mouseenter on the other element fire first
-    closeTimeout = setTimeout(() => {
-      if (!wrapHovered && !dropHovered) closeDropdown();
-    }, 50);
-  }
-
-  dropdownWrap.addEventListener('mouseenter', () => { wrapHovered = true;  openDropdown(); });
-  dropdownWrap.addEventListener('mouseleave', () => { wrapHovered = false; maybeClose(); });
-  dropdown.addEventListener('mouseenter',    () => { dropHovered = true;  if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; } });
-  dropdown.addEventListener('mouseleave',    () => { dropHovered = false; maybeClose(); });
+  dropdownWrap.addEventListener('mouseleave', () => {
+    gsap.to(dropdown, { maxHeight: 0, duration: 0.2, ease: 'power2.in' });
+    gsap.to(dropdownItems, { opacity: 0, duration: 0.15, ease: 'power2.in' });
+  });
 }
