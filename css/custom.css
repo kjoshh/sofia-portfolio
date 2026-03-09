@@ -659,6 +659,10 @@ body.about-page { overflow: hidden; }
   align-items: stretch;
 }
 
+.index-nav .nav-menu {
+  justify-content: space-between;
+}
+
 .zzz {
   pointer-events: none;
   width: 18px;
@@ -857,9 +861,9 @@ body.about-page { overflow: hidden; }
   overflow: hidden;
   max-height: 0;
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 1em;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4em;
   white-space: nowrap;
 }
 

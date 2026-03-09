@@ -148,6 +148,15 @@ const dropdown      = document.getElementById('projects-dropdown');
 const dropdownItems = dropdown ? [...dropdown.querySelectorAll('.nav-dropdown-item')] : [];
 
 if (dropdownWrap && dropdown) {
+  // Align dropdown items with the Projects link
+  function alignDropdown() {
+    const projectsRect = dropdownWrap.getBoundingClientRect();
+    const navRect      = nav.getBoundingClientRect();
+    dropdown.style.paddingLeft = (projectsRect.left - navRect.left) + 'px';
+  }
+  alignDropdown();
+  window.addEventListener('resize', alignDropdown);
+
   const fullHeight = () => {
     dropdown.style.maxHeight = 'none';
     const h = dropdown.scrollHeight;
@@ -160,7 +169,8 @@ if (dropdownWrap && dropdown) {
     gsap.to(dropdownItems, { opacity: 1, duration: 0.2, stagger: 0.06, delay: 0.05, ease: 'power2.out' });
   });
 
-  dropdownWrap.addEventListener('mouseleave', () => {
+  // Close when mouse leaves the whole nav pill
+  nav.addEventListener('mouseleave', () => {
     gsap.to(dropdown, { maxHeight: 0, duration: 0.2, ease: 'power2.in' });
     gsap.to(dropdownItems, { opacity: 0, duration: 0.15, ease: 'power2.in' });
   });
