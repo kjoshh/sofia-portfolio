@@ -163,9 +163,13 @@ if (dropdownWrap && dropdown) {
     });
   }
 
-  let closeTween = null;
+  let closeTween   = null;
+  let closeTimeout = null;
+  let wrapHovered  = false;
+  let dropHovered  = false;
 
   function openDropdown() {
+    if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
     if (closeTween) closeTween.kill();
     positionDropdown();
     dropdown.style.pointerEvents = 'auto';
@@ -188,8 +192,15 @@ if (dropdownWrap && dropdown) {
     });
   }
 
-  dropdownWrap.addEventListener('mouseenter', openDropdown);
-  dropdownWrap.addEventListener('mouseleave', closeDropdown);
-  dropdown.addEventListener('mouseenter', () => { if (closeTween) closeTween.kill(); dropdown.style.pointerEvents = 'auto'; });
-  dropdown.addEventListener('mouseleave', closeDropdown);
+  function maybeClose() {
+    // Small delay to let mouseenter on the other element fire first
+    closeTimeout = setTimeout(() => {
+      if (!wrapHovered && !dropHovered) closeDropdown();
+    }, 50);
+  }
+
+  dropdownWrap.addEventListener('mouseenter', () => { wrapHovered = true;  openDropdown(); });
+  dropdownWrap.addEventListener('mouseleave', () => { wrapHovered = false; maybeClose(); });
+  dropdown.addEventListener('mouseenter',    () => { dropHovered = true;  if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; } });
+  dropdown.addEventListener('mouseleave',    () => { dropHovered = false; maybeClose(); });
 }
