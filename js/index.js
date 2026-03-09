@@ -151,8 +151,8 @@ if (dropdownWrap && dropdown) {
   // Align dropdown items with the Projects link
   function alignDropdown() {
     const projectsRect = dropdownWrap.getBoundingClientRect();
-    const navRect      = nav.getBoundingClientRect();
-    dropdown.style.paddingLeft = (projectsRect.left - navRect.left) + 'px';
+    const wrapinRect   = dropdownWrap.closest('.wrapin').getBoundingClientRect();
+    dropdown.style.paddingLeft = (projectsRect.left - wrapinRect.left) + 'px';
   }
   alignDropdown();
   window.addEventListener('resize', alignDropdown);
