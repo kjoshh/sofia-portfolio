@@ -30,7 +30,7 @@
   position: fixed;
   pointer-events: none;
   opacity: 0.1;
-  z-index: 1;
+  z-index: 100;
   background-image: url("../images/BGDust.png");
 }
 .nois3 {
@@ -39,7 +39,7 @@
   position: fixed;
   pointer-events: none;
   opacity: 0.1;
-  z-index: 1;
+  z-index: 100;
   background-image: url("../images/Noise.png");
 }
 .nois3-grain {
@@ -48,7 +48,7 @@
   pointer-events: none;
   overflow: hidden;
   opacity: 0.08;
-  z-index: 1;
+  z-index: 100;
 }
 .nois3-grain::after {
   content: "";
@@ -347,15 +347,17 @@
 /* Layout nav font stagger */
 .layout-nav-char {
   display: inline-block;
+
 }
 .layout-nav-char.post-font {
   font-family: Post, serif;
   letter-spacing: 0.03em;
-  font-size: 17.25px;
-  color: #f5f4ef;
+  font-size: 1.19em;
+
 
   opacity:1 !important;
 }
+
 
 /* Project lightbox overrides */
 .lb-btn img {
@@ -533,26 +535,28 @@ body.about-page { overflow: hidden; }
 
 .main-nav {
   font-family: Alegreya, sans-serif;
+  font-size: 14.5px; /* em base — scale via .index-nav override */
 
   z-index: 999990;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   pointer-events: auto;
   background-color: #29282385;
-  border-radius: 20.17px;
+  border-radius: 1.39em;
   flex-flow: row;
   justify-content: space-between;
   align-items: center;
-  padding: 11.86px 14.24px;
+  padding: 0.818em 0.982em;
   display: flex;
   position: absolute;
-  top: 18.9867px;
+  top: 1.31em;
   left: 50%;
   transform: translate(-50%);
-}
 
+}
 .pro-nav {
   font-family: Alegreya, sans-serif;
+  font-size: 14.5px;
 
   z-index: 999990;
   backdrop-filter: blur(20px);
@@ -576,29 +580,29 @@ body.about-page { overflow: hidden; }
   flex: 0 auto;
   align-items: baseline;
   height: 100%;
-  margin-right: 20px;
+  margin-right: 1em;
   display: flex;
   position: relative;
 }
 
 .nav-menu {
-  grid-column-gap: 10.75px;
+  grid-column-gap: 0.741em;
   align-items: baseline;
   display: flex;
+  z-index: 1;
 }
 
-.nav-link, .logotext {
+.nav-link {
   opacity: 1;
   color: hsla(50, 23%, 95%, 0.6);
   letter-spacing: .125em;
   padding: 0;
-  font-size: 14.5px;
+  font-size: 1em;
   transition: opacity .25s;
 }
-
-.nav-link:hover, .nav-link.active, .logotext:hover  { cursor: default;}
-
-
+.nav-link:hover, .nav-link.active { cursor: pointer; }
+.nav-link.active    { color: hsla(50, 23%, 95%, 1); }
+.nav-link.notactive { color: hsla(50, 23%, 95%, 0.9); }
 
 .imgbg {
   position: fixed;
@@ -629,18 +633,25 @@ body.about-page { overflow: hidden; }
 
 /* Index page — nav centered on screen (transform owned by GSAP) */
 .index-nav {
-  top: 50% !important;
+  top: 27.5% !important;
+  font-size: 16px;
+}
+.baxckdroppi{
+  position: absolute;
+  top:50%;
+  left:50%;
+  transform: translate(-48%, -54%) rotate(-0.25deg);
+  z-index: 0;
+  width: 150%;
+  height: 325%;
+  max-width: none;
 }
 
 
-
-
-
 .wrapin {
-  grid-column-gap: 6.5px;
+  grid-column-gap: 0.448em;
   display: flex;
   align-items: center;
-  /* transform: translateY(-9.5%); */
 }
 
 .zzz {
@@ -758,3 +769,111 @@ body.about-page { overflow: hidden; }
 
 
 
+
+
+/* ── Projects overview page ── */
+.proj-list-wrap {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font-size: 14px;
+  z-index: 9000;
+}
+
+.proj-list {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  pointer-events: auto;
+  gap: 1em;
+  font-size: 1em;
+}
+
+.proj-item {
+  position: relative;
+  display: block;
+  text-decoration: none;
+  color: hsla(50, 23%, 95%, 0.75);
+  font-family: Alegreya, serif;
+  font-size: clamp(1rem, 1vw, 1rem);
+  font-style: italic;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+  transition: color 0.3s ease;
+  white-space: nowrap;
+  z-index: 3;
+}
+
+.proj-item:hover {
+  color: white;
+  ;
+}
+
+.proj-img-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 420px;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(0);
+  z-index: 1;
+}
+
+.proj-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.08);
+  transition: transform 0.8s cubic-bezier(0.075, 0.82, 0.165, 1);
+
+}
+
+.proj-item:hover .proj-img-wrap img {
+  transform: scale(1);
+}
+
+
+
+/* ── Index nav dropdown ── */
+.nav-dropdown-wrap {
+  position: relative;
+}
+
+/* Transparent bridge fills the gap so mouseleave doesn't fire mid-travel */
+.nav-dropdown-wrap::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 0.6em;
+}
+
+.nav-dropdown {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.818em 0.982em;
+  background-color: #29282385;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 1.39em;
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  font-size: 14.5px;
+}
+
+.nav-dropdown-item {
+  opacity: 0;
+  transform: translateY(-4px);
+}
