@@ -44,7 +44,7 @@ const FLUID_CONFIG = {
   duration: 3,
 
   // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
-  ease: 'none',
+  ease: 'power1.out',
 
   // Speed of the organic noise movement while hovering
   noiseSpeed: 0.25,
@@ -56,7 +56,7 @@ const FLUID_CONFIG = {
   noiseAmount: 0.6,
 
   // How soft/harsh the masked wipe edge is (Lower = harsher line; Higher = softer gradient)
-  edgeSoftness: 0.02
+  edgeSoftness: 0.03
 };
 
 // WebGL shaders for fluid ink spilled-over effect
@@ -137,9 +137,10 @@ const fragmentShader = `
     float spread = dist + (noiseComb - 0.5) * u_noiseAmount;
 
     // u_progress goes from 0 to 1.
-    // We expand it to make sure the circle covers the viewport cleanly even with noise.
-    // We adjust the offset so that the reveal starts almost instantly (removing "dead air").
-    float p = u_progress * (2.0 + u_noiseAmount) - (u_noiseAmount * 0.4);
+    // We adjust the mapping so the expansion covers the viewport exactly within the duration.
+    // The multiplier (e.g., 1.5) ensures the circle reaches the corners, while 
+    // the offset (-u_noiseAmount) ensures we start at the mouse instantly.
+    float p = u_progress * (1.5 + u_noiseAmount) - (u_noiseAmount * 0.5);
     
     // Mask logic: smoothstep creates the transition
     float mask = smoothstep(p - u_edgeSoftness, p + u_edgeSoftness, spread);
@@ -162,6 +163,8 @@ Object.entries(NAV_BG).forEach(([key, src]) => {
     if (bgCurrentSrc === src && uniforms) {
       uniforms.u_aspect0.value.set(tex.image.width, tex.image.height);
       uniforms.u_aspect1.value.set(tex.image.width, tex.image.height);
+      // Render once to show the loaded image
+      renderer.render(scene, camera);
     }
   });
 });
@@ -268,6 +271,7 @@ function slideBg(src) {
 
 const navHoverEls = [
   ...document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)'),
+  document.querySelector('.logo-link')
 ].filter(Boolean);
 
 function setNavActive(activeEl) {
@@ -295,7 +299,7 @@ navHoverEls.forEach(el => {
       uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
       uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
     }
-    
+
     slideBg(src);
     setNavActive(el);
   });
