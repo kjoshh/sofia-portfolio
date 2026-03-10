@@ -41,7 +41,7 @@ const noiseLayers = [
 // ==========================================
 const FLUID_CONFIG = {
   // Animation duration in seconds (How long the wipe takes)
-  duration: 1,
+  duration: 3,
 
   // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
   ease: 'none',
@@ -137,9 +137,9 @@ const fragmentShader = `
     float spread = dist + (noiseComb - 0.5) * u_noiseAmount;
 
     // u_progress goes from 0 to 1.
-    // We expand it to make sure the circle covers the viewport cleanly even with noise
-    // scale factor 2.5 is usually enough depending on screen shape
-    float p = u_progress * 2.5 - 0.5;
+    // We expand it to make sure the circle covers the viewport cleanly even with noise.
+    // We adjust the offset so that the reveal starts almost instantly (removing "dead air").
+    float p = u_progress * (2.0 + u_noiseAmount) - (u_noiseAmount * 0.4);
     
     // Mask logic: smoothstep creates the transition
     float mask = smoothstep(p - u_edgeSoftness, p + u_edgeSoftness, spread);
@@ -302,7 +302,7 @@ navHoverEls.forEach(el => {
       uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
       uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
     }
-    
+
     slideBg(src);
     setNavActive(el);
   });
@@ -403,7 +403,7 @@ if (dropdownWrap && dropdown) {
 }
 
 // ── Fluid Nav Bar Wobble ──
-(function() {
+(function () {
   const indexNav = document.querySelector('.index-nav');
   if (!indexNav) return;
 
@@ -415,18 +415,18 @@ if (dropdownWrap && dropdown) {
     const fx = px - ix, fy = py - iy;
     const ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
     return chash(ix, iy) + (chash(ix + 1, iy) - chash(ix, iy)) * ux
-         + (chash(ix, iy + 1) - chash(ix, iy)) * uy
-         + (chash(ix, iy) - chash(ix + 1, iy) - chash(ix, iy + 1) + chash(ix + 1, iy + 1)) * ux * uy;
+      + (chash(ix, iy + 1) - chash(ix, iy)) * uy
+      + (chash(ix, iy) - chash(ix + 1, iy) - chash(ix, iy + 1) + chash(ix + 1, iy + 1)) * ux * uy;
   }
 
   (function loop() {
     curTime += 0.015; // Animation speed
     const s = curTime * 1.5;
-    
+
     // The base border-radius is ~20px. 
     // We add noise between -8px and +8px to each corner to organically squash and stretch it.
     const r = (i) => Math.round(20 + (cnoise(s + i * 5.1, i * 4.2) - 0.5) * 16);
-    
+
     indexNav.style.borderRadius = `${r(0)}px ${r(1)}px ${r(2)}px ${r(3)}px / ${r(4)}px ${r(5)}px ${r(6)}px ${r(7)}px`;
     requestAnimationFrame(loop);
   })();
