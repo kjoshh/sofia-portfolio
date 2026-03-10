@@ -62,8 +62,8 @@ const FLUID_CONFIG = {
   // Strength of uneven growth tendrils (0 to 1)
   viscosity: 0.4, 
   
-  // Amount of lens distortion/warp inside the fluid (0 to 0.1)
-  refraction: 0.04, 
+  // Amount of lens distortion/warp purely at the edge of the fluid (0 to 0.1)
+  refraction: 0.1, // Increased for a stronger, more concentrated effect
   
   // Brightness of the surface tension highlight at the edge (0 to 1)
   lipBrightness: 0.3 
@@ -160,13 +160,13 @@ const fragmentShader = `
     // Mask logic
     float mask = smoothstep(p - u_edgeSoftness, p + u_edgeSoftness, spread);
 
-    // 2. Refraction: warp the texture inside the reveal
-    // We link the refraction strength to a sine wave of progress, 
-    // so it peaks in the middle and fades to 0 at the end!
-    // This perfectly prevents the image from freezing in a distorted state
-    // and jumping when the next hover starts.
-    float refrStrength = u_refraction * sin(u_progress * 3.14159265);
-    vec2 refractOff = vec2((noiseComb - 0.5) * refrStrength * (1.0 - mask));
+    // 2. Refraction: warp the texture strictly at the edge of the reveal
+    // We isolate the edge by multiplying the inverted mask by a tight inner bounds
+    // This creates a "ring" of distortion just inside the fluid boundary.
+    float edgeThickness = 0.08;
+    float edgeRing = (1.0 - mask) * smoothstep(p - edgeThickness, p, spread);
+    
+    vec2 refractOff = vec2((noiseComb - 0.5) * u_refraction * edgeRing);
     vec2 uv1_refr = getCoverUV(uv + refractOff, u_resolution, u_aspect1);
     c1 = texture2D(u_tex1, uv1_refr);
 
