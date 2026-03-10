@@ -19,14 +19,14 @@ function applyFontStagger(el) {
       gsap.killTweensOf(span);
       gsap.to(span, {
         opacity: 0,
-        y: -6,
-        duration: 0.2,
-        delay: i * 0.03,
+        y: -12,
+        duration: 0.25,
+        delay: i * 0.04,
         ease: "power2.in",
         onComplete() {
           toPost ? span.classList.add("post-font") : span.classList.remove("post-font");
           gsap.fromTo(span,
-            { opacity: 0, y: 6 },
+            { opacity: 0, y: 12 },
             { opacity: 1, y: 0, duration: 0.2, ease: "power4.out" }
           );
         }
@@ -60,7 +60,7 @@ function applyFontStagger(el) {
   });
 
   // Set active/notactive on top nav links (excluding pro/layout nav)
-  document.querySelectorAll('.main-nav .nav-link').forEach(link => {
+  document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)').forEach(link => {
     const href = (link.getAttribute('href') || '').split('/').pop();
     if (href === path) {
       link.classList.add('active');
@@ -72,7 +72,7 @@ function applyFontStagger(el) {
   });
 
   // Set active/notactive on logo
-  document.querySelectorAll('.logotext:not(.project)').forEach(logo => {
+  document.querySelectorAll('.logo-link').forEach(logo => {
     const href = (logo.getAttribute('href') || '').split('/').pop() || 'index.html';
     if (href === path) {
       logo.classList.add('active');
@@ -134,8 +134,8 @@ function applyFontStagger(el) {
 
   // Apply font stagger + cross-hover to top nav links and logo (all pages)
   const topEls = [
-    ...document.querySelectorAll('.main-nav .nav-link'),
-    ...document.querySelectorAll('.logotext:not(.project)'),
+    ...document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)'),
+    ...document.querySelectorAll('.logo-link'),
   ].filter(Boolean);
 
   topEls.forEach(el => {
@@ -145,5 +145,8 @@ function applyFontStagger(el) {
       el.querySelectorAll('.layout-nav-char').forEach(span => span.classList.add('post-font'));
     }
   });
+
+  // Dropdown items get the same font stagger (no active state management)
+  document.querySelectorAll('.nav-dropdown-item').forEach(el => applyFontStagger(el));
 
 })();

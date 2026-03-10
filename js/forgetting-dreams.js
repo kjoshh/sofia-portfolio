@@ -140,9 +140,9 @@ function switchLayoutHandler(newLayout) {
   }
 }
 
-document.querySelector(".logotext.project").addEventListener("click", (e) => {
+document.querySelector(".nav-link.project").addEventListener("click", (e) => {
   e.preventDefault();
-  updateProNavActive(document.querySelector(".logotext.project"));
+  updateProNavActive(document.querySelector(".nav-link.project"));
   switchLayout("layout-0-gall3ry");
   proNav.classList.add("transparent");
 });
@@ -175,7 +175,7 @@ window.addEventListener("mousemove", (e) => {
 /* ── Font stagger + active/notactive + cross-hover on pro-nav (mirrors main nav) ── */
 const proNavEls = [
   ...document.querySelectorAll(".pro-nav .nav-link"),
-  document.querySelector(".logotext.project"),
+  document.querySelector(".nav-link.project"),
 ].filter(Boolean);
 
 proNavEls.forEach(el => {
@@ -209,7 +209,7 @@ function clearProNavActive() {
 
 // layout-0 is active on load — set post-font instantly, no animation
 (function () {
-  const logoEl = document.querySelector(".logotext.project");
+  const logoEl = document.querySelector(".nav-link.project");
   proNavEls.forEach(el => {
     el._isCurrentPage = el === logoEl;
     if (el === logoEl) {
