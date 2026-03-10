@@ -465,10 +465,11 @@
   overflow: hidden;
   vertical-align: bottom;
   /* Add explicit height so the overflow actually clips */
-  height: 1.15em;
+  /* height: 1.15em; */
 }
 
-.char-top, .char-bottom {
+.char-top,
+.char-bottom {
   display: inline-block;
   line-height: 1.15;
 }
@@ -479,11 +480,11 @@
   font-size: 1.19em;
   opacity: 1 !important;
   position: absolute;
-  top: 100%;
+  top: calc(100% - 0.25em);
+  /* Offset upwards natively instead of using transform */
   left: 0;
   width: 100%;
   text-align: center;
-  padding-top: 0.05em; /* Minor adjustment for Post font baseline */
 }
 
 

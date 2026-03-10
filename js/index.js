@@ -41,22 +41,22 @@ const noiseLayers = [
 // ==========================================
 const FLUID_CONFIG = {
   // Animation duration in seconds (How long the wipe takes)
-  duration: 1.4, 
-  
+  duration: 1,
+
   // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
-  ease: 'power2.inOut', 
-  
+  ease: 'none',
+
   // Speed of the organic noise movement while hovering
-  noiseSpeed: 0.35, 
-  
+  noiseSpeed: 0.25,
+
   // Scale of the noise (Higher = smaller ripples; Lower = larger waves)
-  noiseScale: 4.0, 
-  
+  noiseScale: 3.75,
+
   // How much the noise distorts the straight edge (Higher = messier edge)
-  noiseAmount: 0.8, 
-  
+  noiseAmount: 0.6,
+
   // How soft/harsh the masked wipe edge is (Lower = harsher line; Higher = softer gradient)
-  edgeSoftness: 0.05 
+  edgeSoftness: 0.02
 };
 
 // WebGL shaders for fluid ink spilled-over effect
@@ -124,7 +124,7 @@ const fragmentShader = `
     float wipe = 1.0 - uv.y; 
 
     // Add a slight curvature so the center flows slightly ahead (optional but organic)
-    float curve = sin(uv.x * 3.1415) * 0.2; 
+    float curve = sin(uv.x * 3.1415) * 0.1; 
     
     // Combine shape and noise. The noise breaks up the edge
     float spread = wipe - curve + (noiseComb - 0.5) * u_noiseAmount;
@@ -199,7 +199,7 @@ let animationFrameId = null;
 function render() {
   uniforms.u_time.value += 0.01;
   renderer.render(scene, camera);
-  
+
   if (isAnimating) {
     animationFrameId = requestAnimationFrame(render);
   }
@@ -234,16 +234,16 @@ function slideBg(src) {
 
   gsap.killTweensOf(uniforms.u_progress);
   uniforms.u_progress.value = 0;
-  
+
   // Start render loop
   if (!isAnimating) {
     isAnimating = true;
     render();
   }
-  
-  gsap.to(uniforms.u_progress, { 
-    value: 1, 
-    duration: FLUID_CONFIG.duration, 
+
+  gsap.to(uniforms.u_progress, {
+    value: 1,
+    duration: FLUID_CONFIG.duration,
     ease: FLUID_CONFIG.ease,
     onComplete: () => {
       // Pause render loop once the wipe completes
@@ -295,12 +295,12 @@ if (logoEl) {
   function swapLogoChars(newText) {
     const wrappers = logoEl.querySelectorAll('.char-wrapper');
     const chars = [...newText].map(ch => ch === ' ' ? '\u00A0' : ch);
-    
+
     wrappers.forEach((wrapper, i) => {
       const topSpan = wrapper.querySelector('.char-top');
       const bottomSpan = wrapper.querySelector('.char-bottom');
       const isHover = newText === LOGO_SYBIL;
-      
+
       if (isHover) {
         // Going to Sybil - update bottom text before sliding up
         bottomSpan.textContent = chars[i] ?? '';
@@ -308,11 +308,11 @@ if (logoEl) {
         // Returning to Sofia - original text was already in topSpan.
         // The slide down will reveal it.
       }
-      
+
       gsap.killTweensOf([topSpan, bottomSpan]);
-      
+
       const yVal = isHover ? -100 : 0;
-      
+
       gsap.to([topSpan, bottomSpan], {
         yPercent: yVal,
         duration: 0.4,
