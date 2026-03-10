@@ -86,21 +86,27 @@ const fragmentShader = `
     vec2 uv1 = getCoverUV(uv, u_resolution, u_aspect1);
     vec4 c1 = texture2D(u_tex1, uv1);
 
-    // Turbulent noise to distort the mask edge
-    float n = turbulence(uv * 6.0 + u_time * 0.4);
+    // Turbulent noise to distort the mask edge - make it rougher
+    float n1 = turbulence(uv * 4.0 + u_time * 0.3);
+    float n2 = turbulence(uv * 8.0 - u_time * 0.4);
+    float noiseComb = (n1 * 0.6 + n2 * 0.4);
     
-    // Distance from the center (ink spilling outwards)
-    float dist = distance(uv, vec2(0.5, 0.5)) * 1.5;
+    // Base shape is a bottom-to-top wipe: distance from bottom edge
+    // Inverse uv.y so 0 is top and 1 is bottom
+    float wipe = 1.0 - uv.y; 
+
+    // Add a slight curvature so the center flows slightly ahead (optional but organic)
+    float curve = sin(uv.x * 3.1415) * 0.2; 
     
-    // Add noise for an organic fluid edge
-    float spread = dist + (n - 0.5) * 1.4;
+    // Combine shape and noise. The noise breaks up the edge
+    float spread = wipe - curve + (noiseComb - 0.5) * 0.8;
 
     // Expand u_progress beyond the 0..1 bounds to fully cover the noisy range
-    float p = u_progress * 3.5 - 0.5;
+    float p = u_progress * 2.5 - 0.5;
     
-    // Mask logic: when p is deeply negative, smoothstep returns 1 -> c0 visible.
-    // When p is highly positive, smoothstep returns 0 -> c1 visible.
-    float mask = smoothstep(p - 0.5, p + 0.5, spread);
+    // Mask logic: harsher edge by narrowing the smoothstep range
+    // When p is highly positive, mask -> 0 (c1 visible).
+    float mask = smoothstep(p - 0.05, p + 0.05, spread);
 
     gl_FragColor = mix(c1, c0, mask);
   }
