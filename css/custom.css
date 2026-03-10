@@ -704,26 +704,25 @@ body.about-page {
   /* em base — scale via .index-nav override */
 
   z-index: 999990;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  pointer-events: auto;
-  background-color: #29282385;
   padding: 12px 32px;
-  border-radius: 40px;
   display: flex;
-
-  /* Subtle feathered edges for organic blend */
-  -webkit-mask-image: linear-gradient(to right, transparent, black 10px, black calc(100% - 10px), transparent),
-                      linear-gradient(to bottom, transparent, black 4px, black calc(100% - 4px), transparent);
-  mask-image: linear-gradient(to right, transparent, black 10px, black calc(100% - 10px), transparent),
-              linear-gradient(to bottom, transparent, black 4px, black calc(100% - 4px), transparent);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-
   position: absolute;
   top: 1.31em;
   left: 50%;
   transform: translate(-50%);
+}
+
+.nav-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: #29282385;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 40px;
+  /* Subtle organic edge using shadow (follows border-radius) */
+  box-shadow: 0 0 10px 2px #29282385;
+  pointer-events: none;
 }
 
 .pro-nav {

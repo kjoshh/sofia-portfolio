@@ -161,8 +161,11 @@ const fragmentShader = `
     float mask = smoothstep(p - u_edgeSoftness, p + u_edgeSoftness, spread);
 
     // 2. Refraction: warp the texture inside the reveal
-    // We link the refraction strength to progress so it grows from 0, avoiding a "pop"
-    float refrStrength = u_refraction * u_progress;
+    // We link the refraction strength to a sine wave of progress, 
+    // so it peaks in the middle and fades to 0 at the end!
+    // This perfectly prevents the image from freezing in a distorted state
+    // and jumping when the next hover starts.
+    float refrStrength = u_refraction * sin(u_progress * 3.14159265);
     vec2 refractOff = vec2((noiseComb - 0.5) * refrStrength * (1.0 - mask));
     vec2 uv1_refr = getCoverUV(uv + refractOff, u_resolution, u_aspect1);
     c1 = texture2D(u_tex1, uv1_refr);
@@ -211,11 +214,11 @@ Object.entries(NAV_BG).forEach(([key, src]) => {
         updateUniformAspects(src, 1);
       }
       
-      // If we just loaded the very first image, force a render
-      if (bgCurrentSrc === src && !bgNextSrc) {
-        uniforms.u_tex1.value = tex;
-        updateUniformAspects(src, 1);
-        renderer.render(scene, camera);
+      // If we just loaded the current background image, render it so the screen isn't black
+      if (bgCurrentSrc === src) {
+        if (!isAnimating && typeof renderer !== 'undefined') {
+          renderer.render(scene, camera);
+        }
       }
     }
   });
@@ -455,7 +458,7 @@ if (dropdownWrap && dropdown) {
 // ── Fluid Nav Bar Wobble ──
 (function () {
   const indexNav = document.querySelector('.index-nav');
-  if (!indexNav) return;
+  const navBg = indexNav.querySelector('.nav-bg') || indexNav;
 
   let curTime = 0;
   function cfract(x) { return x - Math.floor(x); }
@@ -473,11 +476,11 @@ if (dropdownWrap && dropdown) {
     curTime += 0.015; // Animation speed
     const s = curTime * 1.5;
 
-    // The base border-radius is ~20px. 
-    // We add noise between -8px and +8px to each corner to organically squash and stretch it.
-    const r = (i) => Math.round(20 + (cnoise(s + i * 5.1, i * 4.2) - 0.5) * 16);
+    // The base border-radius is ~40px (updated from 20px). 
+    // We add noise to each corner to organically squash and stretch it.
+    const r = (i) => Math.round(40 + (cnoise(s + i * 5.1, i * 4.2) - 0.5) * 16);
 
-    indexNav.style.borderRadius = `${r(0)}px ${r(1)}px ${r(2)}px ${r(3)}px / ${r(4)}px ${r(5)}px ${r(6)}px ${r(7)}px`;
+    navBg.style.borderRadius = `${r(0)}px ${r(1)}px ${r(2)}px ${r(3)}px / ${r(4)}px ${r(5)}px ${r(6)}px ${r(7)}px`;
     requestAnimationFrame(loop);
   })();
 })();
