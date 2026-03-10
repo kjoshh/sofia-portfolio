@@ -196,13 +196,6 @@ function slideBg(src) {
   gsap.killTweensOf(uniforms.u_progress);
   uniforms.u_progress.value = 0;
   gsap.to(uniforms.u_progress, { value: 1, duration: 1.4, ease: 'power2.inOut' });
-
-  // Pulse noise/grain overlays during fluid spill
-  noiseLayers.forEach(({ el, peak, rest }) => {
-    gsap.killTweensOf(el);
-    gsap.to(el, { opacity: peak, duration: 0.6, ease: 'power4.in' });
-    gsap.to(el, { opacity: rest, duration: 0.6, ease: 'power4.out', delay: 0.6 });
-  });
 }
 
 const navHoverEls = [
@@ -242,16 +235,31 @@ if (logoEl) {
   const LOGO_SYBIL = 'Sybil Sometimes';
 
   function swapLogoChars(newText) {
-    const spans = logoEl.querySelectorAll('.layout-nav-char');
+    const wrappers = logoEl.querySelectorAll('.char-wrapper');
     const chars = [...newText].map(ch => ch === ' ' ? '\u00A0' : ch);
-    spans.forEach((span, i) => {
-      gsap.killTweensOf(span);
-      gsap.to(span, {
-        opacity: 0, y: -6, duration: 0.2, delay: i * 0.03, ease: 'power2.in',
-        onComplete() {
-          span.textContent = chars[i] ?? '';
-          gsap.fromTo(span, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.2, ease: 'power4.out' });
-        }
+    
+    wrappers.forEach((wrapper, i) => {
+      const topSpan = wrapper.querySelector('.char-top');
+      const bottomSpan = wrapper.querySelector('.char-bottom');
+      const isHover = newText === LOGO_SYBIL;
+      
+      if (isHover) {
+        // Going to Sybil - update bottom text before sliding up
+        bottomSpan.textContent = chars[i] ?? '';
+      } else {
+        // Returning to Sofia - original text was already in topSpan.
+        // The slide down will reveal it.
+      }
+      
+      gsap.killTweensOf([topSpan, bottomSpan]);
+      
+      const yVal = isHover ? -100 : 0;
+      
+      gsap.to([topSpan, bottomSpan], {
+        yPercent: yVal,
+        duration: 0.4,
+        delay: i * 0.03,
+        ease: 'power3.inOut'
       });
     });
   }

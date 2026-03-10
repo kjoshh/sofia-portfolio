@@ -1,38 +1,60 @@
-/* ── Font stagger (global — also used by forgetting-dreams.js for layout nav) ── */
 function applyFontStagger(el) {
   const original = el.textContent.trim();
   el.style.display = "inline-block";
-  el.style.width = el.offsetWidth + "px";
+  // We no longer lock the width, as "Sybil Sometimes" is longer than "Sofia Cartuccia"
+  // el.style.width = el.offsetWidth + "px";
   el.style.textAlign = "center";
   el.style.whiteSpace = "nowrap";
   el.style.overflow = "visible";
   el.textContent = "";
-  const chars = original.split("").map(ch => {
-    const span = document.createElement("span");
-    span.className = "layout-nav-char";
-    span.textContent = ch === " " ? "\u00A0" : ch;
-    el.appendChild(span);
-    return span;
+  
+  const charWrappers = original.split("").map((ch, i) => {
+    const wrapper = document.createElement("span");
+    wrapper.className = "char-wrapper";
+    // Inline styles that will be moved to CSS, but added here for safety
+    wrapper.style.display = "inline-flex";
+    wrapper.style.flexDirection = "column";
+    wrapper.style.position = "relative";
+    wrapper.style.overflow = "hidden";
+    wrapper.style.verticalAlign = "bottom";
+
+    const topSpan = document.createElement("span");
+    topSpan.className = "char-top";
+    topSpan.textContent = ch === " " ? "\u00A0" : ch;
+    
+    const bottomSpan = document.createElement("span");
+    bottomSpan.className = "char-bottom post-font";
+    bottomSpan.style.position = "absolute";
+    bottomSpan.style.top = "100%";
+    bottomSpan.style.left = "0";
+    bottomSpan.style.width = "100%";
+    bottomSpan.style.textAlign = "center";
+    bottomSpan.textContent = ch === " " ? "\u00A0" : ch;
+
+    wrapper.appendChild(topSpan);
+    wrapper.appendChild(bottomSpan);
+    el.appendChild(wrapper);
+    return wrapper;
   });
-  function animateEl(toPost) {
-    chars.forEach((span, i) => {
-      gsap.killTweensOf(span);
-      gsap.to(span, {
-        opacity: 0,
-        y: -12,
-        duration: 0.25,
-        delay: i * 0.04,
-        ease: "power2.in",
-        onComplete() {
-          toPost ? span.classList.add("post-font") : span.classList.remove("post-font");
-          gsap.fromTo(span,
-            { opacity: 0, y: 12 },
-            { opacity: 1, y: 0, duration: 0.2, ease: "power4.out" }
-          );
-        }
+
+  function animateEl(isHover) {
+    charWrappers.forEach((wrapper, i) => {
+      const topSpan = wrapper.querySelector('.char-top');
+      const bottomSpan = wrapper.querySelector('.char-bottom');
+      
+      gsap.killTweensOf([topSpan, bottomSpan]);
+      
+      const yVal = isHover ? -100 : 0;
+      
+      gsap.to([topSpan, bottomSpan], {
+        yPercent: yVal,
+        duration: 0.4,
+        delay: i * 0.03,
+        ease: "power3.inOut"
       });
     });
   }
+
   el._staggerOff = () => animateEl(false);
   el._staggerOn  = () => animateEl(true);
   el.addEventListener("mouseenter", () => { if (!el.classList.contains("active")) animateEl(true); });
