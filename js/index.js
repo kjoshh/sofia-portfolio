@@ -41,7 +41,7 @@ const noiseLayers = [
 // ==========================================
 const FLUID_CONFIG = {
   // Animation duration in seconds (How long the wipe takes)
-  duration: 5,
+  duration: 6,
 
   // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
   ease: 'power2.out',
@@ -56,7 +56,7 @@ const FLUID_CONFIG = {
   noiseAmount: 0.35,
 
   // How soft/harsh the masked wipe edge is (Lower = harsher line; Higher = softer gradient)
-  edgeSoftness: 0.15,
+  edgeSoftness: 0.015,
 
   // --- Realism Settings ---
   // Strength of uneven growth tendrils (0 to 1)
@@ -73,10 +73,10 @@ const FLUID_CONFIG = {
   developerMode: true,
 
   // How wide the negative "band" is behind the reveal front (higher = slower transition)
-  developSpeed: 1.2,
+  developSpeed: 0.5,
 
   // How strong the initial negative inversion is (0 to 1)
-  negativeStrength: 1
+  negativeStrength: 0.8
 };
 
 // WebGL shaders for fluid ink spilled-over effect
@@ -199,7 +199,11 @@ const fragmentShader = `
     // We add a tiny epsilon to prevent NaN division at the exact center of the mouse
     vec2 outwardNormal = normalize(correctedUV - correctedMouse + vec2(0.0001, 0.0001));
     float softWobble = noise(correctedUV * 3.0 + u_time * 0.5) - 0.5;
-    vec2 refractOff = (outwardNormal * 0.5 + softWobble) * u_refraction * edgeRing;
+    
+    // We scale down u_refraction * 0.15 internally. 
+    // Otherwise a value of 0.25 tries to pull pixels from 25% away, 
+    // causing extreme UV tearing and "white streaks" at the image border.
+    vec2 refractOff = (outwardNormal * 0.5 + softWobble) * (u_refraction * 0.15) * edgeRing;
     
     vec2 uv1_refr = getCoverUV(uv + refractOff, u_resolution, u_aspect1);
     c1 = texture2D(u_tex1, uv1_refr);
