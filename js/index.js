@@ -193,12 +193,20 @@ if (defaultBg) {
   if (defaultImg) defaultImg.style.display = 'none';
 }
 
-function animate() {
-  requestAnimationFrame(animate);
+let isAnimating = false;
+let animationFrameId = null;
+
+function render() {
   uniforms.u_time.value += 0.01;
   renderer.render(scene, camera);
+  
+  if (isAnimating) {
+    animationFrameId = requestAnimationFrame(render);
+  }
 }
-animate();
+
+// Render one initial frame to establish the default image
+renderer.render(scene, camera);
 
 window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -226,10 +234,25 @@ function slideBg(src) {
 
   gsap.killTweensOf(uniforms.u_progress);
   uniforms.u_progress.value = 0;
+  
+  // Start render loop
+  if (!isAnimating) {
+    isAnimating = true;
+    render();
+  }
+  
   gsap.to(uniforms.u_progress, { 
     value: 1, 
     duration: FLUID_CONFIG.duration, 
-    ease: FLUID_CONFIG.ease 
+    ease: FLUID_CONFIG.ease,
+    onComplete: () => {
+      // Pause render loop once the wipe completes
+      isAnimating = false;
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    }
   });
 }
 

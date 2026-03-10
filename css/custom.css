@@ -483,7 +483,7 @@
   left: 0;
   width: 100%;
   text-align: center;
-  padding-top: 0.2em; /* Push it down closer to the baseline */
+  padding-top: 0.05em; /* Minor adjustment for Post font baseline */
 }
 
 
