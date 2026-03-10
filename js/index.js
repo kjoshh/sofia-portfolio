@@ -132,26 +132,39 @@ const fragmentShader = `
 
   void main() {
     vec2 uv = v_uv;
-    vec2 uv0 = getCoverUV(uv, u_resolution, u_aspect0);
+    
+    // Correct positions for screen aspect ratio
+    float screenR = u_resolution.x / u_resolution.y;
+    vec2 correctedUV = uv;
+    correctedUV.x *= screenR;
+    vec2 correctedMouseTrailing = u_mouseTrailing;
+    correctedMouseTrailing.x *= screenR;
+
+    // === Mouse Trail Warp ===
+    // Compute offset BEFORE sampling textures so it can be applied to all UVs.
+    // The offset is strictly 0 outside the radius — no blending seam possible.
+    float trailDist = distance(correctedUV, correctedMouseTrailing);
+    float trailFalloff = 1.0 - clamp(trailDist / u_trailRadius, 0.0, 1.0);
+    float trailStrength = trailFalloff * trailFalloff * trailFalloff; // cubic, very soft
+    float trailWobble = (turbulence(correctedUV * 4.0 - u_time * 0.5) - 0.5);
+    vec2 trailNorm = normalize(correctedUV - correctedMouseTrailing + vec2(0.0001, 0.0001));
+    vec2 trailOffset = trailNorm * trailWobble * u_trailIntensity * trailStrength;
+
+    // Sample textures with the trail warp baked in
+    vec2 uv0 = getCoverUV(uv + trailOffset, u_resolution, u_aspect0);
     vec4 c0 = texture2D(u_tex0, uv0);
 
-    vec2 uv1 = getCoverUV(uv, u_resolution, u_aspect1);
+    vec2 uv1 = getCoverUV(uv + trailOffset, u_resolution, u_aspect1);
     vec4 c1 = texture2D(u_tex1, uv1);
 
     // Turbulent noise to distort the mask edge
     float n1 = turbulence(uv * u_noiseScale + u_time * u_noiseSpeed);
     float n2 = turbulence(uv * (u_noiseScale * 2.0) - u_time * (u_noiseSpeed * 1.3));
     float noiseComb = (n1 * 0.6 + n2 * 0.4);
-    
-    // Correct mouse positions for screen aspect ratio to get circular expansion
-    vec2 correctedUV = uv;
+
+    // Re-use already-computed correctedUV; correct u_mouse too
     vec2 correctedMouse = u_mouse;
-    vec2 correctedMouseTrailing = u_mouseTrailing;
-    
-    float screenR = u_resolution.x / u_resolution.y;
-    correctedUV.x *= screenR;
     correctedMouse.x *= screenR;
-    correctedMouseTrailing.x *= screenR;
 
     // Distance from the locked hover point
     float dist = distance(correctedUV, correctedMouse);
@@ -205,31 +218,6 @@ const fragmentShader = `
     c1.rgb += lip * u_lipBrightness;
 
     vec4 finalColor = mix(c1, c0, mask);
-    
-    // 5. Continuous Background Mouse Trail (Warping final output)
-    float trailDist = distance(correctedUV, correctedMouseTrailing);
-    
-    // Use a cubic falloff so the edge dissolves invisibly (no visible circle)
-    float trailFalloff = 1.0 - clamp(trailDist / u_trailRadius, 0.0, 1.0);
-    float trailMask = trailFalloff * trailFalloff * trailFalloff; // Cubic = extremely soft edge
-    
-    if (trailMask > 0.001) {
-       // Deep, low-frequence turbulence for liquid swell
-       float trailWobble = turbulence(correctedUV * 4.0 - u_time * 0.5) - 0.5;
-       vec2 trailNormal = normalize(correctedUV - correctedMouseTrailing + vec2(0.0001, 0.0001));
-       
-       // Calculate independent UV shifts for both c0 and c1 so the trail works on whatever image is visible
-       vec2 trailOffset = trailNormal * trailWobble * u_trailIntensity * trailMask;
-       
-       vec2 uv0_warp = getCoverUV(uv + trailOffset, u_resolution, u_aspect0);
-       vec2 uv1_warp = getCoverUV(uv + trailOffset, u_resolution, u_aspect1);
-       
-       vec4 c0_warp = texture2D(u_tex0, uv0_warp);
-       vec4 c1_warp = texture2D(u_tex1, uv1_warp);
-       
-       // Same mixing, just using the warped textures
-       finalColor = mix(c1_warp, c0_warp, mask);
-    }
 
     gl_FragColor = finalColor;
   }
@@ -478,51 +466,6 @@ if (logoEl) {
   logoEl.addEventListener('mouseenter', () => swapLogoChars(LOGO_SYBIL));
 }
 
-
-// ── Project Dropdown ──
-const dropdownWrap = document.querySelector('.nav-dropdown-wrap');
-const dropdown = document.getElementById('projects-dropdown');
-const dropdownItems = dropdown ? [...dropdown.querySelectorAll('.nav-dropdown-item')] : [];
-
-if (dropdownWrap && dropdown) {
-  // Align dropdown items with the Projects link
-  function alignDropdown() {
-    const projectsRect = dropdownWrap.getBoundingClientRect();
-    const wrapinRect = dropdownWrap.closest('.wrapin').getBoundingClientRect();
-    dropdown.style.paddingLeft = (projectsRect.left - wrapinRect.left) + 'px';
-  }
-  alignDropdown();
-  window.addEventListener('resize', alignDropdown);
-
-  const fullHeight = () => {
-    const currentMaxHeight = dropdown.style.maxHeight;
-    dropdown.style.maxHeight = 'none';
-    const h = dropdown.scrollHeight;
-    dropdown.style.maxHeight = currentMaxHeight;
-    return h;
-  };
-
-  dropdownWrap.addEventListener('mouseenter', () => {
-    gsap.to(dropdown, { maxHeight: fullHeight(), duration: 0.25, ease: 'power2.out' });
-    gsap.to(dropdownItems, { opacity: 1, duration: 0.2, stagger: 0.06, delay: 0.05, ease: 'power2.out' });
-  });
-
-  const closeDropdown = () => {
-    gsap.to(dropdown, { maxHeight: 0, duration: 0.2, ease: 'power2.in' });
-    gsap.to(dropdownItems, { opacity: 0, duration: 0.15, ease: 'power2.in' });
-  };
-
-  // Close when mouse leaves the whole nav pill
-  const mainNavWrapper = document.querySelector('.main-nav');
-  if (mainNavWrapper) mainNavWrapper.addEventListener('mouseleave', closeDropdown);
-
-  // Close when hovering other main links
-  document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)').forEach(link => {
-    if (!link.closest('.nav-dropdown-wrap')) {
-      link.addEventListener('mouseenter', closeDropdown);
-    }
-  });
-}
 
 // ── Fluid Nav Bar Wobble ──
 (function () {

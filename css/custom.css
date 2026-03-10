@@ -704,15 +704,17 @@ body.about-page {
   /* em base — scale via .index-nav override */
 
   z-index: 999990;
+  pointer-events: auto;
   padding: 12px 32px;
   display: flex;
-  position: absolute;
+  position: fixed;
   top: 1.31em;
   left: 50%;
   transform: translate(-50%);
 }
 
 .nav-bg {
+  display: none;
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -720,9 +722,12 @@ body.about-page {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 40px;
-  /* Subtle organic edge using shadow (follows border-radius) */
   box-shadow: 0 0 10px 2px #29282385;
   pointer-events: none;
+}
+
+.index-nav .nav-bg {
+  display: block;
 }
 
 .pro-nav {

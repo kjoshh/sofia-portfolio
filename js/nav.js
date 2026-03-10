@@ -172,4 +172,46 @@ function applyFontStagger(el) {
   // Dropdown items get the same font stagger (no active state management)
   document.querySelectorAll('.nav-dropdown-item').forEach(el => applyFontStagger(el));
 
+  // ── Project Dropdown (runs on all pages) ──
+  const dropdownWrap = document.querySelector('.nav-dropdown-wrap');
+  const dropdown = document.getElementById('projects-dropdown');
+  const dropdownItems = dropdown ? [...dropdown.querySelectorAll('.nav-dropdown-item')] : [];
+
+  if (dropdownWrap && dropdown) {
+    function alignDropdown() {
+      const projectsRect = dropdownWrap.getBoundingClientRect();
+      const wrapinRect = dropdownWrap.closest('.wrapin').getBoundingClientRect();
+      dropdown.style.paddingLeft = (projectsRect.left - wrapinRect.left) + 'px';
+    }
+    alignDropdown();
+    window.addEventListener('resize', alignDropdown);
+
+    const fullHeight = () => {
+      const currentMaxHeight = dropdown.style.maxHeight;
+      dropdown.style.maxHeight = 'none';
+      const h = dropdown.scrollHeight;
+      dropdown.style.maxHeight = currentMaxHeight;
+      return h;
+    };
+
+    dropdownWrap.addEventListener('mouseenter', () => {
+      gsap.to(dropdown, { maxHeight: fullHeight(), duration: 0.25, ease: 'power2.out' });
+      gsap.to(dropdownItems, { opacity: 1, duration: 0.2, stagger: 0.06, delay: 0.05, ease: 'power2.out' });
+    });
+
+    const closeDropdown = () => {
+      gsap.to(dropdown, { maxHeight: 0, duration: 0.2, ease: 'power2.in' });
+      gsap.to(dropdownItems, { opacity: 0, duration: 0.15, ease: 'power2.in' });
+    };
+
+    const mainNavWrapper = document.querySelector('.main-nav');
+    if (mainNavWrapper) mainNavWrapper.addEventListener('mouseleave', closeDropdown);
+
+    document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)').forEach(link => {
+      if (!link.closest('.nav-dropdown-wrap')) {
+        link.addEventListener('mouseenter', closeDropdown);
+      }
+    });
+  }
+
 })();
