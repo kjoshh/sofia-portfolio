@@ -66,7 +66,17 @@ const FLUID_CONFIG = {
   refraction: 0.25, // Increased for a stronger, more concentrated effect
 
   // Brightness of the surface tension highlight at the edge (0 to 1)
-  lipBrightness: 0.1
+  lipBrightness: 0.1,
+
+  // --- Darkroom Sub-Effects ---
+  // If true, the liquid acts like a photo developer (negative -> positive)
+  developerMode: true,
+  
+  // How wide the negative "band" is behind the reveal front
+  developSpeed: 0.15,
+  
+  // How strong the initial negative inversion is (0 to 1)
+  negativeStrength: 0.8
 };
 
 // WebGL shaders for fluid ink spilled-over effect
@@ -94,6 +104,9 @@ const fragmentShader = `
   uniform float u_viscosity;
   uniform float u_refraction;
   uniform float u_lipBrightness;
+  uniform bool u_developerMode;
+  uniform float u_developSpeed;
+  uniform float u_negativeStrength;
 
   varying vec2 v_uv;
 
@@ -191,6 +204,25 @@ const fragmentShader = `
     float lip = smoothstep(p + 0.01, p, spread) * smoothstep(p - 0.05, p - 0.02, spread);
     c1.rgb += lip * u_lipBrightness;
 
+    // 4. Darkroom Developer (Negative to Positive)
+    // The fluid acts as a chemical developer. The active edge is Negative, trailing is Positive.
+    if (u_developerMode) {
+      // timeRevealed is 0 at the bleeding edge of the fluid, and goes towards 1 as the liquid advances further
+      float timeRevealed = smoothstep(p, p - u_developSpeed, spread);
+      
+      // Calculate a slightly cyan-tinted "analog" negative of the image
+      vec3 negColor = vec3(1.0) - c1.rgb;
+      // Add slight cyan/blue tint to shadow areas of the negative for that darkroom paper feel
+      negColor.b += 0.05 * c1.r;
+      negColor.g += 0.02 * c1.r;
+      
+      // The strength of the negative is highest at the front (timeRevealed=0) and fades out (timeRevealed=1)
+      float negMix = (1.0 - timeRevealed) * u_negativeStrength;
+      
+      // We only apply the developer effect inside the liquid mask
+      c1.rgb = mix(c1.rgb, negColor, negMix * mask);
+    }
+
     gl_FragColor = mix(c1, c0, mask);
   }
 `;
@@ -259,7 +291,10 @@ uniforms = {
   u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
   u_viscosity: { value: FLUID_CONFIG.viscosity },
   u_refraction: { value: FLUID_CONFIG.refraction },
-  u_lipBrightness: { value: FLUID_CONFIG.lipBrightness }
+  u_lipBrightness: { value: FLUID_CONFIG.lipBrightness },
+  u_developerMode: { value: FLUID_CONFIG.developerMode },
+  u_developSpeed: { value: FLUID_CONFIG.developSpeed },
+  u_negativeStrength: { value: FLUID_CONFIG.negativeStrength }
 };
 
 const mesh = new THREE.Mesh(
