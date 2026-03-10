@@ -284,25 +284,18 @@ function setNavActive(activeEl) {
   });
 }
 
-// Track mouse position globally for the shader
-window.addEventListener('mousemove', (e) => {
-  if (uniforms) {
-    uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
-    uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
-  }
-});
-
+// Radial fluid expansion is triggered only on entry and locks in place.
 navHoverEls.forEach(el => {
   const href = (el.getAttribute('href') || '').split('/').pop() || 'index.html';
   const src = NAV_BG[href];
   if (!src) return;
   el.addEventListener('mouseenter', (e) => {
-    // Force mouse position update right as hover starts
+    // Lock mouse position at the exact moment hover starts
     if (uniforms) {
       uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
       uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
     }
-
+    
     slideBg(src);
     setNavActive(el);
   });
