@@ -159,9 +159,9 @@ const fragmentShader = `
 
     // 2. Refraction: warp the texture inside the reveal
     // We use the noise field to offset the UVs of the incoming texture
-    vec2 refractOff = (noiseComb - 0.5) * u_refraction * (1.0 - mask);
+    vec2 refractOff = vec2((noiseComb - 0.5) * u_refraction * (1.0 - mask));
     vec2 uv1_refr = getCoverUV(uv + refractOff, u_resolution, u_aspect1);
-    vec4 c1 = texture2D(u_tex1, uv1_refr);
+    c1 = texture2D(u_tex1, uv1_refr);
 
     // 3. Surface Tension "Lip": Highlight the leading edge
     // A narrow ring right at the reveal front
@@ -184,6 +184,8 @@ Object.entries(NAV_BG).forEach(([key, src]) => {
     tex.magFilter = THREE.LinearFilter;
     // Nudge aspect ratio calculation when texture finishes loading
     if (bgCurrentSrc === src && uniforms) {
+      uniforms.u_tex0.value = tex;
+      uniforms.u_tex1.value = tex;
       uniforms.u_aspect0.value.set(tex.image.width, tex.image.height);
       uniforms.u_aspect1.value.set(tex.image.width, tex.image.height);
       // Render once to show the loaded image

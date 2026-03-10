@@ -713,12 +713,10 @@ body.about-page {
   justify-content: space-between;
   align-items: flex-start;
   /* padding: 0.818em 0.982em; */
-  padding: 10px 22px;
-  /* Increased from ~11px 14px */
-  gap: 20px;
-  /* If using gap on the container directly, or update .nav-menu */
-
-  display: flex;
+  padding: 12px 32px;
+  border-radius: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   position: absolute;
   top: 1.31em;
   left: 50%;
@@ -758,13 +756,16 @@ body.about-page {
 }
 
 .nav-menu {
-  /* grid-column-gap: 0.741em; */
-  grid-column-gap: 1.5em;
-  /* Increased from 0.741em */
-
+  grid-column-gap: 2.5em;
   align-items: baseline;
   display: flex;
   z-index: 1;
+}
+
+.logo-link {
+  margin-right: 1.5em;
+  font-weight: 500;
+  color: hsla(50, 23%, 95%, 1) !important;
 }
 
 .nav-link {
