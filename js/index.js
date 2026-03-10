@@ -35,6 +35,30 @@ const noiseLayers = [
   { el: document.querySelector('.nois3-grain'), peak: 0.6, rest: 0.08 },
 ].filter(l => l.el);
 
+// ==========================================
+// FLUID HOVER CONFIGURATION
+// Adjust these values to change the animation
+// ==========================================
+const FLUID_CONFIG = {
+  // Animation duration in seconds (How long the wipe takes)
+  duration: 1.4, 
+  
+  // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
+  ease: 'power2.inOut', 
+  
+  // Speed of the organic noise movement while hovering
+  noiseSpeed: 0.35, 
+  
+  // Scale of the noise (Higher = smaller ripples; Lower = larger waves)
+  noiseScale: 4.0, 
+  
+  // How much the noise distorts the straight edge (Higher = messier edge)
+  noiseAmount: 0.8, 
+  
+  // How soft/harsh the masked wipe edge is (Lower = harsher line; Higher = softer gradient)
+  edgeSoftness: 0.05 
+};
+
 // WebGL shaders for fluid ink spilled-over effect
 const vertexShader = `
   varying vec2 v_uv;
@@ -52,6 +76,10 @@ const fragmentShader = `
   uniform vec2 u_resolution;
   uniform vec2 u_aspect0;
   uniform vec2 u_aspect1;
+  uniform float u_noiseSpeed;
+  uniform float u_noiseScale;
+  uniform float u_noiseAmount;
+  uniform float u_edgeSoftness;
 
   varying vec2 v_uv;
 
@@ -87,8 +115,8 @@ const fragmentShader = `
     vec4 c1 = texture2D(u_tex1, uv1);
 
     // Turbulent noise to distort the mask edge - make it rougher
-    float n1 = turbulence(uv * 4.0 + u_time * 0.3);
-    float n2 = turbulence(uv * 8.0 - u_time * 0.4);
+    float n1 = turbulence(uv * u_noiseScale + u_time * u_noiseSpeed);
+    float n2 = turbulence(uv * (u_noiseScale * 2.0) - u_time * (u_noiseSpeed * 1.3));
     float noiseComb = (n1 * 0.6 + n2 * 0.4);
     
     // Base shape is a bottom-to-top wipe: distance from bottom edge
@@ -99,14 +127,13 @@ const fragmentShader = `
     float curve = sin(uv.x * 3.1415) * 0.2; 
     
     // Combine shape and noise. The noise breaks up the edge
-    float spread = wipe - curve + (noiseComb - 0.5) * 0.8;
+    float spread = wipe - curve + (noiseComb - 0.5) * u_noiseAmount;
 
     // Expand u_progress beyond the 0..1 bounds to fully cover the noisy range
     float p = u_progress * 2.5 - 0.5;
     
-    // Mask logic: harsher edge by narrowing the smoothstep range
-    // When p is highly positive, mask -> 0 (c1 visible).
-    float mask = smoothstep(p - 0.05, p + 0.05, spread);
+    // Mask logic: customizable softness edge
+    float mask = smoothstep(p - u_edgeSoftness, p + u_edgeSoftness, spread);
 
     gl_FragColor = mix(c1, c0, mask);
   }
@@ -141,7 +168,11 @@ uniforms = {
   u_time: { value: 0 },
   u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
   u_aspect0: { value: new THREE.Vector2(1, 1) },
-  u_aspect1: { value: new THREE.Vector2(1, 1) }
+  u_aspect1: { value: new THREE.Vector2(1, 1) },
+  u_noiseSpeed: { value: FLUID_CONFIG.noiseSpeed },
+  u_noiseScale: { value: FLUID_CONFIG.noiseScale },
+  u_noiseAmount: { value: FLUID_CONFIG.noiseAmount },
+  u_edgeSoftness: { value: FLUID_CONFIG.edgeSoftness }
 };
 
 const mesh = new THREE.Mesh(
@@ -195,7 +226,11 @@ function slideBg(src) {
 
   gsap.killTweensOf(uniforms.u_progress);
   uniforms.u_progress.value = 0;
-  gsap.to(uniforms.u_progress, { value: 1, duration: 1.4, ease: 'power2.inOut' });
+  gsap.to(uniforms.u_progress, { 
+    value: 1, 
+    duration: FLUID_CONFIG.duration, 
+    ease: FLUID_CONFIG.ease 
+  });
 }
 
 const navHoverEls = [

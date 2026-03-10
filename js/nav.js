@@ -1,4 +1,6 @@
 function applyFontStagger(el) {
+  if (el.dataset.staggerApplied) return;
+  el.dataset.staggerApplied = "true";
   const original = el.textContent.trim();
   el.style.display = "inline-block";
   // We no longer lock the width, as "Sybil Sometimes" is longer than "Sofia Cartuccia"
@@ -12,8 +14,7 @@ function applyFontStagger(el) {
     const wrapper = document.createElement("span");
     wrapper.className = "char-wrapper";
     // Inline styles that will be moved to CSS, but added here for safety
-    wrapper.style.display = "inline-flex";
-    wrapper.style.flexDirection = "column";
+    wrapper.style.display = "inline-block";
     wrapper.style.position = "relative";
     wrapper.style.overflow = "hidden";
     wrapper.style.verticalAlign = "bottom";

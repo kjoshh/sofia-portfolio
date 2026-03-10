@@ -458,19 +458,32 @@
   -webkit-backdrop-filter: none !important;
 }
 
-/* Layout nav font stagger */
-.layout-nav-char {
+/* Layout nav font slot machine wrappers */
+.char-wrapper {
   display: inline-block;
-
+  position: relative;
+  overflow: hidden;
+  vertical-align: bottom;
+  /* Add explicit height so the overflow actually clips */
+  height: 1.15em;
 }
 
-.layout-nav-char.post-font {
+.char-top, .char-bottom {
+  display: inline-block;
+  line-height: 1.15;
+}
+
+.char-bottom.post-font {
   font-family: Post, serif;
   letter-spacing: 0.03em;
   font-size: 1.19em;
-
-
   opacity: 1 !important;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  padding-top: 0.2em; /* Push it down closer to the baseline */
 }
 
 
