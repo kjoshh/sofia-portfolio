@@ -41,7 +41,7 @@ const noiseLayers = [
 // ==========================================
 const FLUID_CONFIG = {
   // Animation duration in seconds (How long the wipe takes)
-  duration: 6,
+  duration: 5,
 
   // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
   ease: 'power2.out',
@@ -66,17 +66,7 @@ const FLUID_CONFIG = {
   refraction: 0.25, // Increased for a stronger, more concentrated effect
 
   // Brightness of the surface tension highlight at the edge (0 to 1)
-  lipBrightness: 0.001,
-
-  // --- Darkroom Sub-Effects ---
-  // If true, the liquid acts like a photo developer (negative -> positive)
-  developerMode: true,
-
-  // How wide the negative "band" is behind the reveal front (higher = slower transition)
-  developSpeed: 0.5,
-
-  // How strong the initial negative inversion is (0 to 1)
-  negativeStrength: 0.8
+  lipBrightness: 0.1
 };
 
 // WebGL shaders for fluid ink spilled-over effect
@@ -104,9 +94,6 @@ const fragmentShader = `
   uniform float u_viscosity;
   uniform float u_refraction;
   uniform float u_lipBrightness;
-  uniform bool u_developerMode;
-  uniform float u_developSpeed;
-  uniform float u_negativeStrength;
 
   varying vec2 v_uv;
 
@@ -195,16 +182,7 @@ const fragmentShader = `
     float edgeThickness = 0.08;
     float edgeRing = (1.0 - mask) * smoothstep(p - edgeThickness, p, spread);
     
-    // Calculate a smooth outward vector from the mouse, modified by soft noise
-    // We add a tiny epsilon to prevent NaN division at the exact center of the mouse
-    vec2 outwardNormal = normalize(correctedUV - correctedMouse + vec2(0.0001, 0.0001));
-    float softWobble = noise(correctedUV * 3.0 + u_time * 0.5) - 0.5;
-    
-    // We scale down u_refraction * 0.15 internally. 
-    // Otherwise a value of 0.25 tries to pull pixels from 25% away, 
-    // causing extreme UV tearing and "white streaks" at the image border.
-    vec2 refractOff = (outwardNormal * 0.5 + softWobble) * (u_refraction * 0.15) * edgeRing;
-    
+    vec2 refractOff = vec2((noiseComb - 0.5) * u_refraction * edgeRing);
     vec2 uv1_refr = getCoverUV(uv + refractOff, u_resolution, u_aspect1);
     c1 = texture2D(u_tex1, uv1_refr);
 
@@ -212,31 +190,6 @@ const fragmentShader = `
     // A narrow ring right at the reveal front
     float lip = smoothstep(p + 0.01, p, spread) * smoothstep(p - 0.05, p - 0.02, spread);
     c1.rgb += lip * u_lipBrightness;
-
-    // 4. Darkroom Developer (Negative to Positive)
-    // The fluid acts as a chemical developer. The active edge is Negative, trailing is Positive.
-    if (u_developerMode) {
-      // depthInside is 0.0 at the bleeding edge, and grows positive as the liquid goes further past the pixel
-      float depthInside = p - spread;
-      // development goes from 0.0 (undeveloped negative) to 1.0 (fully developed positive)
-      float development = smoothstep(0.0, u_developSpeed, depthInside);
-      
-      // Calculate a slightly cyan-tinted "analog" negative of the image
-      vec3 negColor = vec3(1.0) - c1.rgb;
-      // Add slight cyan/blue tint to shadow areas of the negative for that darkroom paper feel
-      negColor.b += 0.05 * c1.r;
-      negColor.g += 0.02 * c1.r;
-      
-      // The strength of the negative is highest at the front (development=0.0) and fades out (development=1.0)
-      float negMix = (1.0 - development) * u_negativeStrength;
-      
-      // To prevent "white dust", we MUST fade the negative inversion out perfectly at the fluid boundary.
-      // If we don't, the bright inverted colors mix with the soft edge of the background mask, creating white static.
-      negMix *= (1.0 - mask);
-      
-      // Apply the developer effect directly to the fluid texture (c1)
-      c1.rgb = mix(c1.rgb, negColor, negMix);
-    }
 
     gl_FragColor = mix(c1, c0, mask);
   }
@@ -306,10 +259,7 @@ uniforms = {
   u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
   u_viscosity: { value: FLUID_CONFIG.viscosity },
   u_refraction: { value: FLUID_CONFIG.refraction },
-  u_lipBrightness: { value: FLUID_CONFIG.lipBrightness },
-  u_developerMode: { value: FLUID_CONFIG.developerMode },
-  u_developSpeed: { value: FLUID_CONFIG.developSpeed },
-  u_negativeStrength: { value: FLUID_CONFIG.negativeStrength }
+  u_lipBrightness: { value: FLUID_CONFIG.lipBrightness }
 };
 
 const mesh = new THREE.Mesh(
