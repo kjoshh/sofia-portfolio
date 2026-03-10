@@ -44,26 +44,26 @@ const FLUID_CONFIG = {
   duration: 5,
 
   // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
-  ease: 'power3.out',
+  ease: 'power2.out',
 
   // Speed of the organic noise movement while hovering
-  noiseSpeed: 0.25,
+  noiseSpeed: 0.15,
 
   // Scale of the noise (Higher = smaller ripples; Lower = larger waves)
-  noiseScale: 3.5,
+  noiseScale: 2.5,
 
   // How much the noise distorts the straight edge (Higher = messier edge)
-  noiseAmount: 0.5,
+  noiseAmount: 0.35,
 
   // How soft/harsh the masked wipe edge is (Lower = harsher line; Higher = softer gradient)
-  edgeSoftness: 0.02,
+  edgeSoftness: 0.015,
 
   // --- Realism Settings ---
   // Strength of uneven growth tendrils (0 to 1)
-  viscosity: 0.5,
+  viscosity: 0.75,
 
   // Amount of lens distortion/warp purely at the edge of the fluid (0 to 0.1)
-  refraction: 0.15, // Increased for a stronger, more concentrated effect
+  refraction: 0.25, // Increased for a stronger, more concentrated effect
 
   // Brightness of the surface tension highlight at the edge (0 to 1)
   lipBrightness: 0.1
