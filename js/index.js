@@ -41,7 +41,7 @@ const noiseLayers = [
 // ==========================================
 const FLUID_CONFIG = {
   // Animation duration in seconds (How long the wipe takes)
-  duration: 5,
+  duration: 6,
 
   // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
   ease: 'power2.out',
@@ -53,7 +53,7 @@ const FLUID_CONFIG = {
   noiseScale: 2.5,
 
   // How much the noise distorts the straight edge (Higher = messier edge)
-  noiseAmount: 0.35,
+  noiseAmount: 0.25,
 
   // How soft/harsh the masked wipe edge is (Lower = harsher line; Higher = softer gradient)
   edgeSoftness: 0.015,
@@ -66,7 +66,14 @@ const FLUID_CONFIG = {
   refraction: 0.25, // Increased for a stronger, more concentrated effect
 
   // Brightness of the surface tension highlight at the edge (0 to 1)
-  lipBrightness: 0.1
+  lipBrightness: 0.05,
+  
+  // --- Continuous Background Mouse Trail ---
+  // Size of the background mouse distortion
+  trailRadius: 0.15,
+  
+  // How strongly the trailing mouse warps the background photo
+  trailIntensity: 0.05
 };
 
 // WebGL shaders for fluid ink spilled-over effect
@@ -94,6 +101,9 @@ const fragmentShader = `
   uniform float u_viscosity;
   uniform float u_refraction;
   uniform float u_lipBrightness;
+  uniform vec2 u_mouseTrailing;
+  uniform float u_trailRadius;
+  uniform float u_trailIntensity;
 
   varying vec2 v_uv;
 
@@ -133,14 +143,17 @@ const fragmentShader = `
     float n2 = turbulence(uv * (u_noiseScale * 2.0) - u_time * (u_noiseSpeed * 1.3));
     float noiseComb = (n1 * 0.6 + n2 * 0.4);
     
-    // Correct mouse position for screen aspect ratio to get circular expansion
+    // Correct mouse positions for screen aspect ratio to get circular expansion
     vec2 correctedUV = uv;
     vec2 correctedMouse = u_mouse;
+    vec2 correctedMouseTrailing = u_mouseTrailing;
+    
     float screenR = u_resolution.x / u_resolution.y;
     correctedUV.x *= screenR;
     correctedMouse.x *= screenR;
+    correctedMouseTrailing.x *= screenR;
 
-    // Distance from the mouse hover point
+    // Distance from the locked hover point
     float dist = distance(correctedUV, correctedMouse);
     
     // 1. Viscous Fingering: multiply progress by noise to make expansion uneven
@@ -191,7 +204,31 @@ const fragmentShader = `
     float lip = smoothstep(p + 0.01, p, spread) * smoothstep(p - 0.05, p - 0.02, spread);
     c1.rgb += lip * u_lipBrightness;
 
-    gl_FragColor = mix(c1, c0, mask);
+    vec4 finalColor = mix(c1, c0, mask);
+    
+    // 5. Continuous Background Mouse Trail (Warping final output)
+    // We apply this fluid distortion even when not transitioning
+    float trailDist = distance(correctedUV, correctedMouseTrailing);
+    float trailMask = 1.0 - smoothstep(0.0, u_trailRadius, trailDist);
+    if (trailMask > 0.01) {
+       // Deep, low-frequence turbulence for liquid swell
+       float trailWobble = turbulence(correctedUV * 4.0 - u_time * 0.5) - 0.5;
+       vec2 trailNormal = normalize(correctedUV - correctedMouseTrailing + vec2(0.0001, 0.0001));
+       
+       // Calculate independent UV shifts for both c0 and c1 so the trail works on whatever image is visible
+       vec2 trailOffset = trailNormal * trailWobble * u_trailIntensity * trailMask;
+       
+       vec2 uv0_warp = getCoverUV(uv + trailOffset, u_resolution, u_aspect0);
+       vec2 uv1_warp = getCoverUV(uv + trailOffset, u_resolution, u_aspect1);
+       
+       vec4 c0_warp = texture2D(u_tex0, uv0_warp);
+       vec4 c1_warp = texture2D(u_tex1, uv1_warp);
+       
+       // Same mixing, just using the warped textures
+       finalColor = mix(c1_warp, c0_warp, mask);
+    }
+
+    gl_FragColor = finalColor;
   }
 `;
 
@@ -256,7 +293,10 @@ uniforms = {
   u_noiseScale: { value: FLUID_CONFIG.noiseScale },
   u_noiseAmount: { value: FLUID_CONFIG.noiseAmount },
   u_edgeSoftness: { value: FLUID_CONFIG.edgeSoftness },
-  u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
+  u_mouse: { value: new THREE.Vector2(0.5, 0.5) }, // Locked origin for transitions
+  u_mouseTrailing: { value: new THREE.Vector2(0.5, 0.5) }, // Continuously lerped mouse for the trail
+  u_trailRadius: { value: FLUID_CONFIG.trailRadius },
+  u_trailIntensity: { value: FLUID_CONFIG.trailIntensity },
   u_viscosity: { value: FLUID_CONFIG.viscosity },
   u_refraction: { value: FLUID_CONFIG.refraction },
   u_lipBrightness: { value: FLUID_CONFIG.lipBrightness }
@@ -283,17 +323,32 @@ if (defaultBg) {
 let isAnimating = false;
 let animationFrameId = null;
 
+// Track real mouse and interpolated "liquid" mouse
+const targetMouse = new THREE.Vector2(0.5, 0.5);
+const lerpedMouse = new THREE.Vector2(0.5, 0.5);
+
+// Keep the background trail running constantly
 function render() {
   uniforms.u_time.value += 0.01;
+  
+  // Smoothly lerp the continuous mouse toward the target (liquid drag feel)
+  lerpedMouse.lerp(targetMouse, 0.1);
+  uniforms.u_mouseTrailing.value.copy(lerpedMouse);
+  
   renderer.render(scene, camera);
-
-  if (isAnimating) {
-    animationFrameId = requestAnimationFrame(render);
-  }
+  
+  requestAnimationFrame(render);
 }
 
-// Render one initial frame to establish the default image
-renderer.render(scene, camera);
+// Render loop is now constant, instead of only running during transitions
+requestAnimationFrame(render);
+
+window.addEventListener('mousemove', (e) => {
+  if (uniforms) {
+    targetMouse.x = e.clientX / window.innerWidth;
+    targetMouse.y = 1.0 - (e.clientY / window.innerHeight);
+  }
+});
 
 window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -320,10 +375,9 @@ function slideBg(src) {
   gsap.killTweensOf(uniforms.u_progress);
   uniforms.u_progress.value = 0;
 
-  // Start render loop
+  // Start transition physics
   if (!isAnimating) {
     isAnimating = true;
-    render();
   }
 
   gsap.to(uniforms.u_progress, {
@@ -331,12 +385,8 @@ function slideBg(src) {
     duration: FLUID_CONFIG.duration,
     ease: FLUID_CONFIG.ease,
     onComplete: () => {
-      // Pause render loop once the wipe completes
+      // Flag transition as complete
       isAnimating = false;
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-      }
     }
   });
 }
