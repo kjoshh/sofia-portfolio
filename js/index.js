@@ -207,8 +207,10 @@ const fragmentShader = `
     // 4. Darkroom Developer (Negative to Positive)
     // The fluid acts as a chemical developer. The active edge is Negative, trailing is Positive.
     if (u_developerMode) {
-      // timeRevealed is 0 at the bleeding edge of the fluid, and goes towards 1 as the liquid advances further
-      float timeRevealed = smoothstep(p, p - u_developSpeed, spread);
+      // depthInside is 0.0 at the bleeding edge, and grows positive as the liquid goes further past the pixel
+      float depthInside = p - spread;
+      // development goes from 0.0 (undeveloped negative) to 1.0 (fully developed positive)
+      float development = smoothstep(0.0, u_developSpeed, depthInside);
       
       // Calculate a slightly cyan-tinted "analog" negative of the image
       vec3 negColor = vec3(1.0) - c1.rgb;
@@ -216,8 +218,8 @@ const fragmentShader = `
       negColor.b += 0.05 * c1.r;
       negColor.g += 0.02 * c1.r;
       
-      // The strength of the negative is highest at the front (timeRevealed=0) and fades out (timeRevealed=1)
-      float negMix = (1.0 - timeRevealed) * u_negativeStrength;
+      // The strength of the negative is highest at the front (development=0.0) and fades out (development=1.0)
+      float negMix = (1.0 - development) * u_negativeStrength;
       
       // We only apply the developer effect inside the liquid mask
       c1.rgb = mix(c1.rgb, negColor, negMix * mask);
