@@ -66,17 +66,17 @@ const FLUID_CONFIG = {
   refraction: 0.25, // Increased for a stronger, more concentrated effect
 
   // Brightness of the surface tension highlight at the edge (0 to 1)
-  lipBrightness: 0.1,
+  lipBrightness: 0.001,
 
   // --- Darkroom Sub-Effects ---
   // If true, the liquid acts like a photo developer (negative -> positive)
   developerMode: true,
 
   // How wide the negative "band" is behind the reveal front (higher = slower transition)
-  developSpeed: 1.5,
+  developSpeed: 0.5,
 
   // How strong the initial negative inversion is (0 to 1)
-  negativeStrength: 0.85
+  negativeStrength: 0.8
 };
 
 // WebGL shaders for fluid ink spilled-over effect
@@ -195,7 +195,12 @@ const fragmentShader = `
     float edgeThickness = 0.08;
     float edgeRing = (1.0 - mask) * smoothstep(p - edgeThickness, p, spread);
     
-    vec2 refractOff = vec2((noiseComb - 0.5) * u_refraction * edgeRing);
+    // Calculate a smooth outward vector from the mouse, modified by soft noise
+    // This creates a clean "glass bead" push instead of chaotic, high-frequency static (dust)
+    vec2 outwardNormal = normalize(correctedUV - correctedMouse);
+    float softWobble = noise(correctedUV * 3.0 + u_time * 0.5) - 0.5;
+    vec2 refractOff = (outwardNormal * 0.5 + softWobble) * u_refraction * edgeRing;
+    
     vec2 uv1_refr = getCoverUV(uv + refractOff, u_resolution, u_aspect1);
     c1 = texture2D(u_tex1, uv1_refr);
 
