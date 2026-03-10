@@ -74,7 +74,7 @@ const FLUID_CONFIG = {
 
   // How wide the negative "band" is behind the reveal front (higher = slower transition)
   developSpeed: 1.5,
-  
+
   // How strong the initial negative inversion is (0 to 1)
   negativeStrength: 0.85
 };
@@ -221,8 +221,8 @@ const fragmentShader = `
       // The strength of the negative is highest at the front (development=0.0) and fades out (development=1.0)
       float negMix = (1.0 - development) * u_negativeStrength;
       
-      // We only apply the developer effect inside the liquid mask
-      c1.rgb = mix(c1.rgb, negColor, negMix * mask);
+      // Apply the developer effect directly to the fluid texture (c1)
+      c1.rgb = mix(c1.rgb, negColor, negMix);
     }
 
     gl_FragColor = mix(c1, c0, mask);
