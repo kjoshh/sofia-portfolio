@@ -712,7 +712,12 @@ body.about-page {
   flex-flow: row;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 0.818em 0.982em;
+  /* padding: 0.818em 0.982em; */
+  padding: 10px 22px;
+  /* Increased from ~11px 14px */
+  gap: 20px;
+  /* If using gap on the container directly, or update .nav-menu */
+
   display: flex;
   position: absolute;
   top: 1.31em;
@@ -753,7 +758,10 @@ body.about-page {
 }
 
 .nav-menu {
-  grid-column-gap: 0.741em;
+  /* grid-column-gap: 0.741em; */
+  grid-column-gap: 1.5em;
+  /* Increased from 0.741em */
+
   align-items: baseline;
   display: flex;
   z-index: 1;

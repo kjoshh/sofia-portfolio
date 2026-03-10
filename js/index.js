@@ -44,7 +44,7 @@ const FLUID_CONFIG = {
   duration: 3,
 
   // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
-  ease: 'power1.out',
+  ease: 'power2.out',
 
   // Speed of the organic noise movement while hovering
   noiseSpeed: 0.25,
@@ -56,7 +56,17 @@ const FLUID_CONFIG = {
   noiseAmount: 0.6,
 
   // How soft/harsh the masked wipe edge is (Lower = harsher line; Higher = softer gradient)
-  edgeSoftness: 0.03
+  edgeSoftness: 0.03,
+
+  // --- Realism Settings ---
+  // Strength of uneven growth tendrils (0 to 1)
+  viscosity: 0.4, 
+  
+  // Amount of lens distortion/warp inside the fluid (0 to 0.1)
+  refraction: 0.04, 
+  
+  // Brightness of the surface tension highlight at the edge (0 to 1)
+  lipBrightness: 0.3 
 };
 
 // WebGL shaders for fluid ink spilled-over effect
@@ -81,6 +91,9 @@ const fragmentShader = `
   uniform float u_noiseAmount;
   uniform float u_edgeSoftness;
   uniform vec2 u_mouse;
+  uniform float u_viscosity;
+  uniform float u_refraction;
+  uniform float u_lipBrightness;
 
   varying vec2 v_uv;
 
@@ -130,20 +143,30 @@ const fragmentShader = `
     // Distance from the mouse hover point
     float dist = distance(correctedUV, correctedMouse);
     
-    // Reverse the concept: we want it to 'grow' outwards. 
-    // The mask reveals when the value is low. 
-    // Distance starts at 0 at mouse, increases outward.
-    // Add noise to break down the perfect circle.
+    // 1. Viscous Fingering: multiply progress by noise to make expansion uneven
+    // Low frequency noise for "blobs"
+    float fingerNoise = turbulence(correctedUV * 1.5 + u_time * 0.1);
+    float progressMult = 1.0 + (fingerNoise - 0.5) * u_viscosity;
+    
+    // Add original noise to break down the perfect circle.
     float spread = dist + (noiseComb - 0.5) * u_noiseAmount;
 
     // u_progress goes from 0 to 1.
-    // We adjust the mapping so the expansion covers the viewport exactly within the duration.
-    // The multiplier (e.g., 1.5) ensures the circle reaches the corners, while 
-    // the offset (-u_noiseAmount) ensures we start at the mouse instantly.
-    float p = u_progress * (1.5 + u_noiseAmount) - (u_noiseAmount * 0.5);
+    float p = u_progress * (1.5 + u_noiseAmount) * progressMult - (u_noiseAmount * 0.5);
     
-    // Mask logic: smoothstep creates the transition
+    // Mask logic
     float mask = smoothstep(p - u_edgeSoftness, p + u_edgeSoftness, spread);
+
+    // 2. Refraction: warp the texture inside the reveal
+    // We use the noise field to offset the UVs of the incoming texture
+    vec2 refractOff = (noiseComb - 0.5) * u_refraction * (1.0 - mask);
+    vec2 uv1_refr = getCoverUV(uv + refractOff, u_resolution, u_aspect1);
+    vec4 c1 = texture2D(u_tex1, uv1_refr);
+
+    // 3. Surface Tension "Lip": Highlight the leading edge
+    // A narrow ring right at the reveal front
+    float lip = smoothstep(p + 0.01, p, spread) * smoothstep(p - 0.05, p - 0.02, spread);
+    c1.rgb += lip * u_lipBrightness;
 
     gl_FragColor = mix(c1, c0, mask);
   }
@@ -185,7 +208,10 @@ uniforms = {
   u_noiseScale: { value: FLUID_CONFIG.noiseScale },
   u_noiseAmount: { value: FLUID_CONFIG.noiseAmount },
   u_edgeSoftness: { value: FLUID_CONFIG.edgeSoftness },
-  u_mouse: { value: new THREE.Vector2(0.5, 0.5) }
+  u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
+  u_viscosity: { value: FLUID_CONFIG.viscosity },
+  u_refraction: { value: FLUID_CONFIG.refraction },
+  u_lipBrightness: { value: FLUID_CONFIG.lipBrightness }
 };
 
 const mesh = new THREE.Mesh(
