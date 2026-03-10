@@ -207,10 +207,13 @@ const fragmentShader = `
     vec4 finalColor = mix(c1, c0, mask);
     
     // 5. Continuous Background Mouse Trail (Warping final output)
-    // We apply this fluid distortion even when not transitioning
     float trailDist = distance(correctedUV, correctedMouseTrailing);
-    float trailMask = 1.0 - smoothstep(0.0, u_trailRadius, trailDist);
-    if (trailMask > 0.01) {
+    
+    // Use a cubic falloff so the edge dissolves invisibly (no visible circle)
+    float trailFalloff = 1.0 - clamp(trailDist / u_trailRadius, 0.0, 1.0);
+    float trailMask = trailFalloff * trailFalloff * trailFalloff; // Cubic = extremely soft edge
+    
+    if (trailMask > 0.001) {
        // Deep, low-frequence turbulence for liquid swell
        float trailWobble = turbulence(correctedUV * 4.0 - u_time * 0.5) - 0.5;
        vec2 trailNormal = normalize(correctedUV - correctedMouseTrailing + vec2(0.0001, 0.0001));
