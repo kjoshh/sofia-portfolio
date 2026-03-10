@@ -10,69 +10,188 @@ const navMoveY = gsap.quickTo(nav, 'y', { duration: 0.9, ease: 'power3.out' });
 const PARALLAX_STRENGTH = 12.5;
 
 window.addEventListener('mousemove', e => {
-  const cx = innerWidth  / 2;
+  const cx = innerWidth / 2;
   const cy = innerHeight / 2;
   navMoveX((e.clientX - cx) / cx * PARALLAX_STRENGTH);
   navMoveY((e.clientY - cy) / cy * PARALLAX_STRENGTH);
 });
 
 
-// ── Nav hover — swap background image (slide in from bottom) ──
+// ── Nav hover — Fluid WebGL background transition ──
 const NAV_BG = {
-  'index.html':             'images/0017_17A.jpg',
-  'projects.html':          'images/Forgettingdreams-1.jpg',
+  'index.html': 'images/0017_17A.jpg',
+  'projects.html': 'images/Forgettingdreams-1.jpg',
   'forgetting-dreams.html': 'images/Forgettingdreams-1.jpg',
-  'archive.html':           'images/sofia_archive-31.jpg',
-  'about.html':             'images/Sybilbg.jpg',
+  'archive.html': 'images/sofia_archive-31.jpg',
+  'about.html': 'images/Sybilbg.jpg',
 };
 
-// Overflow-hidden wrapper clips the sliding images
-const bgWrap = document.createElement('div');
-bgWrap.style.cssText = 'position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:1;';
-document.body.appendChild(bgWrap);
+const defaultBg = document.querySelector('.imgbg');
+const defaultImg = defaultBg ? defaultBg.querySelector('img') : null;
 
-function makeBgLayer() {
-  const img = document.createElement('img');
-  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;';
-  bgWrap.appendChild(img);
-  gsap.set(img, { yPercent: 100 });
-  return img;
-}
-
-const bgLayers = [makeBgLayer(), makeBgLayer()];
-let bgFront = 0;
-let bgVisible = false;
-let bgCurrentSrc = null;
-
-const defaultBg  = document.querySelector('.imgbg');
 const noiseLayers = [
-  { el: document.querySelector('.dusti'),       peak: 0.7, rest: 0.1 },
-  { el: document.querySelector('.nois3'),       peak: 0.5, rest: 0.1 },
+  { el: document.querySelector('.dusti'), peak: 0.7, rest: 0.1 },
+  { el: document.querySelector('.nois3'), peak: 0.5, rest: 0.1 },
   { el: document.querySelector('.nois3-grain'), peak: 0.6, rest: 0.08 },
 ].filter(l => l.el);
 
-// Preload all hover images
-Object.values(NAV_BG).forEach(src => { const i = new Image(); i.src = src; });
+// WebGL shaders for fluid ink spilled-over effect
+const vertexShader = `
+  varying vec2 v_uv;
+  void main() {
+    v_uv = uv;
+    gl_Position = vec4(position, 1.0);
+  }
+`;
+const fragmentShader = `
+  precision highp float;
+  uniform sampler2D u_tex0;
+  uniform sampler2D u_tex1;
+  uniform float u_progress;
+  uniform float u_time;
+  uniform vec2 u_resolution;
+  uniform vec2 u_aspect0;
+  uniform vec2 u_aspect1;
 
+  varying vec2 v_uv;
+
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float noise(vec2 p) {
+    vec2 i = floor(p); vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i+vec2(0,0)),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);
+  }
+  float turbulence(vec2 p) {
+    float t = 0.0; float w = 0.5;
+    for (int i = 0; i < 5; i++) { t += abs(noise(p)) * w; p *= 2.0; w *= 0.5; }
+    return t;
+  }
+  vec2 getCoverUV(vec2 uv, vec2 res, vec2 aspect) {
+    float screenR = res.x / res.y;
+    float imgR = aspect.x / aspect.y;
+    vec2 newUv = uv;
+    if (imgR > screenR) {
+      newUv.x = 0.5 + (uv.x - 0.5) * (screenR / imgR);
+    } else {
+      newUv.y = 0.5 + (uv.y - 0.5) * (imgR / screenR);
+    }
+    return newUv;
+  }
+
+  void main() {
+    vec2 uv = v_uv;
+    vec2 uv0 = getCoverUV(uv, u_resolution, u_aspect0);
+    vec4 c0 = texture2D(u_tex0, uv0);
+
+    vec2 uv1 = getCoverUV(uv, u_resolution, u_aspect1);
+    vec4 c1 = texture2D(u_tex1, uv1);
+
+    // Turbulent noise to distort the mask edge
+    float n = turbulence(uv * 6.0 + u_time * 0.4);
+    
+    // Distance from the center (ink spilling outwards)
+    float dist = distance(uv, vec2(0.5, 0.5)) * 1.5;
+    
+    // Add noise for an organic fluid edge
+    float spread = dist + (n - 0.5) * 1.4;
+
+    // Expand u_progress beyond the 0..1 bounds to fully cover the noisy range
+    float p = u_progress * 3.5 - 0.5;
+    
+    // Mask logic: when p is deeply negative, smoothstep returns 1 -> c0 visible.
+    // When p is highly positive, smoothstep returns 0 -> c1 visible.
+    float mask = smoothstep(p - 0.5, p + 0.5, spread);
+
+    gl_FragColor = mix(c1, c0, mask);
+  }
+`;
+
+let scene, camera, renderer, uniforms;
+const textures = {};
+const loader = new THREE.TextureLoader();
+let bgCurrentSrc = NAV_BG['index.html'];
+
+// Load textures and trigger aspect ratio updates
+Object.entries(NAV_BG).forEach(([key, src]) => {
+  textures[src] = loader.load(src, tex => {
+    tex.minFilter = THREE.LinearMipMapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    // Nudge aspect ratio calculation when texture finishes loading
+    if (bgCurrentSrc === src && uniforms) {
+      uniforms.u_aspect0.value.set(tex.image.width, tex.image.height);
+      uniforms.u_aspect1.value.set(tex.image.width, tex.image.height);
+    }
+  });
+});
+
+const defaultTex = textures[bgCurrentSrc];
+
+scene = new THREE.Scene();
+camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+uniforms = {
+  u_tex0: { value: defaultTex },
+  u_tex1: { value: defaultTex },
+  u_progress: { value: 0 },
+  u_time: { value: 0 },
+  u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+  u_aspect0: { value: new THREE.Vector2(1, 1) },
+  u_aspect1: { value: new THREE.Vector2(1, 1) }
+};
+
+const mesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(2, 2),
+  new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader })
+);
+scene.add(mesh);
+
+renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.domElement.style.position = 'absolute';
+renderer.domElement.style.inset = '0';
+renderer.domElement.style.zIndex = '0';
+
+if (defaultBg) {
+  defaultBg.appendChild(renderer.domElement);
+  if (defaultImg) defaultImg.style.display = 'none';
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  uniforms.u_time.value += 0.01;
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
+});
+
+function getAspect(tex) {
+  if (tex && tex.image && tex.image.width) return new THREE.Vector2(tex.image.width, tex.image.height);
+  return new THREE.Vector2(1, 1);
+}
 
 function slideBg(src) {
   if (src === bgCurrentSrc) return;
-  bgCurrentSrc = src;
-  const next = bgVisible ? 1 - bgFront : 0;
-  const out  = bgVisible ? bgFront : null;
-  bgLayers[next].src = src;
-  gsap.killTweensOf(bgLayers);
-  gsap.set(bgLayers[next], { yPercent: 100 });
-  gsap.to(bgLayers[next], { yPercent: 0, duration: 1.2, ease: 'power4.inOut' });
-  if (out !== null) {
-    gsap.to(bgLayers[out], { yPercent: -100, duration: 1.2, ease: 'power4.inOut' });
-  } else if (defaultBg) {
-    gsap.to(defaultBg, { yPercent: -100, duration: 1.2, ease: 'power4.inOut' });
-  }
-  bgFront = next;
-  bgVisible = true;
 
-  // Pulse noise/grain overlays during swap
+  const tex0 = textures[bgCurrentSrc];
+  const tex1 = textures[src];
+
+  uniforms.u_tex0.value = tex0;
+  uniforms.u_aspect0.value.copy(getAspect(tex0));
+
+  uniforms.u_tex1.value = tex1;
+  uniforms.u_aspect1.value.copy(getAspect(tex1));
+
+  bgCurrentSrc = src;
+
+  gsap.killTweensOf(uniforms.u_progress);
+  uniforms.u_progress.value = 0;
+  gsap.to(uniforms.u_progress, { value: 1, duration: 1.4, ease: 'power2.inOut' });
+
+  // Pulse noise/grain overlays during fluid spill
   noiseLayers.forEach(({ el, peak, rest }) => {
     gsap.killTweensOf(el);
     gsap.to(el, { opacity: peak, duration: 0.6, ease: 'power4.in' });
@@ -100,7 +219,7 @@ function setNavActive(activeEl) {
 
 navHoverEls.forEach(el => {
   const href = (el.getAttribute('href') || '').split('/').pop() || 'index.html';
-  const src  = NAV_BG[href];
+  const src = NAV_BG[href];
   if (!src) return;
   el.addEventListener('mouseenter', () => {
     slideBg(src);
@@ -114,7 +233,7 @@ const logoEl = document.querySelector('.main-nav .logo-link');
 
 if (logoEl) {
   const LOGO_DEFAULT = 'Sofia Cartuccia';
-  const LOGO_SYBIL   = 'Sybil Sometimes';
+  const LOGO_SYBIL = 'Sybil Sometimes';
 
   function swapLogoChars(newText) {
     const spans = logoEl.querySelectorAll('.layout-nav-char');
@@ -143,24 +262,25 @@ if (logoEl) {
 
 
 // ── Projects dropdown ──
-const dropdownWrap  = document.querySelector('.nav-dropdown-wrap');
-const dropdown      = document.getElementById('projects-dropdown');
+const dropdownWrap = document.querySelector('.nav-dropdown-wrap');
+const dropdown = document.getElementById('projects-dropdown');
 const dropdownItems = dropdown ? [...dropdown.querySelectorAll('.nav-dropdown-item')] : [];
 
 if (dropdownWrap && dropdown) {
   // Align dropdown items with the Projects link
   function alignDropdown() {
     const projectsRect = dropdownWrap.getBoundingClientRect();
-    const wrapinRect   = dropdownWrap.closest('.wrapin').getBoundingClientRect();
+    const wrapinRect = dropdownWrap.closest('.wrapin').getBoundingClientRect();
     dropdown.style.paddingLeft = (projectsRect.left - wrapinRect.left) + 'px';
   }
   alignDropdown();
   window.addEventListener('resize', alignDropdown);
 
   const fullHeight = () => {
+    const currentMaxHeight = dropdown.style.maxHeight;
     dropdown.style.maxHeight = 'none';
     const h = dropdown.scrollHeight;
-    dropdown.style.maxHeight = '0';
+    dropdown.style.maxHeight = currentMaxHeight;
     return h;
   };
 
@@ -169,9 +289,18 @@ if (dropdownWrap && dropdown) {
     gsap.to(dropdownItems, { opacity: 1, duration: 0.2, stagger: 0.06, delay: 0.05, ease: 'power2.out' });
   });
 
-  // Close when mouse leaves the whole nav pill
-  nav.addEventListener('mouseleave', () => {
+  const closeDropdown = () => {
     gsap.to(dropdown, { maxHeight: 0, duration: 0.2, ease: 'power2.in' });
     gsap.to(dropdownItems, { opacity: 0, duration: 0.15, ease: 'power2.in' });
+  };
+
+  // Close when mouse leaves the whole nav pill
+  nav.addEventListener('mouseleave', closeDropdown);
+
+  // Close when hovering other main links
+  document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)').forEach(link => {
+    if (!link.closest('.nav-dropdown-wrap')) {
+      link.addEventListener('mouseenter', closeDropdown);
+    }
   });
 }
