@@ -152,14 +152,18 @@ const fragmentShader = `
     float spread = dist + (noiseComb - 0.5) * u_noiseAmount;
 
     // u_progress goes from 0 to 1.
-    float p = u_progress * (1.5 + u_noiseAmount) * progressMult - (u_noiseAmount * 0.5);
+    // We adjust the mapping so the expansion covers the viewport exactly within the duration.
+    // We start p at a slightly negative value (-u_noiseAmount) to ensure no noise 'holes' 
+    // appear at progress 0.
+    float p = u_progress * (1.5 + u_noiseAmount) - u_noiseAmount;
     
     // Mask logic
     float mask = smoothstep(p - u_edgeSoftness, p + u_edgeSoftness, spread);
 
     // 2. Refraction: warp the texture inside the reveal
-    // We use the noise field to offset the UVs of the incoming texture
-    vec2 refractOff = vec2((noiseComb - 0.5) * u_refraction * (1.0 - mask));
+    // We link the refraction strength to progress so it grows from 0, avoiding a "pop"
+    float refrStrength = u_refraction * u_progress;
+    vec2 refractOff = vec2((noiseComb - 0.5) * refrStrength * (1.0 - mask));
     vec2 uv1_refr = getCoverUV(uv + refractOff, u_resolution, u_aspect1);
     c1 = texture2D(u_tex1, uv1_refr);
 
@@ -177,7 +181,7 @@ const textures = {};
 const textureAspects = {}; // Store dimensions to ensure consistent aspect ratios
 const loader = new THREE.TextureLoader();
 let bgCurrentSrc = NAV_BG['index.html'];
-let bgNextSrc = null;
+let bgNextSrc = bgCurrentSrc; // Initialize next to current to avoid null aspect jumps
 
 function updateUniformAspects(src, uniformTarget) {
   if (uniforms && textureAspects[src]) {
