@@ -56,7 +56,7 @@ const FLUID_CONFIG = {
   noiseAmount: 0.35,
 
   // How soft/harsh the masked wipe edge is (Lower = harsher line; Higher = softer gradient)
-  edgeSoftness: 0.015,
+  edgeSoftness: 0.15,
 
   // --- Realism Settings ---
   // Strength of uneven growth tendrils (0 to 1)
@@ -73,10 +73,10 @@ const FLUID_CONFIG = {
   developerMode: true,
 
   // How wide the negative "band" is behind the reveal front (higher = slower transition)
-  developSpeed: 0.5,
+  developSpeed: 1.2,
 
   // How strong the initial negative inversion is (0 to 1)
-  negativeStrength: 0.8
+  negativeStrength: 1
 };
 
 // WebGL shaders for fluid ink spilled-over effect
@@ -196,8 +196,8 @@ const fragmentShader = `
     float edgeRing = (1.0 - mask) * smoothstep(p - edgeThickness, p, spread);
     
     // Calculate a smooth outward vector from the mouse, modified by soft noise
-    // This creates a clean "glass bead" push instead of chaotic, high-frequency static (dust)
-    vec2 outwardNormal = normalize(correctedUV - correctedMouse);
+    // We add a tiny epsilon to prevent NaN division at the exact center of the mouse
+    vec2 outwardNormal = normalize(correctedUV - correctedMouse + vec2(0.0001, 0.0001));
     float softWobble = noise(correctedUV * 3.0 + u_time * 0.5) - 0.5;
     vec2 refractOff = (outwardNormal * 0.5 + softWobble) * u_refraction * edgeRing;
     
@@ -225,6 +225,10 @@ const fragmentShader = `
       
       // The strength of the negative is highest at the front (development=0.0) and fades out (development=1.0)
       float negMix = (1.0 - development) * u_negativeStrength;
+      
+      // To prevent "white dust", we MUST fade the negative inversion out perfectly at the fluid boundary.
+      // If we don't, the bright inverted colors mix with the soft edge of the background mask, creating white static.
+      negMix *= (1.0 - mask);
       
       // Apply the developer effect directly to the fluid texture (c1)
       c1.rgb = mix(c1.rgb, negColor, negMix);
