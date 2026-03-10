@@ -72,11 +72,11 @@ const FLUID_CONFIG = {
   // If true, the liquid acts like a photo developer (negative -> positive)
   developerMode: true,
 
-  // How wide the negative "band" is behind the reveal front
-  developSpeed: 0.15,
-
+  // How wide the negative "band" is behind the reveal front (higher = slower transition)
+  developSpeed: 1.5,
+  
   // How strong the initial negative inversion is (0 to 1)
-  negativeStrength: 0.8
+  negativeStrength: 0.85
 };
 
 // WebGL shaders for fluid ink spilled-over effect
