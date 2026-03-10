@@ -71,10 +71,10 @@ const FLUID_CONFIG = {
   // --- Darkroom Sub-Effects ---
   // If true, the liquid acts like a photo developer (negative -> positive)
   developerMode: true,
-  
+
   // How wide the negative "band" is behind the reveal front
   developSpeed: 0.15,
-  
+
   // How strong the initial negative inversion is (0 to 1)
   negativeStrength: 0.8
 };
