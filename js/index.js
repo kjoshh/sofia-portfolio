@@ -41,7 +41,7 @@ const noiseLayers = [
 // ==========================================
 const FLUID_CONFIG = {
   // Animation duration in seconds (How long the wipe takes)
-  duration: 6,
+  duration: 5,
 
   // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
   ease: 'power2.out',
@@ -53,7 +53,7 @@ const FLUID_CONFIG = {
   noiseScale: 2.5,
 
   // How much the noise distorts the straight edge (Higher = messier edge)
-  noiseAmount: 0.25,
+  noiseAmount: 0.35,
 
   // How soft/harsh the masked wipe edge is (Lower = harsher line; Higher = softer gradient)
   edgeSoftness: 0.015,
@@ -66,14 +66,7 @@ const FLUID_CONFIG = {
   refraction: 0.25, // Increased for a stronger, more concentrated effect
 
   // Brightness of the surface tension highlight at the edge (0 to 1)
-  lipBrightness: 0.05,
-  
-  // --- Continuous Background Mouse Trail ---
-  // Size of the background mouse distortion
-  trailRadius: 0.15,
-  
-  // How strongly the trailing mouse warps the background photo
-  trailIntensity: 0.05
+  lipBrightness: 0.1
 };
 
 // WebGL shaders for fluid ink spilled-over effect
@@ -101,9 +94,6 @@ const fragmentShader = `
   uniform float u_viscosity;
   uniform float u_refraction;
   uniform float u_lipBrightness;
-  uniform vec2 u_mouseTrailing;
-  uniform float u_trailRadius;
-  uniform float u_trailIntensity;
 
   varying vec2 v_uv;
 
@@ -132,45 +122,25 @@ const fragmentShader = `
 
   void main() {
     vec2 uv = v_uv;
-    
-    // Correct positions for screen aspect ratio
-    float screenR = u_resolution.x / u_resolution.y;
-    vec2 correctedUV = uv;
-    correctedUV.x *= screenR;
-    vec2 correctedMouseTrailing = u_mouseTrailing;
-    correctedMouseTrailing.x *= screenR;
-
-    // === Mouse Trail Warp ===
-    // Compute offset BEFORE sampling textures so it can be applied to all UVs.
-    // The offset is strictly 0 outside the radius — no blending seam possible.
-    // We use cheap 2-octave noise here (not full turbulence) to keep performance light.
-    float trailDist = distance(correctedUV, correctedMouseTrailing);
-    float trailFalloff = 1.0 - clamp(trailDist / u_trailRadius, 0.0, 1.0);
-    float trailStrength = trailFalloff * trailFalloff * trailFalloff; // cubic, very soft
-    // Cheap 2-octave noise (no turbulence loop needed)
-    float tw1 = noise(correctedUV * 4.0 - u_time * 0.5);
-    float tw2 = noise(correctedUV * 8.0 + u_time * 0.3);
-    float trailWobble = (tw1 * 0.7 + tw2 * 0.3) - 0.5;
-    vec2 trailNorm = normalize(correctedUV - correctedMouseTrailing + vec2(0.0001, 0.0001));
-    vec2 trailOffset = trailNorm * trailWobble * u_trailIntensity * trailStrength;
-
-    // Sample textures with the trail warp baked in
-    vec2 uv0 = getCoverUV(uv + trailOffset, u_resolution, u_aspect0);
+    vec2 uv0 = getCoverUV(uv, u_resolution, u_aspect0);
     vec4 c0 = texture2D(u_tex0, uv0);
 
-    vec2 uv1 = getCoverUV(uv + trailOffset, u_resolution, u_aspect1);
+    vec2 uv1 = getCoverUV(uv, u_resolution, u_aspect1);
     vec4 c1 = texture2D(u_tex1, uv1);
 
     // Turbulent noise to distort the mask edge
     float n1 = turbulence(uv * u_noiseScale + u_time * u_noiseSpeed);
     float n2 = turbulence(uv * (u_noiseScale * 2.0) - u_time * (u_noiseSpeed * 1.3));
     float noiseComb = (n1 * 0.6 + n2 * 0.4);
-
-    // Re-use already-computed correctedUV; correct u_mouse too
+    
+    // Correct mouse position for screen aspect ratio to get circular expansion
+    vec2 correctedUV = uv;
     vec2 correctedMouse = u_mouse;
+    float screenR = u_resolution.x / u_resolution.y;
+    correctedUV.x *= screenR;
     correctedMouse.x *= screenR;
 
-    // Distance from the locked hover point
+    // Distance from the mouse hover point
     float dist = distance(correctedUV, correctedMouse);
     
     // 1. Viscous Fingering: multiply progress by noise to make expansion uneven
@@ -221,9 +191,7 @@ const fragmentShader = `
     float lip = smoothstep(p + 0.01, p, spread) * smoothstep(p - 0.05, p - 0.02, spread);
     c1.rgb += lip * u_lipBrightness;
 
-    vec4 finalColor = mix(c1, c0, mask);
-
-    gl_FragColor = finalColor;
+    gl_FragColor = mix(c1, c0, mask);
   }
 `;
 
@@ -288,10 +256,7 @@ uniforms = {
   u_noiseScale: { value: FLUID_CONFIG.noiseScale },
   u_noiseAmount: { value: FLUID_CONFIG.noiseAmount },
   u_edgeSoftness: { value: FLUID_CONFIG.edgeSoftness },
-  u_mouse: { value: new THREE.Vector2(0.5, 0.5) }, // Locked origin for transitions
-  u_mouseTrailing: { value: new THREE.Vector2(0.5, 0.5) }, // Continuously lerped mouse for the trail
-  u_trailRadius: { value: FLUID_CONFIG.trailRadius },
-  u_trailIntensity: { value: FLUID_CONFIG.trailIntensity },
+  u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
   u_viscosity: { value: FLUID_CONFIG.viscosity },
   u_refraction: { value: FLUID_CONFIG.refraction },
   u_lipBrightness: { value: FLUID_CONFIG.lipBrightness }
@@ -318,47 +283,17 @@ if (defaultBg) {
 let isAnimating = false;
 let animationFrameId = null;
 
-// Track real mouse and interpolated "liquid" mouse
-const targetMouse = new THREE.Vector2(0.5, 0.5);
-const lerpedMouse = new THREE.Vector2(0.5, 0.5);
-
-let _rafId = null;
-let _idleTimer = null;
-
-function stopRender() {
-  if (_rafId) { cancelAnimationFrame(_rafId); _rafId = null; }
-}
-
-function startRender() {
-  if (_rafId) return; // already running
-  _rafId = requestAnimationFrame(renderLoop);
-}
-
-function renderLoop() {
+function render() {
   uniforms.u_time.value += 0.01;
-  // Smoothly lerp the continuous mouse toward the target (liquid drag feel)
-  lerpedMouse.lerp(targetMouse, 0.1);
-  uniforms.u_mouseTrailing.value.copy(lerpedMouse);
   renderer.render(scene, camera);
-  _rafId = requestAnimationFrame(renderLoop);
+
+  if (isAnimating) {
+    animationFrameId = requestAnimationFrame(render);
+  }
 }
 
-// Render loop is now constant, instead of only running during transitions
-startRender();
-
-window.addEventListener('mousemove', (e) => {
-  if (uniforms) {
-    targetMouse.x = e.clientX / window.innerWidth;
-    targetMouse.y = 1.0 - (e.clientY / window.innerHeight);
-  }
-  // Resume rendering on mouse move; schedule idle stop
-  startRender();
-  clearTimeout(_idleTimer);
-  // Pause the render loop 1.5s after the mouse stops (saves GPU/battery at rest)
-  _idleTimer = setTimeout(() => {
-    if (!isAnimating) stopRender();
-  }, 1500);
-});
+// Render one initial frame to establish the default image
+renderer.render(scene, camera);
 
 window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -385,9 +320,10 @@ function slideBg(src) {
   gsap.killTweensOf(uniforms.u_progress);
   uniforms.u_progress.value = 0;
 
-  // Start transition physics
+  // Start render loop
   if (!isAnimating) {
     isAnimating = true;
+    render();
   }
 
   gsap.to(uniforms.u_progress, {
@@ -395,8 +331,12 @@ function slideBg(src) {
     duration: FLUID_CONFIG.duration,
     ease: FLUID_CONFIG.ease,
     onComplete: () => {
-      // Flag transition as complete
+      // Pause render loop once the wipe completes
       isAnimating = false;
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
     }
   });
 }
@@ -485,6 +425,51 @@ if (logoEl) {
   logoEl.addEventListener('mouseenter', () => swapLogoChars(LOGO_SYBIL));
 }
 
+
+// ── Project Dropdown ──
+const dropdownWrap = document.querySelector('.nav-dropdown-wrap');
+const dropdown = document.getElementById('projects-dropdown');
+const dropdownItems = dropdown ? [...dropdown.querySelectorAll('.nav-dropdown-item')] : [];
+
+if (dropdownWrap && dropdown) {
+  // Align dropdown items with the Projects link
+  function alignDropdown() {
+    const projectsRect = dropdownWrap.getBoundingClientRect();
+    const wrapinRect = dropdownWrap.closest('.wrapin').getBoundingClientRect();
+    dropdown.style.paddingLeft = (projectsRect.left - wrapinRect.left) + 'px';
+  }
+  alignDropdown();
+  window.addEventListener('resize', alignDropdown);
+
+  const fullHeight = () => {
+    const currentMaxHeight = dropdown.style.maxHeight;
+    dropdown.style.maxHeight = 'none';
+    const h = dropdown.scrollHeight;
+    dropdown.style.maxHeight = currentMaxHeight;
+    return h;
+  };
+
+  dropdownWrap.addEventListener('mouseenter', () => {
+    gsap.to(dropdown, { maxHeight: fullHeight(), duration: 0.25, ease: 'power2.out' });
+    gsap.to(dropdownItems, { opacity: 1, duration: 0.2, stagger: 0.06, delay: 0.05, ease: 'power2.out' });
+  });
+
+  const closeDropdown = () => {
+    gsap.to(dropdown, { maxHeight: 0, duration: 0.2, ease: 'power2.in' });
+    gsap.to(dropdownItems, { opacity: 0, duration: 0.15, ease: 'power2.in' });
+  };
+
+  // Close when mouse leaves the whole nav pill
+  const mainNavWrapper = document.querySelector('.main-nav');
+  if (mainNavWrapper) mainNavWrapper.addEventListener('mouseleave', closeDropdown);
+
+  // Close when hovering other main links
+  document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)').forEach(link => {
+    if (!link.closest('.nav-dropdown-wrap')) {
+      link.addEventListener('mouseenter', closeDropdown);
+    }
+  });
+}
 
 // ── Fluid Nav Bar Wobble ──
 (function () {
