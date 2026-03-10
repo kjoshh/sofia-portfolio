@@ -174,22 +174,45 @@ const fragmentShader = `
 
 let scene, camera, renderer, uniforms;
 const textures = {};
+const textureAspects = {}; // Store dimensions to ensure consistent aspect ratios
 const loader = new THREE.TextureLoader();
 let bgCurrentSrc = NAV_BG['index.html'];
+let bgNextSrc = null;
+
+function updateUniformAspects(src, uniformTarget) {
+  if (uniforms && textureAspects[src]) {
+    const { w, h } = textureAspects[src];
+    if (uniformTarget === 0) uniforms.u_aspect0.value.set(w, h);
+    if (uniformTarget === 1) uniforms.u_aspect1.value.set(w, h);
+  }
+}
 
 // Load textures and trigger aspect ratio updates
 Object.entries(NAV_BG).forEach(([key, src]) => {
   textures[src] = loader.load(src, tex => {
     tex.minFilter = THREE.LinearMipMapLinearFilter;
     tex.magFilter = THREE.LinearFilter;
-    // Nudge aspect ratio calculation when texture finishes loading
-    if (bgCurrentSrc === src && uniforms) {
-      uniforms.u_tex0.value = tex;
-      uniforms.u_tex1.value = tex;
-      uniforms.u_aspect0.value.set(tex.image.width, tex.image.height);
-      uniforms.u_aspect1.value.set(tex.image.width, tex.image.height);
-      // Render once to show the loaded image
-      renderer.render(scene, camera);
+    
+    // Store dimensions permanently
+    textureAspects[src] = { w: tex.image.width, h: tex.image.height };
+
+    // If this is the current or upcoming image, update the shader immediately
+    if (uniforms) {
+      if (bgCurrentSrc === src) {
+        uniforms.u_tex0.value = tex;
+        updateUniformAspects(src, 0);
+      }
+      if (bgNextSrc === src) {
+        uniforms.u_tex1.value = tex;
+        updateUniformAspects(src, 1);
+      }
+      
+      // If we just loaded the very first image, force a render
+      if (bgCurrentSrc === src && !bgNextSrc) {
+        uniforms.u_tex1.value = tex;
+        updateUniformAspects(src, 1);
+        renderer.render(scene, camera);
+      }
     }
   });
 });
@@ -254,22 +277,20 @@ window.addEventListener('resize', () => {
   uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
 });
 
-function getAspect(tex) {
-  if (tex && tex.image && tex.image.width) return new THREE.Vector2(tex.image.width, tex.image.height);
-  return new THREE.Vector2(1, 1);
-}
+// Helper removed in favor of textureAspects map
 
 function slideBg(src) {
   if (src === bgCurrentSrc) return;
 
+  bgNextSrc = src;
   const tex0 = textures[bgCurrentSrc];
   const tex1 = textures[src];
 
   uniforms.u_tex0.value = tex0;
-  uniforms.u_aspect0.value.copy(getAspect(tex0));
+  updateUniformAspects(bgCurrentSrc, 0);
 
   uniforms.u_tex1.value = tex1;
-  uniforms.u_aspect1.value.copy(getAspect(tex1));
+  updateUniformAspects(src, 1);
 
   bgCurrentSrc = src;
 
