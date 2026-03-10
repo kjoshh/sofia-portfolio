@@ -80,6 +80,7 @@ const fragmentShader = `
   uniform float u_noiseScale;
   uniform float u_noiseAmount;
   uniform float u_edgeSoftness;
+  uniform vec2 u_mouse;
 
   varying vec2 v_uv;
 
@@ -114,25 +115,33 @@ const fragmentShader = `
     vec2 uv1 = getCoverUV(uv, u_resolution, u_aspect1);
     vec4 c1 = texture2D(u_tex1, uv1);
 
-    // Turbulent noise to distort the mask edge - make it rougher
+    // Turbulent noise to distort the mask edge
     float n1 = turbulence(uv * u_noiseScale + u_time * u_noiseSpeed);
     float n2 = turbulence(uv * (u_noiseScale * 2.0) - u_time * (u_noiseSpeed * 1.3));
     float noiseComb = (n1 * 0.6 + n2 * 0.4);
     
-    // Base shape is a bottom-to-top wipe: distance from bottom edge
-    // Inverse uv.y so 0 is top and 1 is bottom
-    float wipe = 1.0 - uv.y; 
+    // Correct mouse position for screen aspect ratio to get circular expansion
+    vec2 correctedUV = uv;
+    vec2 correctedMouse = u_mouse;
+    float screenR = u_resolution.x / u_resolution.y;
+    correctedUV.x *= screenR;
+    correctedMouse.x *= screenR;
 
-    // Add a slight curvature so the center flows slightly ahead (optional but organic)
-    float curve = sin(uv.x * 3.1415) * 0.1; 
+    // Distance from the mouse hover point
+    float dist = distance(correctedUV, correctedMouse);
     
-    // Combine shape and noise. The noise breaks up the edge
-    float spread = wipe - curve + (noiseComb - 0.5) * u_noiseAmount;
+    // Reverse the concept: we want it to 'grow' outwards. 
+    // The mask reveals when the value is low. 
+    // Distance starts at 0 at mouse, increases outward.
+    // Add noise to break down the perfect circle.
+    float spread = dist + (noiseComb - 0.5) * u_noiseAmount;
 
-    // Expand u_progress beyond the 0..1 bounds to fully cover the noisy range
+    // u_progress goes from 0 to 1.
+    // We expand it to make sure the circle covers the viewport cleanly even with noise
+    // scale factor 2.5 is usually enough depending on screen shape
     float p = u_progress * 2.5 - 0.5;
     
-    // Mask logic: customizable softness edge
+    // Mask logic: smoothstep creates the transition
     float mask = smoothstep(p - u_edgeSoftness, p + u_edgeSoftness, spread);
 
     gl_FragColor = mix(c1, c0, mask);
@@ -172,7 +181,8 @@ uniforms = {
   u_noiseSpeed: { value: FLUID_CONFIG.noiseSpeed },
   u_noiseScale: { value: FLUID_CONFIG.noiseScale },
   u_noiseAmount: { value: FLUID_CONFIG.noiseAmount },
-  u_edgeSoftness: { value: FLUID_CONFIG.edgeSoftness }
+  u_edgeSoftness: { value: FLUID_CONFIG.edgeSoftness },
+  u_mouse: { value: new THREE.Vector2(0.5, 0.5) }
 };
 
 const mesh = new THREE.Mesh(
@@ -274,11 +284,25 @@ function setNavActive(activeEl) {
   });
 }
 
+// Track mouse position globally for the shader
+window.addEventListener('mousemove', (e) => {
+  if (uniforms) {
+    uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
+    uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
+  }
+});
+
 navHoverEls.forEach(el => {
   const href = (el.getAttribute('href') || '').split('/').pop() || 'index.html';
   const src = NAV_BG[href];
   if (!src) return;
-  el.addEventListener('mouseenter', () => {
+  el.addEventListener('mouseenter', (e) => {
+    // Force mouse position update right as hover starts
+    if (uniforms) {
+      uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
+      uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
+    }
+    
     slideBg(src);
     setNavActive(el);
   });
@@ -333,7 +357,7 @@ if (logoEl) {
 }
 
 
-// ── Projects dropdown ──
+// ── Project Dropdown ──
 const dropdownWrap = document.querySelector('.nav-dropdown-wrap');
 const dropdown = document.getElementById('projects-dropdown');
 const dropdownItems = dropdown ? [...dropdown.querySelectorAll('.nav-dropdown-item')] : [];
@@ -367,7 +391,8 @@ if (dropdownWrap && dropdown) {
   };
 
   // Close when mouse leaves the whole nav pill
-  nav.addEventListener('mouseleave', closeDropdown);
+  const mainNavWrapper = document.querySelector('.main-nav');
+  if (mainNavWrapper) mainNavWrapper.addEventListener('mouseleave', closeDropdown);
 
   // Close when hovering other main links
   document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)').forEach(link => {
@@ -376,3 +401,33 @@ if (dropdownWrap && dropdown) {
     }
   });
 }
+
+// ── Fluid Nav Bar Wobble ──
+(function() {
+  const indexNav = document.querySelector('.index-nav');
+  if (!indexNav) return;
+
+  let curTime = 0;
+  function cfract(x) { return x - Math.floor(x); }
+  function chash(px, py) { return cfract(Math.sin(px * 127.1 + py * 311.7) * 43758.5453); }
+  function cnoise(px, py) {
+    const ix = Math.floor(px), iy = Math.floor(py);
+    const fx = px - ix, fy = py - iy;
+    const ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
+    return chash(ix, iy) + (chash(ix + 1, iy) - chash(ix, iy)) * ux
+         + (chash(ix, iy + 1) - chash(ix, iy)) * uy
+         + (chash(ix, iy) - chash(ix + 1, iy) - chash(ix, iy + 1) + chash(ix + 1, iy + 1)) * ux * uy;
+  }
+
+  (function loop() {
+    curTime += 0.015; // Animation speed
+    const s = curTime * 1.5;
+    
+    // The base border-radius is ~20px. 
+    // We add noise between -8px and +8px to each corner to organically squash and stretch it.
+    const r = (i) => Math.round(20 + (cnoise(s + i * 5.1, i * 4.2) - 0.5) * 16);
+    
+    indexNav.style.borderRadius = `${r(0)}px ${r(1)}px ${r(2)}px ${r(3)}px / ${r(4)}px ${r(5)}px ${r(6)}px ${r(7)}px`;
+    requestAnimationFrame(loop);
+  })();
+})();
