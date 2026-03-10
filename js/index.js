@@ -41,32 +41,32 @@ const noiseLayers = [
 // ==========================================
 const FLUID_CONFIG = {
   // Animation duration in seconds (How long the wipe takes)
-  duration: 3,
+  duration: 5,
 
   // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
-  ease: 'power2.out',
+  ease: 'power3.out',
 
   // Speed of the organic noise movement while hovering
   noiseSpeed: 0.25,
 
   // Scale of the noise (Higher = smaller ripples; Lower = larger waves)
-  noiseScale: 3.75,
+  noiseScale: 3.5,
 
   // How much the noise distorts the straight edge (Higher = messier edge)
-  noiseAmount: 0.6,
+  noiseAmount: 0.5,
 
   // How soft/harsh the masked wipe edge is (Lower = harsher line; Higher = softer gradient)
-  edgeSoftness: 0.03,
+  edgeSoftness: 0.02,
 
   // --- Realism Settings ---
   // Strength of uneven growth tendrils (0 to 1)
-  viscosity: 0.4, 
-  
+  viscosity: 0.5,
+
   // Amount of lens distortion/warp purely at the edge of the fluid (0 to 0.1)
-  refraction: 0.1, // Increased for a stronger, more concentrated effect
-  
+  refraction: 0.15, // Increased for a stronger, more concentrated effect
+
   // Brightness of the surface tension highlight at the edge (0 to 1)
-  lipBrightness: 0.3 
+  lipBrightness: 0.1
 };
 
 // WebGL shaders for fluid ink spilled-over effect
@@ -151,11 +151,24 @@ const fragmentShader = `
     // Add original noise to break down the perfect circle.
     float spread = dist + (noiseComb - 0.5) * u_noiseAmount;
 
-    // u_progress goes from 0 to 1.
-    // We adjust the mapping so the expansion covers the viewport exactly within the duration.
-    // We start p at a slightly negative value (-u_noiseAmount) to ensure no noise 'holes' 
-    // appear at progress 0.
-    float p = u_progress * (1.5 + u_noiseAmount) - u_noiseAmount;
+    // Calculate max distance from the mouse to the screen corners
+    // This ensures the animation time is perfectly consistent on all screen sizes and hover positions
+    float d1 = distance(correctedMouse, vec2(0.0, 0.0));
+    float d2 = distance(correctedMouse, vec2(screenR, 0.0));
+    float d3 = distance(correctedMouse, vec2(0.0, 1.0));
+    float d4 = distance(correctedMouse, vec2(screenR, 1.0));
+    float maxDist = max(max(d1, d2), max(d3, d4));
+
+    // Calculate start and end values for the progress mapping
+    float minMult = 1.0 - (0.5 * u_viscosity);
+    float pEnd = (maxDist + (u_noiseAmount * 0.5) + u_edgeSoftness) / minMult;
+    float pStart = -(u_noiseAmount + u_edgeSoftness + 0.2) / minMult;
+    
+    // Base mapped progress
+    float baseP = mix(pStart, pEnd, u_progress);
+    
+    // Apply viscous fingering
+    float p = baseP * progressMult;
     
     // Mask logic
     float mask = smoothstep(p - u_edgeSoftness, p + u_edgeSoftness, spread);
@@ -199,7 +212,7 @@ Object.entries(NAV_BG).forEach(([key, src]) => {
   textures[src] = loader.load(src, tex => {
     tex.minFilter = THREE.LinearMipMapLinearFilter;
     tex.magFilter = THREE.LinearFilter;
-    
+
     // Store dimensions permanently
     textureAspects[src] = { w: tex.image.width, h: tex.image.height };
 
@@ -213,7 +226,7 @@ Object.entries(NAV_BG).forEach(([key, src]) => {
         uniforms.u_tex1.value = tex;
         updateUniformAspects(src, 1);
       }
-      
+
       // If we just loaded the current background image, render it so the screen isn't black
       if (bgCurrentSrc === src) {
         if (!isAnimating && typeof renderer !== 'undefined') {
