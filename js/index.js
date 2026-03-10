@@ -143,10 +143,14 @@ const fragmentShader = `
     // === Mouse Trail Warp ===
     // Compute offset BEFORE sampling textures so it can be applied to all UVs.
     // The offset is strictly 0 outside the radius — no blending seam possible.
+    // We use cheap 2-octave noise here (not full turbulence) to keep performance light.
     float trailDist = distance(correctedUV, correctedMouseTrailing);
     float trailFalloff = 1.0 - clamp(trailDist / u_trailRadius, 0.0, 1.0);
     float trailStrength = trailFalloff * trailFalloff * trailFalloff; // cubic, very soft
-    float trailWobble = (turbulence(correctedUV * 4.0 - u_time * 0.5) - 0.5);
+    // Cheap 2-octave noise (no turbulence loop needed)
+    float tw1 = noise(correctedUV * 4.0 - u_time * 0.5);
+    float tw2 = noise(correctedUV * 8.0 + u_time * 0.3);
+    float trailWobble = (tw1 * 0.7 + tw2 * 0.3) - 0.5;
     vec2 trailNorm = normalize(correctedUV - correctedMouseTrailing + vec2(0.0001, 0.0001));
     vec2 trailOffset = trailNorm * trailWobble * u_trailIntensity * trailStrength;
 
@@ -318,27 +322,42 @@ let animationFrameId = null;
 const targetMouse = new THREE.Vector2(0.5, 0.5);
 const lerpedMouse = new THREE.Vector2(0.5, 0.5);
 
-// Keep the background trail running constantly
-function render() {
+let _rafId = null;
+let _idleTimer = null;
+
+function stopRender() {
+  if (_rafId) { cancelAnimationFrame(_rafId); _rafId = null; }
+}
+
+function startRender() {
+  if (_rafId) return; // already running
+  _rafId = requestAnimationFrame(renderLoop);
+}
+
+function renderLoop() {
   uniforms.u_time.value += 0.01;
-  
   // Smoothly lerp the continuous mouse toward the target (liquid drag feel)
   lerpedMouse.lerp(targetMouse, 0.1);
   uniforms.u_mouseTrailing.value.copy(lerpedMouse);
-  
   renderer.render(scene, camera);
-  
-  requestAnimationFrame(render);
+  _rafId = requestAnimationFrame(renderLoop);
 }
 
 // Render loop is now constant, instead of only running during transitions
-requestAnimationFrame(render);
+startRender();
 
 window.addEventListener('mousemove', (e) => {
   if (uniforms) {
     targetMouse.x = e.clientX / window.innerWidth;
     targetMouse.y = 1.0 - (e.clientY / window.innerHeight);
   }
+  // Resume rendering on mouse move; schedule idle stop
+  startRender();
+  clearTimeout(_idleTimer);
+  // Pause the render loop 1.5s after the mouse stops (saves GPU/battery at rest)
+  _idleTimer = setTimeout(() => {
+    if (!isAnimating) stopRender();
+  }, 1500);
 });
 
 window.addEventListener('resize', () => {
