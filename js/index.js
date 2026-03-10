@@ -162,7 +162,10 @@ const fragmentShader = `
     // Calculate start and end values for the progress mapping
     float minMult = 1.0 - (0.5 * u_viscosity);
     float pEnd = (maxDist + (u_noiseAmount * 0.5) + u_edgeSoftness) / minMult;
-    float pStart = -(u_noiseAmount + u_edgeSoftness + 0.2) / minMult;
+    
+    // We adjust pStart to be just barely negative enough to hide noise,
+    // ensuring the reveal starts expanding instantly to prevent "dead air" delay.
+    float pStart = -(u_noiseAmount * 0.5 + u_edgeSoftness + 0.01) / minMult;
     
     // Base mapped progress
     float baseP = mix(pStart, pEnd, u_progress);
