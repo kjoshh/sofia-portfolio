@@ -13,7 +13,6 @@ function applyFontStagger(el) {
   const charWrappers = original.split("").map((ch, i) => {
     const wrapper = document.createElement("span");
     wrapper.className = "char-wrapper";
-    // Inline styles that will be moved to CSS, but added here for safety
     wrapper.style.display = "inline-block";
     wrapper.style.position = "relative";
     wrapper.style.overflow = "hidden";

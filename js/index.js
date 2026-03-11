@@ -1,23 +1,30 @@
-// ── Nav cursor follow + magnetic pull ──
+// ── Mobile detection ──
+// Use both pointer and width checks for robustness
+const isMobile = window.matchMedia('(max-width: 767px)').matches ||
+                 window.matchMedia('(pointer: coarse)').matches;
+
+// ── Nav cursor follow + magnetic pull (desktop only) ──
 const nav = document.querySelector('.main-nav');
 
-// GSAP owns the transform — base centering via xPercent/yPercent
-gsap.set(nav, { xPercent: -50, yPercent: 0 });
+if (!isMobile) {
+  // GSAP owns the transform — base centering via xPercent/yPercent
+  gsap.set(nav, { xPercent: -50, yPercent: 0 });
 
-const navMoveX = gsap.quickTo(nav, 'x', { duration: 0.9, ease: 'power3.out' });
-const navMoveY = gsap.quickTo(nav, 'y', { duration: 0.9, ease: 'power3.out' });
+  const navMoveX = gsap.quickTo(nav, 'x', { duration: 0.9, ease: 'power3.out' });
+  const navMoveY = gsap.quickTo(nav, 'y', { duration: 0.9, ease: 'power3.out' });
 
-const PARALLAX_STRENGTH = 12.5;
+  const PARALLAX_STRENGTH = 12.5;
 
-window.addEventListener('mousemove', e => {
-  const cx = innerWidth / 2;
-  const cy = innerHeight / 2;
-  navMoveX((e.clientX - cx) / cx * PARALLAX_STRENGTH);
-  navMoveY((e.clientY - cy) / cy * PARALLAX_STRENGTH);
-});
+  window.addEventListener('mousemove', e => {
+    const cx = innerWidth / 2;
+    const cy = innerHeight / 2;
+    navMoveX((e.clientX - cx) / cx * PARALLAX_STRENGTH);
+    navMoveY((e.clientY - cy) / cy * PARALLAX_STRENGTH);
+  });
+}
 
 
-// ── Nav hover — Fluid WebGL background transition ──
+// ── Nav hover — Fluid WebGL background transition (desktop only) ──
 const NAV_BG = {
   'index.html': 'images/0017_17A.jpg',
   'projects.html': 'images/Forgettingdreams-1.jpg',
@@ -34,6 +41,8 @@ const noiseLayers = [
   { el: document.querySelector('.nois3'), peak: 0.5, rest: 0.1 },
   { el: document.querySelector('.nois3-grain'), peak: 0.6, rest: 0.08 },
 ].filter(l => l.el);
+
+if (!isMobile) { // ── BEGIN DESKTOP-ONLY WebGL block ──
 
 // ==========================================
 // FLUID HOVER CONFIGURATION
@@ -339,43 +348,46 @@ function slideBg(src) {
       }
     }
   });
-}
+  }
+} // ── END DESKTOP-ONLY WebGL block ──
 
 const navHoverEls = [
   ...document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)'),
   document.querySelector('.logo-link')
 ].filter(Boolean);
 
-function setNavActive(activeEl) {
+if (!isMobile) {
+  function setNavActive(activeEl) {
+    navHoverEls.forEach(el => {
+      if (el === activeEl) {
+        el.classList.add('active');
+        el.classList.remove('notactive');
+      } else {
+        const wasActive = el.classList.contains('active');
+        el.classList.remove('active');
+        el.classList.add('notactive');
+        if (wasActive && el._staggerOff) el._staggerOff();
+      }
+    });
+  }
+
+  // Radial fluid expansion is triggered only on entry and locks in place.
   navHoverEls.forEach(el => {
-    if (el === activeEl) {
-      el.classList.add('active');
-      el.classList.remove('notactive');
-    } else {
-      const wasActive = el.classList.contains('active');
-      el.classList.remove('active');
-      el.classList.add('notactive');
-      if (wasActive && el._staggerOff) el._staggerOff();
-    }
+    const href = (el.getAttribute('href') || '').split('/').pop() || 'index.html';
+    const src = NAV_BG[href];
+    if (!src) return;
+    el.addEventListener('mouseenter', (e) => {
+      // Lock mouse position at the exact moment hover starts
+      if (typeof uniforms !== 'undefined' && uniforms) {
+        uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
+        uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
+      }
+
+      slideBg(src);
+      setNavActive(el);
+    });
   });
 }
-
-// Radial fluid expansion is triggered only on entry and locks in place.
-navHoverEls.forEach(el => {
-  const href = (el.getAttribute('href') || '').split('/').pop() || 'index.html';
-  const src = NAV_BG[href];
-  if (!src) return;
-  el.addEventListener('mouseenter', (e) => {
-    // Lock mouse position at the exact moment hover starts
-    if (uniforms) {
-      uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
-      uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
-    }
-
-    slideBg(src);
-    setNavActive(el);
-  });
-});
 
 
 // ── Logo text swap on hover (char stagger) ──
@@ -471,32 +483,34 @@ if (dropdownWrap && dropdown) {
   });
 }
 
-// ── Fluid Nav Bar Wobble ──
-(function () {
-  const indexNav = document.querySelector('.index-nav');
-  const navBg = indexNav.querySelector('.nav-bg') || indexNav;
+// ── Fluid Nav Bar Wobble (desktop only) ──
+if (!isMobile) {
+  (function () {
+    const indexNav = document.querySelector('.index-nav');
+    const navBg = indexNav.querySelector('.nav-bg') || indexNav;
 
-  let curTime = 0;
-  function cfract(x) { return x - Math.floor(x); }
-  function chash(px, py) { return cfract(Math.sin(px * 127.1 + py * 311.7) * 43758.5453); }
-  function cnoise(px, py) {
-    const ix = Math.floor(px), iy = Math.floor(py);
-    const fx = px - ix, fy = py - iy;
-    const ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
-    return chash(ix, iy) + (chash(ix + 1, iy) - chash(ix, iy)) * ux
-      + (chash(ix, iy + 1) - chash(ix, iy)) * uy
-      + (chash(ix, iy) - chash(ix + 1, iy) - chash(ix, iy + 1) + chash(ix + 1, iy + 1)) * ux * uy;
-  }
+    let curTime = 0;
+    function cfract(x) { return x - Math.floor(x); }
+    function chash(px, py) { return cfract(Math.sin(px * 127.1 + py * 311.7) * 43758.5453); }
+    function cnoise(px, py) {
+      const ix = Math.floor(px), iy = Math.floor(py);
+      const fx = px - ix, fy = py - iy;
+      const ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
+      return chash(ix, iy) + (chash(ix + 1, iy) - chash(ix, iy)) * ux
+        + (chash(ix, iy + 1) - chash(ix, iy)) * uy
+        + (chash(ix, iy) - chash(ix + 1, iy) - chash(ix, iy + 1) + chash(ix + 1, iy + 1)) * ux * uy;
+    }
 
-  (function loop() {
-    curTime += 0.015; // Animation speed
-    const s = curTime * 1.5;
+    (function loop() {
+      curTime += 0.015; // Animation speed
+      const s = curTime * 1.5;
 
-    // The base border-radius is ~40px (updated from 20px). 
-    // We add noise to each corner to organically squash and stretch it.
-    const r = (i) => Math.round(40 + (cnoise(s + i * 5.1, i * 4.2) - 0.5) * 16);
+      // The base border-radius is ~40px.
+      // We add noise to each corner to organically squash and stretch it.
+      const r = (i) => Math.round(40 + (cnoise(s + i * 5.1, i * 4.2) - 0.5) * 16);
 
-    navBg.style.borderRadius = `${r(0)}px ${r(1)}px ${r(2)}px ${r(3)}px / ${r(4)}px ${r(5)}px ${r(6)}px ${r(7)}px`;
-    requestAnimationFrame(loop);
+      navBg.style.borderRadius = `${r(0)}px ${r(1)}px ${r(2)}px ${r(3)}px / ${r(4)}px ${r(5)}px ${r(6)}px ${r(7)}px`;
+      requestAnimationFrame(loop);
+    })();
   })();
-})();
+}

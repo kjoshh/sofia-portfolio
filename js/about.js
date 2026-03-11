@@ -171,6 +171,11 @@ gsap.from(".corner", {
   delay: 0.5
 });
 
+// Apply char stagger hover to footer links
+document.querySelectorAll('.corner-link').forEach(el => {
+  if (typeof applyFontStagger === 'function') applyFontStagger(el);
+});
+
 
 /* ── Italy time clock ── */
 (function () {
