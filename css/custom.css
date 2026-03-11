@@ -322,6 +322,7 @@
   position: absolute;
   top: 36.5vh;
   width: 5vw;
+  height: 8vw;
 }
 
 #img100 {
@@ -333,7 +334,8 @@
 
 .gall3ry.layout-0-gall3ry .imgholder img {
   width: 100%;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
 }
 
 .gall3ry.layout-1-gall3ry {
@@ -344,7 +346,8 @@
   display: flex;
   flex-flow: wrap;
   gap: 10px;
-  padding-top: 89.89px;
+  padding: 89.89px;
+  box-sizing: border-box;
   justify-content: center;
   align-content: center;
   align-items: stretch;
@@ -353,7 +356,7 @@
 .gall3ry.layout-1-gall3ry .imgholder {
   position: relative;
   width: auto;
-  height: 13.5vw;
+  height: var(--overview-cell-h, 13.5vw);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -687,6 +690,244 @@ body.about-page {
   opacity: 1;
 }
 
+/* Hide mobile toggle on desktop */
+.mobile-menu-toggle {
+  display: none;
+}
+
+/* ══════════════════════════════════════════
+   MOBILE — Index Page (≤767px)
+   ══════════════════════════════════════════ */
+
+@media (max-width: 767px) {
+
+  /* ── Background: fluid static image ── */
+  .imgbg {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .sofianamebg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+  }
+
+  /* Slightly reduce noise overlays on mobile for battery */
+  .nois3-grain {
+    animation: none;
+    opacity: 0.05;
+  }
+
+  /* ── Nav: move to bottom, full-width pill ── */
+
+  /* Reset the desktop centering/positioning entirely */
+  .main-nav.index-nav {
+    top: auto !important;
+    bottom: 28px !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    /* Override any GSAP x/y that may have been applied */
+    width: calc(100vw - 48px);
+    max-width: 420px;
+    padding: 14px 28px;
+    font-size: 13px;
+  }
+
+  /* Static pill — gentle CSS pulse instead of JS wobble */
+  .main-nav.index-nav .nav-bg {
+    border-radius: 40px !important;
+    animation: mobile-pill-breathe 6s ease-in-out infinite;
+  }
+
+  @keyframes mobile-pill-breathe {
+
+    0%,
+    100% {
+      border-radius: 40px 42px 38px 40px / 40px 38px 42px 40px;
+    }
+
+    33% {
+      border-radius: 38px 40px 42px 38px / 42px 40px 38px 44px;
+    }
+
+    66% {
+      border-radius: 42px 38px 40px 44px / 38px 42px 40px 38px;
+    }
+  }
+
+  /* Nav layout: wrap children so logo and menu toggle stay top, others drop down */
+  .wrapin.index {
+    flex-direction: row !important;
+    align-items: center !important;
+    width: 100%;
+    flex: 1;
+  }
+
+  .nav-menu {
+    grid-column-gap: 0;
+    gap: 0;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    /* crucial for dropping links to next line */
+  }
+
+  /* Top row (Logo & Toggle) */
+  .logo-link {
+    margin-right: 0 !important;
+    font-size: 12.5px;
+    letter-spacing: 0.06em;
+    flex: 0 0 auto;
+  }
+
+  .mobile-menu-toggle {
+    display: block;
+    /* Show entirely on mobile */
+    font-size: 12.5px;
+    letter-spacing: 0.06em;
+    flex: 0 0 auto;
+    color: hsla(50, 23%, 95%, 0.6) !important;
+    text-transform: uppercase;
+  }
+
+  /* Menu Toggle active states */
+  .main-nav.mobile-open .mobile-menu-toggle {
+    color: hsla(50, 23%, 95%, 1) !important;
+  }
+
+  /* The actual navigation links are hidden by default */
+  .nav-menu>*:not(.logo-link):not(.mobile-menu-toggle) {
+    flex: 0 0 100%;
+    text-align: left;
+    display: none !important;
+    /* hidden when closed */
+  }
+
+  /* Hide the Webflow dropdown arrow/wrap components entirely to just show link */
+  .nav-dropdown-wrap {
+    align-items: flex-start;
+  }
+
+  /* When the pill is opened */
+  .main-nav.mobile-open {
+    padding-top: 24px;
+    padding-bottom: 12px;
+  }
+
+  .main-nav.mobile-open .nav-menu>*:not(.logo-link):not(.mobile-menu-toggle) {
+    display: block !important;
+    animation: mobileFadeIn 0.3s ease forwards;
+  }
+
+  /* Add margin to first element to space it from the logo row */
+  .main-nav.mobile-open .nav-dropdown-wrap {
+    margin-top: 24px;
+  }
+
+  .main-nav.mobile-open .nav-link:not(.logo-link):not(.mobile-menu-toggle) {
+    font-size: 24px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    letter-spacing: 0.04em;
+    opacity: 0.85;
+    width: 100%;
+    color: hsla(50, 23%, 95%, 0.9) !important;
+  }
+
+  .main-nav.mobile-open>.wrapin>.nav-menu>.nav-link:last-child {
+    border-bottom: none;
+  }
+
+  @keyframes mobileFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Adjust transition of the pill itself */
+  .main-nav.index-nav,
+  .main-nav.index-nav .nav-bg {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Make sure the pulsing breathing animation doesn't fight the height change */
+  .main-nav.index-nav.mobile-open .nav-bg {
+    animation: none;
+    border-radius: 20px !important;
+  }
+
+  /* Also hide the desktop projects dropdown panel entirely on mobile */
+  #projects-dropdown,
+  .nav-dropdown {
+    display: none !important;
+  }
+
+  /* Disable overflow clip so logo text doesn't cut off */
+  .char-wrapper {
+    overflow: visible;
+  }
+
+  /* ── Vignette: darken bottom so the pill nav reads cleanly ── */
+  body.body::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 220px;
+    background: linear-gradient(to top,
+        rgba(15, 14, 12, 0.72) 0%,
+        rgba(15, 14, 12, 0.35) 55%,
+        transparent 100%);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Also darken top slightly for readability */
+  body.body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    background: linear-gradient(to bottom,
+        rgba(15, 14, 12, 0.45) 0%,
+        transparent 100%);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+}
+
+/* ══════════════════════════════════════════
+   TABLET — 768px–991px (index page)
+   ══════════════════════════════════════════ */
+
+@media (min-width: 768px) and (max-width: 991px) {
+
+  .main-nav.index-nav {
+    top: calc(25% - 22px) !important;
+    font-size: 13.5px;
+  }
+
+}
+
 @font-face {
   font-family: Post;
   src: url('../fonts/Post.otf') format("opentype");
@@ -701,14 +942,15 @@ body.about-page {
 .main-nav {
   font-family: Alegreya, sans-serif;
   font-size: 14.5px;
-  /* em base — scale via .index-nav override */
 
   z-index: 999990;
   pointer-events: auto;
   padding: 12px 32px;
   display: flex;
   position: fixed;
-  top: 1.31em;
+  width: max-content;
+  max-width: 92vw;
+  top: 1.4em;
   left: 50%;
   transform: translate(-50%);
 }
@@ -742,7 +984,7 @@ body.about-page {
   padding: 11.86px 14.24px;
   position: absolute;
   inset: auto auto 18.9867px 50%;
-  transform: translate(-50%, -50%);
+  /* transform: translate(-50%, -50%); */
 }
 
 .logo {
@@ -751,20 +993,20 @@ body.about-page {
   flex: 0 auto;
   align-items: baseline;
   height: 100%;
-  margin-right: 1em;
+  margin-right: 1.5em;
   display: flex;
   position: relative;
 }
 
 .nav-menu {
-  grid-column-gap: 2.5em;
+  grid-column-gap: 1.25em;
   align-items: baseline;
   display: flex;
   z-index: 1;
 }
 
 .logo-link {
-  margin-right: 1.5em;
+  margin-right: 2em;
   font-weight: 500;
   color: hsla(50, 23%, 95%, 1) !important;
 }
@@ -829,17 +1071,19 @@ body.about-page {
 
 
 .wrapin {
-  grid-column-gap: 0.448em;
   display: flex;
   align-items: center;
 }
 
-.wrapin.index {
+/* Nav pill: stack nav-menu row on top, dropdown expands below */
+.main-nav .wrapin {
   flex-direction: column;
   align-items: stretch;
 }
 
-.index-nav .nav-menu {
+.main-nav .nav-menu,
+.pro-nav {
+  gap: 2em;
   justify-content: space-between;
 }
 
@@ -1044,9 +1288,12 @@ body.about-page {
   flex-direction: column;
   align-items: flex-start;
   white-space: nowrap;
+  gap: 0.15em;
 }
 
 .nav-dropdown-item {
-  padding-top: 0.5em;
+  padding-top: 0.6em;
   opacity: 0;
+  letter-spacing: 0.1em;
+  font-size: 0.93em;
 }
