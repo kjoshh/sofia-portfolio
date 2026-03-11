@@ -346,6 +346,7 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-auto-rows: var(--overview-cell-h, 13.5vw);
+  align-content: center;
   gap: 10px;
   padding: 89.89px;
   box-sizing: border-box;
