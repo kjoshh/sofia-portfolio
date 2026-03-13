@@ -1,4 +1,5 @@
 function applyFontStagger(el) {
+  if (el.querySelector('img')) return;
   if (el.dataset.staggerApplied) return;
   el.dataset.staggerApplied = "true";
   const original = el.textContent.trim();
@@ -172,6 +173,23 @@ function applyFontStagger(el) {
   // Dropdown items get the same font stagger (no active state management)
   document.querySelectorAll('.nav-dropdown-item').forEach(el => applyFontStagger(el));
 
+  // ── Logo image swap (Sofia Cartuccia ↔ Sybil Sometimes) ──
+  const logoTop = document.querySelector('.nav-logo-top');
+  const logoBottom = document.querySelector('.nav-logo-bottom');
+  const logoLink = document.querySelector('.logo-link');
+  if (logoTop && logoBottom && logoLink) {
+    gsap.set(logoBottom, { yPercent: 100 });
+    let logoSwapped = false;
+    logoLink.addEventListener('mouseenter', () => {
+      logoSwapped = !logoSwapped;
+      const outgoing = logoSwapped ? logoTop    : logoBottom;
+      const incoming = logoSwapped ? logoBottom : logoTop;
+      gsap.set(incoming, { yPercent: 100 });
+      gsap.to(outgoing,  { yPercent: -100, duration: 0.5, ease: 'power3.inOut' });
+      gsap.to(incoming,  { yPercent: 0,    duration: 0.5, ease: 'power3.inOut' });
+    });
+  }
+
   // ── Project Dropdown (runs on all pages) ──
   const dropdownWrap = document.querySelector('.nav-dropdown-wrap');
   const dropdown = document.getElementById('projects-dropdown');
@@ -179,8 +197,10 @@ function applyFontStagger(el) {
 
   if (dropdownWrap && dropdown) {
     function alignDropdown() {
+      const wrapinEl = dropdownWrap.closest('.wrapin');
+      if (!wrapinEl) return;
       const projectsRect = dropdownWrap.getBoundingClientRect();
-      const wrapinRect = dropdownWrap.closest('.wrapin').getBoundingClientRect();
+      const wrapinRect = wrapinEl.getBoundingClientRect();
       dropdown.style.paddingLeft = (projectsRect.left - wrapinRect.left) + 'px';
     }
     alignDropdown();
@@ -194,14 +214,29 @@ function applyFontStagger(el) {
       return h;
     };
 
+    const panelCells = dropdown ? [...dropdown.querySelectorAll('.desk-nav-cell, .desk-nav-label')] : [];
+
     dropdownWrap.addEventListener('mouseenter', () => {
-      gsap.to(dropdown, { maxHeight: fullHeight(), duration: 0.25, ease: 'power2.out' });
-      gsap.to(dropdownItems, { opacity: 1, duration: 0.2, stagger: 0.06, delay: 0.05, ease: 'power2.out' });
+      dropdown.classList.add('is-open');
+      gsap.to(dropdown, { maxHeight: fullHeight(), duration: 0.35, ease: 'power3.out' });
+      if (panelCells.length) {
+        gsap.fromTo(panelCells,
+          { opacity: 0, y: 6 },
+          { opacity: 1, y: 0, duration: 0.25, ease: 'power2.out', stagger: 0.07, delay: 0.14 }
+        );
+      } else {
+        gsap.to(dropdownItems, { opacity: 1, duration: 0.2, stagger: 0.06, delay: 0.05, ease: 'power2.out' });
+      }
     });
 
     const closeDropdown = () => {
-      gsap.to(dropdown, { maxHeight: 0, duration: 0.2, ease: 'power2.in' });
-      gsap.to(dropdownItems, { opacity: 0, duration: 0.15, ease: 'power2.in' });
+      dropdown.classList.remove('is-open');
+      gsap.to(dropdown, { maxHeight: 0, duration: 0.25, ease: 'power3.inOut' });
+      if (panelCells.length) {
+        gsap.to(panelCells, { opacity: 0, y: 3, duration: 0.15, ease: 'power2.in' });
+      } else {
+        gsap.to(dropdownItems, { opacity: 0, duration: 0.15, ease: 'power2.in' });
+      }
     };
 
     const mainNavWrapper = document.querySelector('.main-nav');
