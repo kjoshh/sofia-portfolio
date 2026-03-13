@@ -155,10 +155,9 @@ function applyFontStagger(el) {
     });
   });
 
-  // Apply font stagger + cross-hover to top nav links and logo (all pages)
+  // Apply font stagger + cross-hover to top nav links (exclude logo-link — it uses images, not text)
   const topEls = [
-    ...document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)'),
-    ...document.querySelectorAll('.logo-link'),
+    ...document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item):not(.logo-link)'),
   ].filter(Boolean);
 
   topEls.forEach(el => {

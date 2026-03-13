@@ -17,6 +17,7 @@
   <div class="nois3"></div>
   <div class="nois3-grain"></div>
   <div data-collapse="medium" class="navbar main-nav">
+    <div class="nav-bg"></div>
     <nav role="navigation" class="nav-menu">
       <a href="index.html" aria-current="page" class="nav-link logo-link">
         <span class="nav-logo-wrap">
@@ -32,16 +33,34 @@
       <a href="about.html" class="nav-link">About</a>
     </nav>
     <div class="nav-dropdown" id="projects-dropdown">
-      <a href="hard-coded.html" class="nav-link nav-dropdown-item">Hard-Coded</a>
-      <a href="forgetting-dreams.html" class="nav-link nav-dropdown-item">Forgetting Dreams</a>
+      <div class="desk-nav-inner">
+        <p class="desk-nav-label">Projects</p>
+        <div class="desk-nav-grid">
+          <a href="hard-coded.html" class="desk-nav-cell">
+            <img src="images/Hard-Coded-1.jpg" class="desk-nav-cell-img" alt="Hard-Coded">
+            <span class="desk-nav-cell-num">02</span>
+            <span class="desk-nav-cell-label">Hard-Coded</span>
+          </a>
+          <a href="forgetting-dreams.html" class="desk-nav-cell">
+            <img src="images/Forgettingdreams-1-p-500.jpg" class="desk-nav-cell-img" alt="Forgetting Dreams">
+            <span class="desk-nav-cell-num">01</span>
+            <span class="desk-nav-cell-label">Forgetting Dreams</span>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Mobile bottom sheet nav -->
   <div class="mob-sheet" id="mobSheet">
     <div class="mob-sheet-header" id="mobSheetToggle">
-      <img src="brand_assets/SofiaFullname.png" class="mob-sheet-logo" alt="Sofia Cartuccia">
-      <img src="brand_assets/staryo.png" class="mob-sheet-icon" alt="menu">
+      <a href="index.html" class="mob-sheet-logo-link" onclick="event.stopPropagation()">
+        <img src="brand_assets/SofiaFullname.png" class="mob-sheet-logo" alt="Sofia Cartuccia">
+      </a>
+      <div class="mob-sheet-header-right">
+        <img src="brand_assets/staryo.png" class="mob-sheet-icon" alt="menu">
+        <span class="mob-sheet-menu-label" data-closed="MENU" data-open="CLOSE"></span>
+      </div>
       <div class="mob-sheet-header-links">
         <a href="archive.html" class="mob-sheet-link" onclick="event.stopPropagation()">Archive</a>
         <a href="about.html" class="mob-sheet-link" onclick="event.stopPropagation()">About</a>
