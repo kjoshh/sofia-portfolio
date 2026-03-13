@@ -20,6 +20,10 @@
   height: 55px;
 }
 
+@media (max-width: 767px) {
+  .cursor { display: none; }
+}
+
 
 /* ══════════════════════════════════════════
    SHARED — Dust / Noise overlays
@@ -982,8 +986,8 @@ text-decoration: none;
   .mob-sheet-menu-label::after {
     content: attr(data-closed);
     font-family: Post, serif;
-    font-size: 10px;
-    letter-spacing: 0.14em;
+    font-size: 16.5px;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     color: rgba(233, 229, 221, 0.45);
     transition: color 0.2s ease;
@@ -1119,7 +1123,7 @@ text-decoration: none;
   /* Archive / About links */
   .mob-sheet-link {
     font-family: Alegreya, serif;
-    font-size: 17px;
+    font-size: 15px;
     letter-spacing: 0.04em;
     color: rgba(233, 229, 221, 0.55);
     text-decoration: none;
@@ -1590,6 +1594,7 @@ text-decoration: none;
   /* Mobile project tab pill */
   .mob-proj-tabs {
     display: flex;
+    flex-wrap: wrap;
     position: fixed;
     bottom: 24px;
     left: 50%;
@@ -1599,9 +1604,28 @@ text-decoration: none;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-radius: 20px;
-    padding: 6px 8px;
+    padding: 8px 8px 6px;
     z-index: 9999;
     border: 1px solid rgba(233, 229, 221, 0.06);
+  }
+
+  .mob-proj-title {
+    width: 100%;
+    text-align: center;
+    font-family: Post, serif;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(233, 229, 221, 0.3);
+    pointer-events: none;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(233, 229, 221, 0.07);
+    margin-bottom: 2px;
+  }
+
+  .mob-proj-tabs-row {
+    display: flex;
+    flex-wrap: nowrap;
   }
 
   .mob-proj-tab {

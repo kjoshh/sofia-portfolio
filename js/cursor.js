@@ -1,4 +1,6 @@
 (function () {
+  if (window.innerWidth <= 767 || 'ontouchstart' in window) return;
+
   const cursor = document.getElementById("cursor");
   if (!cursor) return;
 
