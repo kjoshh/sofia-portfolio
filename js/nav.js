@@ -171,6 +171,38 @@ function applyFontStagger(el) {
   // Dropdown items get the same font stagger (no active state management)
   document.querySelectorAll('.nav-dropdown-item').forEach(el => applyFontStagger(el));
 
+  // ── Logo image toggle ──
+  // Each hover swaps between the two logos. The incoming logo always rises from below;
+  // the outgoing exits through the top. State persists on mouse leave.
+  const logoLink = document.querySelector('.main-nav .logo-link');
+  if (logoLink) {
+    const top    = logoLink.querySelector('.nav-logo-top');    // Sofia (default visible)
+    const bottom = logoLink.querySelector('.nav-logo-bottom'); // Sybil
+
+    if (top && bottom) {
+      // Initial state: Sofia visible at 0, Sybil parked below
+      gsap.set(bottom, { yPercent: 100 });
+
+      let sybilShowing = false;
+
+      logoLink.addEventListener('mouseenter', () => {
+        if (!sybilShowing) {
+          // Sybil rises from below, Sofia exits top
+          gsap.set(bottom, { yPercent: 100 });
+          gsap.to(top,    { yPercent: -100, duration: 0.6, ease: 'power3.inOut' });
+          gsap.to(bottom, { yPercent: 0,    duration: 0.6, ease: 'power3.inOut' });
+          sybilShowing = true;
+        } else {
+          // Sofia rises from below, Sybil exits top
+          gsap.set(top, { yPercent: 100 });
+          gsap.to(bottom, { yPercent: -100, duration: 0.6, ease: 'power3.inOut' });
+          gsap.to(top,    { yPercent: 0,    duration: 0.6, ease: 'power3.inOut' });
+          sybilShowing = false;
+        }
+      });
+    }
+  }
+
   // ── Project Dropdown (runs on all pages) ──
   const dropdownWrap = document.querySelector('.nav-dropdown-wrap');
   const dropdown = document.getElementById('projects-dropdown');
