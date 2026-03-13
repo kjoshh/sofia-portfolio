@@ -1663,14 +1663,17 @@ text-decoration: none;
     padding: 88px 12px 120px;
   }
 
-  /* layout-3 (Info) mobile: reposition text-container */
+  /* layout-3 (Info) mobile: full-height scrollable container, pills float on top */
   .text-container {
     position: fixed;
-    inset: 90px 24px auto 24px;
+    top: 0;
+    left: 24px;
+    right: 24px;
+    bottom: 0;
     max-width: 100%;
-    padding-bottom: 0;
+    padding-top: 90px;
+    padding-bottom: 130px;
     overflow-y: auto;
-    bottom: 80px;
   }
 
   /* Allow gall3ry-container to grow with content on mobile */
