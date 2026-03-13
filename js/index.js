@@ -1,428 +1,96 @@
-// ── Nav cursor follow + magnetic pull ──
-const nav = document.querySelector('.main-nav');
 
-// GSAP owns the transform — base centering via xPercent/yPercent
-gsap.set(nav, { xPercent: -50, yPercent: 0 });
-
-const navMoveX = gsap.quickTo(nav, 'x', { duration: 0.9, ease: 'power3.out' });
-const navMoveY = gsap.quickTo(nav, 'y', { duration: 0.9, ease: 'power3.out' });
-
-const PARALLAX_STRENGTH = 12.5;
-
-window.addEventListener('mousemove', e => {
-  const cx = innerWidth / 2;
-  const cy = innerHeight / 2;
-  navMoveX((e.clientX - cx) / cx * PARALLAX_STRENGTH);
-  navMoveY((e.clientY - cy) / cy * PARALLAX_STRENGTH);
-});
-
-
-// ── Nav hover — Fluid WebGL background transition ──
-const NAV_BG = {
-  'index.html': 'images/0017_17A.jpg',
-  'projects.html': 'images/Forgettingdreams-1.jpg',
-  'forgetting-dreams.html': 'images/Forgettingdreams-1.jpg',
-  'archive.html': 'images/sofia_archive-31.jpg',
-  'about.html': 'images/Sybilbg.jpg',
-};
+// ── Nav hover — GSAP slide background transition ──
+const BG_SOFIA = 'images/0017_17A.jpg';
+const BG_SYBIL = 'images/Sybilbg.jpg';
 
 const defaultBg = document.querySelector('.imgbg');
-const defaultImg = defaultBg ? defaultBg.querySelector('img') : null;
 
 const noiseLayers = [
-  { el: document.querySelector('.dusti'), peak: 0.7, rest: 0.1 },
-  { el: document.querySelector('.nois3'), peak: 0.5, rest: 0.1 },
+  { el: document.querySelector('.dusti'),       peak: 0.7, rest: 0.1  },
+  { el: document.querySelector('.nois3'),       peak: 0.5, rest: 0.1  },
   { el: document.querySelector('.nois3-grain'), peak: 0.6, rest: 0.08 },
 ].filter(l => l.el);
 
-// ==========================================
-// FLUID HOVER CONFIGURATION
-// Adjust these values to change the animation
-// ==========================================
-const FLUID_CONFIG = {
-  // Animation duration in seconds (How long the wipe takes)
-  duration: 5,
+// Overflow-hidden wrapper clips the sliding layers
+const bgWrap = document.createElement('div');
+bgWrap.style.cssText = 'position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:1;';
+document.body.appendChild(bgWrap);
 
-  // Power of the easing curve ('linear', 'power1.inOut', 'power2.inOut', 'power3.inOut', etc)
-  ease: 'power2.out',
-
-  // Speed of the organic noise movement while hovering
-  noiseSpeed: 0.15,
-
-  // Scale of the noise (Higher = smaller ripples; Lower = larger waves)
-  noiseScale: 2.5,
-
-  // How much the noise distorts the straight edge (Higher = messier edge)
-  noiseAmount: 0.35,
-
-  // How soft/harsh the masked wipe edge is (Lower = harsher line; Higher = softer gradient)
-  edgeSoftness: 0.015,
-
-  // --- Realism Settings ---
-  // Strength of uneven growth tendrils (0 to 1)
-  viscosity: 0.75,
-
-  // Amount of lens distortion/warp purely at the edge of the fluid (0 to 0.1)
-  refraction: 0.25, // Increased for a stronger, more concentrated effect
-
-  // Brightness of the surface tension highlight at the edge (0 to 1)
-  lipBrightness: 0.1
-};
-
-// WebGL shaders for fluid ink spilled-over effect
-const vertexShader = `
-  varying vec2 v_uv;
-  void main() {
-    v_uv = uv;
-    gl_Position = vec4(position, 1.0);
-  }
-`;
-const fragmentShader = `
-  precision highp float;
-  uniform sampler2D u_tex0;
-  uniform sampler2D u_tex1;
-  uniform float u_progress;
-  uniform float u_time;
-  uniform vec2 u_resolution;
-  uniform vec2 u_aspect0;
-  uniform vec2 u_aspect1;
-  uniform float u_noiseSpeed;
-  uniform float u_noiseScale;
-  uniform float u_noiseAmount;
-  uniform float u_edgeSoftness;
-  uniform vec2 u_mouse;
-  uniform float u_viscosity;
-  uniform float u_refraction;
-  uniform float u_lipBrightness;
-
-  varying vec2 v_uv;
-
-  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-  float noise(vec2 p) {
-    vec2 i = floor(p); vec2 f = fract(p);
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash(i+vec2(0,0)),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);
-  }
-  float turbulence(vec2 p) {
-    float t = 0.0; float w = 0.5;
-    for (int i = 0; i < 5; i++) { t += abs(noise(p)) * w; p *= 2.0; w *= 0.5; }
-    return t;
-  }
-  vec2 getCoverUV(vec2 uv, vec2 res, vec2 aspect) {
-    float screenR = res.x / res.y;
-    float imgR = aspect.x / aspect.y;
-    vec2 newUv = uv;
-    if (imgR > screenR) {
-      newUv.x = 0.5 + (uv.x - 0.5) * (screenR / imgR);
-    } else {
-      newUv.y = 0.5 + (uv.y - 0.5) * (imgR / screenR);
-    }
-    return newUv;
-  }
-
-  void main() {
-    vec2 uv = v_uv;
-    vec2 uv0 = getCoverUV(uv, u_resolution, u_aspect0);
-    vec4 c0 = texture2D(u_tex0, uv0);
-
-    vec2 uv1 = getCoverUV(uv, u_resolution, u_aspect1);
-    vec4 c1 = texture2D(u_tex1, uv1);
-
-    // Turbulent noise to distort the mask edge
-    float n1 = turbulence(uv * u_noiseScale + u_time * u_noiseSpeed);
-    float n2 = turbulence(uv * (u_noiseScale * 2.0) - u_time * (u_noiseSpeed * 1.3));
-    float noiseComb = (n1 * 0.6 + n2 * 0.4);
-    
-    // Correct mouse position for screen aspect ratio to get circular expansion
-    vec2 correctedUV = uv;
-    vec2 correctedMouse = u_mouse;
-    float screenR = u_resolution.x / u_resolution.y;
-    correctedUV.x *= screenR;
-    correctedMouse.x *= screenR;
-
-    // Distance from the mouse hover point
-    float dist = distance(correctedUV, correctedMouse);
-    
-    // 1. Viscous Fingering: multiply progress by noise to make expansion uneven
-    // Low frequency noise for "blobs"
-    float fingerNoise = turbulence(correctedUV * 1.5 + u_time * 0.1);
-    float progressMult = 1.0 + (fingerNoise - 0.5) * u_viscosity;
-    
-    // Add original noise to break down the perfect circle.
-    float spread = dist + (noiseComb - 0.5) * u_noiseAmount;
-
-    // Calculate max distance from the mouse to the screen corners
-    // This ensures the animation time is perfectly consistent on all screen sizes and hover positions
-    float d1 = distance(correctedMouse, vec2(0.0, 0.0));
-    float d2 = distance(correctedMouse, vec2(screenR, 0.0));
-    float d3 = distance(correctedMouse, vec2(0.0, 1.0));
-    float d4 = distance(correctedMouse, vec2(screenR, 1.0));
-    float maxDist = max(max(d1, d2), max(d3, d4));
-
-    // Calculate start and end values for the progress mapping
-    float minMult = 1.0 - (0.5 * u_viscosity);
-    float pEnd = (maxDist + (u_noiseAmount * 0.5) + u_edgeSoftness) / minMult;
-    
-    // We adjust pStart to be just barely negative enough to hide noise,
-    // ensuring the reveal starts expanding instantly to prevent "dead air" delay.
-    float pStart = -(u_noiseAmount * 0.5 + u_edgeSoftness + 0.01) / minMult;
-    
-    // Base mapped progress
-    float baseP = mix(pStart, pEnd, u_progress);
-    
-    // Apply viscous fingering
-    float p = baseP * progressMult;
-    
-    // Mask logic
-    float mask = smoothstep(p - u_edgeSoftness, p + u_edgeSoftness, spread);
-
-    // 2. Refraction: warp the texture strictly at the edge of the reveal
-    // We isolate the edge by multiplying the inverted mask by a tight inner bounds
-    // This creates a "ring" of distortion just inside the fluid boundary.
-    float edgeThickness = 0.08;
-    float edgeRing = (1.0 - mask) * smoothstep(p - edgeThickness, p, spread);
-    
-    vec2 refractOff = vec2((noiseComb - 0.5) * u_refraction * edgeRing);
-    vec2 uv1_refr = getCoverUV(uv + refractOff, u_resolution, u_aspect1);
-    c1 = texture2D(u_tex1, uv1_refr);
-
-    // 3. Surface Tension "Lip": Highlight the leading edge
-    // A narrow ring right at the reveal front
-    float lip = smoothstep(p + 0.01, p, spread) * smoothstep(p - 0.05, p - 0.02, spread);
-    c1.rgb += lip * u_lipBrightness;
-
-    gl_FragColor = mix(c1, c0, mask);
-  }
-`;
-
-let scene, camera, renderer, uniforms;
-const textures = {};
-const textureAspects = {}; // Store dimensions to ensure consistent aspect ratios
-const loader = new THREE.TextureLoader();
-let bgCurrentSrc = NAV_BG['index.html'];
-let bgNextSrc = bgCurrentSrc; // Initialize next to current to avoid null aspect jumps
-
-function updateUniformAspects(src, uniformTarget) {
-  if (uniforms && textureAspects[src]) {
-    const { w, h } = textureAspects[src];
-    if (uniformTarget === 0) uniforms.u_aspect0.value.set(w, h);
-    if (uniformTarget === 1) uniforms.u_aspect1.value.set(w, h);
-  }
+function makeBgLayer() {
+  const img = document.createElement('img');
+  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;';
+  bgWrap.appendChild(img);
+  gsap.set(img, { yPercent: 100 });
+  return img;
 }
 
-// Load textures and trigger aspect ratio updates
-Object.entries(NAV_BG).forEach(([key, src]) => {
-  textures[src] = loader.load(src, tex => {
-    tex.minFilter = THREE.LinearMipMapLinearFilter;
-    tex.magFilter = THREE.LinearFilter;
+const bgLayers = [makeBgLayer(), makeBgLayer()];
+let bgFront = 0, bgVisible = false, bgCurrentSrc = null;
 
-    // Store dimensions permanently
-    textureAspects[src] = { w: tex.image.width, h: tex.image.height };
-
-    // If this is the current or upcoming image, update the shader immediately
-    if (uniforms) {
-      if (bgCurrentSrc === src) {
-        uniforms.u_tex0.value = tex;
-        updateUniformAspects(src, 0);
-      }
-      if (bgNextSrc === src) {
-        uniforms.u_tex1.value = tex;
-        updateUniformAspects(src, 1);
-      }
-
-      // If we just loaded the current background image, render it so the screen isn't black
-      if (bgCurrentSrc === src) {
-        if (!isAnimating && typeof renderer !== 'undefined') {
-          renderer.render(scene, camera);
-        }
-      }
-    }
-  });
-});
-
-const defaultTex = textures[bgCurrentSrc];
-
-scene = new THREE.Scene();
-camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-uniforms = {
-  u_tex0: { value: defaultTex },
-  u_tex1: { value: defaultTex },
-  u_progress: { value: 0 },
-  u_time: { value: 0 },
-  u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-  u_aspect0: { value: new THREE.Vector2(1, 1) },
-  u_aspect1: { value: new THREE.Vector2(1, 1) },
-  u_noiseSpeed: { value: FLUID_CONFIG.noiseSpeed },
-  u_noiseScale: { value: FLUID_CONFIG.noiseScale },
-  u_noiseAmount: { value: FLUID_CONFIG.noiseAmount },
-  u_edgeSoftness: { value: FLUID_CONFIG.edgeSoftness },
-  u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
-  u_viscosity: { value: FLUID_CONFIG.viscosity },
-  u_refraction: { value: FLUID_CONFIG.refraction },
-  u_lipBrightness: { value: FLUID_CONFIG.lipBrightness }
-};
-
-const mesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(2, 2),
-  new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader })
-);
-scene.add(mesh);
-
-renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.domElement.style.position = 'absolute';
-renderer.domElement.style.inset = '0';
-renderer.domElement.style.zIndex = '0';
-
-if (defaultBg) {
-  defaultBg.appendChild(renderer.domElement);
-  if (defaultImg) defaultImg.style.display = 'none';
-}
-
-let isAnimating = false;
-let animationFrameId = null;
-
-function render() {
-  uniforms.u_time.value += 0.01;
-  renderer.render(scene, camera);
-
-  if (isAnimating) {
-    animationFrameId = requestAnimationFrame(render);
-  }
-}
-
-// Render one initial frame to establish the default image
-renderer.render(scene, camera);
-
-window.addEventListener('resize', () => {
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
-});
-
-// Helper removed in favor of textureAspects map
+// Preload logo toggle images
+[BG_SOFIA, BG_SYBIL].forEach(src => { const i = new Image(); i.src = src; });
 
 function slideBg(src) {
   if (src === bgCurrentSrc) return;
-
-  bgNextSrc = src;
-  const tex0 = textures[bgCurrentSrc];
-  const tex1 = textures[src];
-
-  uniforms.u_tex0.value = tex0;
-  updateUniformAspects(bgCurrentSrc, 0);
-
-  uniforms.u_tex1.value = tex1;
-  updateUniformAspects(src, 1);
-
   bgCurrentSrc = src;
 
-  gsap.killTweensOf(uniforms.u_progress);
-  uniforms.u_progress.value = 0;
+  const next = bgVisible ? 1 - bgFront : 0;
+  const out  = bgVisible ? bgFront : null;
 
-  // Start render loop
-  if (!isAnimating) {
-    isAnimating = true;
-    render();
+  bgLayers[next].src = src;
+  gsap.killTweensOf(bgLayers);
+  gsap.set(bgLayers[next], { yPercent: 100 });
+  gsap.to(bgLayers[next], { yPercent: 0,    duration: 0.9, ease: 'power3.inOut' });
+
+  if (out !== null) {
+    gsap.to(bgLayers[out], { yPercent: -100, duration: 0.9, ease: 'power3.inOut' });
+  } else if (defaultBg) {
+    gsap.to(defaultBg,     { yPercent: -100, duration: 0.9, ease: 'power3.inOut' });
   }
 
-  gsap.to(uniforms.u_progress, {
-    value: 1,
-    duration: FLUID_CONFIG.duration,
-    ease: FLUID_CONFIG.ease,
-    onComplete: () => {
-      // Pause render loop once the wipe completes
-      isAnimating = false;
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-      }
-    }
+  bgFront = next;
+  bgVisible = true;
+
+  // Pulse noise layers on transition
+  noiseLayers.forEach(({ el, peak, rest }) => {
+    gsap.killTweensOf(el);
+    gsap.to(el, { opacity: peak, duration: 0.6, ease: 'power4.in' });
+    gsap.to(el, { opacity: rest, duration: 0.6, ease: 'power4.out', delay: 0.6 });
   });
 }
 
-const navHoverEls = [
-  ...document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)'),
-  document.querySelector('.logo-link')
-].filter(Boolean);
-
-function setNavActive(activeEl) {
-  navHoverEls.forEach(el => {
-    if (el === activeEl) {
-      el.classList.add('active');
-      el.classList.remove('notactive');
-    } else {
-      const wasActive = el.classList.contains('active');
-      el.classList.remove('active');
-      el.classList.add('notactive');
-      if (wasActive && el._staggerOff) el._staggerOff();
-    }
-  });
-}
-
-// Radial fluid expansion is triggered only on entry and locks in place.
-navHoverEls.forEach(el => {
-  const href = (el.getAttribute('href') || '').split('/').pop() || 'index.html';
-  const src = NAV_BG[href];
-  if (!src) return;
-  el.addEventListener('mouseenter', (e) => {
-    // Lock mouse position at the exact moment hover starts
-    if (uniforms) {
-      uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
-      uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
-    }
-
-    slideBg(src);
-    setNavActive(el);
-  });
-});
-
-
-// ── Logo text swap on hover (char stagger) ──
+// ── Logo toggle (sticky flip on each mouseenter) ──
 const logoEl = document.querySelector('.main-nav .logo-link');
 
 if (logoEl) {
-  const LOGO_DEFAULT = 'Sofia Cartuccia';
-  const LOGO_SYBIL = 'Sybil Sometimes';
+  const sybilChars = [...'Sybil Sometimes'].map(ch => ch === ' ' ? '\u00A0' : ch);
+  let sybilMode = false;
 
-  function swapLogoChars(newText) {
-    const wrappers = logoEl.querySelectorAll('.char-wrapper');
-    const chars = [...newText].map(ch => ch === ' ' ? '\u00A0' : ch);
+  function swapLogoChars(toSybil) {
+    logoEl.querySelectorAll('.char-wrapper').forEach((wrapper, i) => {
+      const top = wrapper.querySelector('.char-top');
+      const bot = wrapper.querySelector('.char-bottom');
+      gsap.killTweensOf([top, bot]);
 
-    wrappers.forEach((wrapper, i) => {
-      const topSpan = wrapper.querySelector('.char-top');
-      const bottomSpan = wrapper.querySelector('.char-bottom');
-      const isHover = newText === LOGO_SYBIL;
-
-      if (isHover) {
-        // Going to Sybil - update bottom text before sliding up
-        bottomSpan.textContent = chars[i] ?? '';
+      if (toSybil) {
+        // Sofia exits top, Sybil enters from below
+        bot.textContent = sybilChars[i] ?? '';
+        gsap.set(bot, { yPercent: 0 });
+        gsap.to([top, bot], { yPercent: -100, duration: 0.4, delay: i * 0.03, ease: 'power3.inOut' });
       } else {
-        // Returning to Sofia - original text was already in topSpan.
-        // The slide down will reveal it.
+        // Sybil exits top, Sofia enters from below
+        gsap.set(top, { yPercent: 100 });
+        gsap.to(bot, { yPercent: -200, duration: 0.4, delay: i * 0.03, ease: 'power3.inOut' });
+        gsap.to(top, { yPercent: 0,    duration: 0.4, delay: i * 0.03, ease: 'power3.inOut' });
       }
-
-      gsap.killTweensOf([topSpan, bottomSpan]);
-
-      const yVal = isHover ? -100 : 0;
-
-      gsap.to([topSpan, bottomSpan], {
-        yPercent: yVal,
-        duration: 0.4,
-        delay: i * 0.03,
-        ease: 'power3.inOut'
-      });
     });
   }
 
-  // "Sofia Cartuccia" is always low opacity — only "Sybil Sometimes" gets full opacity
-  logoEl.classList.remove('active');
-  logoEl.classList.add('notactive');
-
-  // Restore "Sofia Cartuccia" at low opacity when another link becomes active
-  logoEl._staggerOff = () => swapLogoChars(LOGO_DEFAULT);
-
-  logoEl.addEventListener('mouseenter', () => swapLogoChars(LOGO_SYBIL));
+  logoEl.addEventListener('mouseenter', () => {
+    sybilMode = !sybilMode;
+    swapLogoChars(sybilMode);
+    slideBg(sybilMode ? BG_SYBIL : BG_SOFIA);
+  });
 }
 
 
@@ -473,7 +141,7 @@ if (dropdownWrap && dropdown) {
 
 // ── Fluid Nav Bar Wobble ──
 (function () {
-  const indexNav = document.querySelector('.index-nav');
+  const indexNav = document.querySelector('.main-nav');
   const navBg = indexNav.querySelector('.nav-bg') || indexNav;
 
   let curTime = 0;

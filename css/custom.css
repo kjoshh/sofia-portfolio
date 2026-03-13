@@ -548,28 +548,31 @@ body.about-page {
 .about-greeting {
   position: fixed;
   top: 23%;
-  left: 18%;
+  left: 12%;
   z-index: 10;
   font-family: Alegreya, serif;
   font-size: 20px;
   color: #e7e7e7;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 0, 0, 0.6), 0 0 80px rgba(0, 0, 0, 0.4);
   line-height: 1.55;
-  max-width: 220px;
+  max-width: max-content !important;
   pointer-events: auto;
   border-radius: 6px;
 }
 
 .greet-line1 {
+  display: block;
   font-family: post;
   font-size: 25px;
   opacity: 0.95;
 }
 
 .greet-line2 {
+  display: block;
   font-family: Alegreya, serif;
   font-size: 18px;
   opacity: 0.95;
+  white-space: nowrap;
 }
 
 .about-right {
@@ -674,6 +677,8 @@ body.about-page {
 .corner {
   position: relative;
   opacity: 1;
+  color: #e7e7e7;
+text-decoration: none;
   cursor: pointer;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 0, 0, 0.6), 0 0 80px rgba(0, 0, 0, 0.4);
 }
@@ -693,11 +698,16 @@ body.about-page {
   display: none;
 }
 
+/* Hide bottom sheet on desktop */
+.mob-sheet { display: none; }
+
 /* ══════════════════════════════════════════
    MOBILE — Index Page (≤767px)
    ══════════════════════════════════════════ */
 
 @media (max-width: 767px) {
+
+  .main-nav { display: none !important; }
 
   /* ── Background: fluid static image ── */
   .imgbg {
@@ -724,25 +734,6 @@ body.about-page {
 
   /* ── Nav: move to bottom, full-width pill ── */
 
-  /* Reset the desktop centering/positioning entirely */
-  .main-nav.index-nav {
-    top: auto !important;
-    bottom: 28px !important;
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
-    /* Override any GSAP x/y that may have been applied */
-    width: calc(100vw - 48px);
-    max-width: 420px;
-    padding: 14px 28px;
-    font-size: 13px;
-  }
-
-  /* Static pill — gentle CSS pulse instead of JS wobble */
-  .main-nav.index-nav .nav-bg {
-    border-radius: 40px !important;
-    animation: mobile-pill-breathe 6s ease-in-out infinite;
-  }
 
   @keyframes mobile-pill-breathe {
 
@@ -857,17 +848,6 @@ body.about-page {
     }
   }
 
-  /* Adjust transition of the pill itself */
-  .main-nav.index-nav,
-  .main-nav.index-nav .nav-bg {
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  /* Make sure the pulsing breathing animation doesn't fight the height change */
-  .main-nav.index-nav.mobile-open .nav-bg {
-    animation: none;
-    border-radius: 20px !important;
-  }
 
   /* Also hide the desktop projects dropdown panel entirely on mobile */
   #projects-dropdown,
@@ -911,6 +891,200 @@ body.about-page {
     z-index: 10;
   }
 
+  /* ── Mobile bottom sheet nav ── */
+
+
+  .mob-sheet {
+    display: block;
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100vw - 48px);
+    max-width: 400px;
+    /* Warm near-black — like darkroom paper, not glass */
+    background: rgba(15, 13, 11, 0.96);
+    border-radius: 13px;
+    z-index: 999990;
+  }
+
+  /* Dust/scratch grain overlay — gives the sheet a physical, analogue feel */
+  .mob-sheet::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('../brand_assets/BGDust.png');
+    background-size: cover;
+    opacity: 0.14;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Fine noise on top for extra texture depth */
+  .mob-sheet::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('../brand_assets/grain.jpg');
+    background-size: 200px 200px;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 11;
+  }
+
+  .mob-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 18px 13px;
+    cursor: pointer;
+    position: relative;
+    z-index: 20;
+  }
+
+  .mob-sheet-logo {
+    height: 22px;
+    width: auto;
+    display: block;
+    opacity: 0.92;
+  }
+
+  .mob-sheet-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    display: block;
+    filter: invert(1) saturate(0) brightness(3);
+    mix-blend-mode: screen;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+  }
+
+  .mob-sheet.is-open .mob-sheet-icon {
+    opacity: 0.85;
+  }
+
+  .mob-sheet-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 20;
+    border-radius: 0 0 13px 13px;
+  }
+
+  .mob-sheet.is-open .mob-sheet-body {
+    max-height: 420px;
+  }
+
+  .mob-sheet.is-open .mob-sheet-dots {
+    color: rgba(233, 229, 221, 0.6);
+  }
+
+  .mob-sheet-section-label {
+    font-family: Post, serif;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(233, 229, 221, 0.3);
+    position: relative;
+    z-index: 20;
+  }
+
+  /* Contact sheet grid */
+  .mob-sheet-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    padding: 5px 8px 6px;
+    position: relative;
+    z-index: 20;
+  }
+
+  .mob-sheet-cell {
+    position: relative;
+    display: block;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: 5px;
+    text-decoration: none;
+  }
+
+  .mob-sheet-cell-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .mob-sheet-cell:active .mob-sheet-cell-img {
+    transform: scale(0.96);
+  }
+
+  /* Darkroom gradient — text reads clean against image */
+  .mob-sheet-cell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(10, 8, 6, 0.8) 0%, rgba(10, 8, 6, 0.1) 45%, transparent 70%);
+    z-index: 1;
+  }
+
+  .mob-sheet-cell-num {
+    position: absolute;
+    top: 8px;
+    right: 9px;
+    font-family: Post, serif;
+    font-size: 9px;
+    color: rgba(233, 229, 221, 0.4);
+    letter-spacing: 0.12em;
+    z-index: 2;
+  }
+
+  .mob-sheet-cell-label {
+    position: absolute;
+    bottom: 9px;
+    left: 10px;
+    right: 10px;
+    font-family: Alegreya, serif;
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.2;
+    color: rgba(233, 229, 221, 0.92);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+    z-index: 2;
+  }
+
+  /* Archive / About links */
+  .mob-sheet-links {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 10px 14px 13px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    z-index: 20;
+  }
+
+  .mob-sheet-link {
+    font-family: Alegreya, serif;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    color: rgba(233, 229, 221, 0.55);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .mob-sheet-link:active {
+    color: rgba(233, 229, 221, 0.9);
+  }
+
+
 }
 
 /* ══════════════════════════════════════════
@@ -918,11 +1092,6 @@ body.about-page {
    ══════════════════════════════════════════ */
 
 @media (min-width: 768px) and (max-width: 991px) {
-
-  .main-nav.index-nav {
-    top: calc(25% - 22px) !important;
-    font-size: 13.5px;
-  }
 
 }
 
@@ -1060,11 +1229,6 @@ body.about-page {
   overflow: visible;
 }
 
-/* Index page — nav centered on screen (transform owned by GSAP) */
-.index-nav {
-  top: calc(27.5% - 22px) !important;
-  font-size: 14.5px;
-}
 
 
 
@@ -1173,7 +1337,7 @@ body.about-page {
   opacity: .75;
   pointer-events: none;
   color: #d7d7d7;
-  text-transform: uppercase;
+  /* text-transform: uppercase; */
   font-family: Post, Arial, sans-serif;
   font-size: 17px;
   position: relative;
