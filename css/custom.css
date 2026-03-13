@@ -106,7 +106,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.95);
-  z-index: 99999;
+  z-index: 9999999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1613,7 +1613,7 @@ text-decoration: none;
     width: 100%;
     text-align: center;
     font-family: Post, serif;
-    font-size: 9px;
+    font-size: 11.5px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(233, 229, 221, 0.3);
