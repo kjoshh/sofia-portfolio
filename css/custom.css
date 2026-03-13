@@ -249,24 +249,6 @@
   z-index: 1;
 }
 
-.img-num {
-  position: absolute;
-  bottom: 10px;
-  left: 12px;
-  font-family: Post;
-  font-size: 0.72rem;
-  color: #e9e5dd;
-  letter-spacing: 0.08em;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-  z-index: 2;
-}
-
-.archive-grid-item:hover .img-num {
-  opacity: 1;
-}
 
 /* Archive lightbox overrides */
 .archive-page .lb-btn {
@@ -962,21 +944,31 @@ text-decoration: none;
     transition: opacity 0.2s ease;
   }
 
+  .mob-sheet-header-links {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 20px;
+    pointer-events: none;
+  }
+
+  .mob-sheet.is-open .mob-sheet-header-links {
+    pointer-events: auto;
+  }
+
   .mob-sheet.is-open .mob-sheet-icon {
     opacity: 0.85;
   }
 
   .mob-sheet-body {
-    max-height: 0;
+    height: 0;
     overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    /* no transition — GSAP owns this */
     position: relative;
     z-index: 20;
     border-radius: 0 0 13px 13px;
-  }
-
-  .mob-sheet.is-open .mob-sheet-body {
-    max-height: 420px;
   }
 
   .mob-sheet.is-open .mob-sheet-dots {
@@ -987,29 +979,63 @@ text-decoration: none;
     font-family: Post, serif;
     font-size: 11px;
     letter-spacing: 0.14em;
+    margin-bottom: 0;
     text-transform: uppercase;
     color: rgba(233, 229, 221, 0.3);
     position: relative;
     z-index: 20;
+    padding: 8px 17.5px 2px;
   }
 
-  /* Contact sheet grid */
+  /* Contact sheet grid — horizontal draggable slider */
   .mob-sheet-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    overflow-x: scroll;
+    overflow-y: hidden;
     gap: 5px;
     padding: 5px 8px 6px;
     position: relative;
     z-index: 20;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .mob-sheet-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mob-sheet-grid.is-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
+  }
+
+  /* 2 or fewer projects: fill the width as a plain grid */
+  .mob-sheet-grid--few {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow-x: hidden;
+    cursor: default;
+    scroll-snap-type: none;
+  }
+
+  .mob-sheet-grid--few .mob-sheet-cell {
+    width: auto;
+    scroll-snap-align: none;
   }
 
   .mob-sheet-cell {
     position: relative;
     display: block;
+    width: calc(42% - 3px);
+    flex-shrink: 0;
     aspect-ratio: 3 / 4;
     overflow: hidden;
     border-radius: 5px;
     text-decoration: none;
+    scroll-snap-align: start;
   }
 
   .mob-sheet-cell-img {
@@ -1059,21 +1085,9 @@ text-decoration: none;
   }
 
   /* Archive / About links */
-  .mob-sheet-links {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    padding: 10px 14px 13px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    position: relative;
-    z-index: 20;
-  }
-
   .mob-sheet-link {
     font-family: Alegreya, serif;
-    font-size: 15px;
+    font-size: 17px;
     letter-spacing: 0.04em;
     color: rgba(233, 229, 221, 0.55);
     text-decoration: none;
@@ -1107,31 +1121,53 @@ text-decoration: none;
 
 
 .main-nav {
-  font-family: Alegreya, sans-serif;
+  font-family: Alegreya, serif;
   font-size: 14.5px;
-
   z-index: 999990;
   pointer-events: auto;
-  padding: 12px 32px;
+  padding: 0;
   display: flex;
+  flex-direction: column;
   position: fixed;
   width: max-content;
   max-width: 92vw;
   top: 1.4em;
   left: 50%;
-  transform: translate(-50%);
+  transform: translateX(-50%);
+  background: rgba(15, 13, 11, 0.96);
+  border-radius: 13px;
+  border: 1px solid rgba(233, 229, 221, 0.07);
+  overflow: hidden;
+}
+
+/* Dust/scratch grain — analogue darkroom feel */
+.main-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('../brand_assets/BGDust.png');
+  background-size: cover;
+  opacity: 0.14;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* Fine noise for extra texture depth */
+.main-nav::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('../brand_assets/grain.jpg');
+  background-size: 200px 200px;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 101;
 }
 
 .nav-bg {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-color: #29282385;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 40px;
-  box-shadow: 0 0 10px 2px #29282385;
-  pointer-events: none;
+  display: none;
 }
 
 .pro-nav {
@@ -1166,38 +1202,82 @@ text-decoration: none;
 }
 
 .nav-menu {
-  grid-column-gap: 1.25em;
-  align-items: baseline;
   display: flex;
-  z-index: 1;
+  align-items: center;
+  gap: 20px;
+  padding: 13px 20px 12px 16px;
+  position: relative;
+  z-index: 20;
 }
 
 .logo-link {
-  margin-right: 2em;
-  font-weight: 500;
-  color: hsla(50, 23%, 95%, 1) !important;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.nav-logo-wrap {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  height: 20px;
+}
+
+.nav-logo-img {
+  height: 20px;
+  width: auto;
+  display: block;
+  opacity: 0.92;
+
+}
+.nav-logo-top{
+
+  transform: rotate(-1.5deg);
+}
+.nav-logo-bottom {
+  height: 21.5px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotate(0.75deg);
+  opacity: 1;
+
+}
+
+.nav-star-sep {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  display: block;
+  opacity: 0.5;
+  flex-shrink: 0;
+  margin-left: -4px;
 }
 
 .nav-link {
   opacity: 1;
-  color: hsla(50, 23%, 95%, 0.9);
-  letter-spacing: .125em;
+  color: rgba(233, 229, 221, 0.5);
+  letter-spacing: 0.06em;
   padding: 0;
   font-size: 1em;
-  transition: opacity .25s;
+  font-family: Alegreya, serif;
+  text-decoration: none;
+  transition: color 0.15s ease;
 }
 
 .nav-link:hover,
 .nav-link.active {
   cursor: pointer;
+  color: rgba(233, 229, 221, 0.9);
 }
 
 .nav-link.active {
-  color: hsla(50, 23%, 95%, 1);
+  color: rgba(233, 229, 221, 0.92);
 }
 
 .nav-link.notactive {
-  color: hsla(50, 23%, 95%, 0.9);
+  color: rgba(233, 229, 221, 0.5);
 }
 
 .imgbg {
@@ -1243,7 +1323,6 @@ text-decoration: none;
   align-items: stretch;
 }
 
-.main-nav .nav-menu,
 .pro-nav {
   gap: 2em;
   justify-content: space-between;
@@ -1366,96 +1445,34 @@ text-decoration: none;
 
 
 
-/* ── Projects overview page ── */
-.proj-list-wrap {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  font-size: 14px;
-  z-index: 9000;
-}
-
-.proj-list {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  pointer-events: auto;
-  gap: 1em;
-  font-size: 1em;
-}
-
-.proj-item {
-  position: relative;
-  display: block;
-  text-decoration: none;
-  color: hsla(50, 23%, 95%, 0.75);
-  font-family: Alegreya, serif;
-  font-size: clamp(1rem, 1vw, 1rem);
-  font-style: italic;
-  letter-spacing: 0.15em;
-  line-height: 1.1;
-  transition: color 0.3s ease;
-  white-space: nowrap;
-  z-index: 3;
-}
-
-.proj-item:hover {
-  color: white;
-  ;
-}
-
-.proj-img-wrap {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 320px;
-  height: 420px;
-  pointer-events: none;
-  overflow: hidden;
-  opacity: 0;
-  transform: scale(0);
-  z-index: 1;
-}
-
-.proj-img-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  transform: scale(1.08);
-  transition: transform 0.8s cubic-bezier(0.075, 0.82, 0.165, 1);
-
-}
-
-.proj-item:hover .proj-img-wrap img {
-  transform: scale(1);
-}
-
-
 
 /* ── Index nav dropdown ── */
 .nav-dropdown-wrap {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
 }
 
+/* Projects panel — plain text links, expands below nav row */
 .nav-dropdown {
   max-height: 0;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  white-space: nowrap;
-  gap: 0.15em;
 }
 
 .nav-dropdown-item {
-  padding-top: 0.6em;
+  display: block;
+  padding: 0.55em 20px;
+  font-family: Alegreya, serif;
+  font-size: 0.95em;
+  letter-spacing: 0.06em;
+  color: rgba(233, 229, 221, 0.5);
+  text-decoration: none;
   opacity: 0;
-  letter-spacing: 0.1em;
-  font-size: 0.93em;
+}
+
+.nav-dropdown-item:last-child {
+  padding-bottom: 10px;
+}
+
+.nav-dropdown-item:hover {
+  color: rgba(233, 229, 221, 0.9);
 }
