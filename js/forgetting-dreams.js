@@ -1,3 +1,38 @@
+/* ── Overview cell height: all images fit in viewport ── */
+function updateOverviewCellHeight() {
+  const imgCount = document.querySelectorAll(".imgholder").length;
+  const grid = document.querySelector(".gall3ry");
+
+  if (window.innerWidth <= 767) {
+    const gap = 8;
+    const availH = window.innerHeight - 88 - 80;
+    let bestCols = 2;
+    for (let c = 2; c <= 6; c++) {
+      bestCols = c;
+      const rows = Math.ceil(imgCount / c);
+      if ((availH - gap * (rows - 1)) / rows >= 70) break;
+    }
+    const rows = Math.ceil(imgCount / bestCols);
+    const cellH = (availH - gap * (rows - 1)) / rows;
+    document.querySelector(".gall3ry-container").style.setProperty("--overview-cell-h", cellH + "px");
+    if (grid) grid.style.gridTemplateColumns = `repeat(${bestCols}, 1fr)`;
+  } else {
+    const cols = 5;
+    const rows = Math.ceil(imgCount / cols);
+    const gap = 10;
+    const padding = 89.89;
+    const availH = window.innerHeight - 2 * padding;
+    const desiredH = window.innerWidth * 0.135;
+    const maxH = (availH - gap * (rows - 1)) / rows;
+    const cellH = Math.min(desiredH, maxH);
+    document.querySelector(".gall3ry-container").style.setProperty("--overview-cell-h", cellH + "px");
+    if (grid) grid.style.gridTemplateColumns = "";
+  }
+}
+updateOverviewCellHeight();
+window.addEventListener("resize", updateOverviewCellHeight);
+
+
 /* ── Imgholder cursor grow (overview layout only) ── */
 const cursor = document.getElementById("cursor");
 document.querySelectorAll(".imgholder").forEach(el => {
@@ -95,11 +130,14 @@ function switchLayoutHandler(newLayout) {
     ? "power1.inOut"
     : "hop";
 
+  const flipDelay = (isMobile() && previousLayout === "layout-3-gall3ry") ? 0.35 : 0;
+
   Flip.from(state, {
     duration: 1.75,
     ease: flipEase,
     stagger: staggerOption,
     absolute: true,
+    delay: flipDelay,
     onComplete: () => { lenis.resize(); }
   });
 
