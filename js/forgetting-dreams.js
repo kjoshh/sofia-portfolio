@@ -107,14 +107,42 @@ function switchLayout(newLayout) {
 
 function switchLayoutHandler(newLayout) {
   const previousLayout = activeLayout;
+  activeLayout = newLayout;
   const imgholders = Array.from(gall3ry.querySelectorAll(".imgholder"));
 
   // Kill any in-progress animations and clear all stale inline styles before Flip measures
   gsap.killTweensOf(imgholders);
   gsap.set(imgholders, { clearProps: "all" });
 
+  // On mobile, leaving Info tab: images are display:none so there's no Flip "from" position.
+  // Fade text out immediately, delay class change so images only appear after text clears.
+  if (isMobile() && previousLayout === "layout-3-gall3ry") {
+    if (textContainer) {
+      gsap.killTweensOf(infoLines);
+      gsap.to(infoLines, {
+        opacity: 0, y: 10, duration: 0.2,
+        stagger: { each: 0.02, from: "end" }, ease: "power2.in",
+        onComplete: () => {
+          gsap.set(infoLines, { opacity: 0, y: 10 });
+          textContainer.style.display = "none";
+          gsap.set(textContainer, { autoAlpha: 0 });
+        }
+      });
+    }
+    setTimeout(() => {
+      gall3ry.classList.remove(previousLayout);
+      gall3ry.classList.add(newLayout);
+      proNav.classList.remove("transparent");
+      gsap.fromTo(imgholders,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6, stagger: 0.03, ease: "power2.out", onComplete: () => { lenis.resize(); } }
+      );
+    }, 350);
+    return;
+  }
+
   const state = Flip.getState(imgholders);
-  gall3ry.classList.remove(activeLayout);
+  gall3ry.classList.remove(previousLayout);
   gall3ry.classList.add(newLayout);
 
   let staggerOption = 0.025;
@@ -125,19 +153,15 @@ function switchLayoutHandler(newLayout) {
     staggerOption = { each: 0.05, from: "end" };
   }
 
-
   const flipEase = (previousLayout === "layout-0-gall3ry" && newLayout === "layout-2-gall3ry")
     ? "power1.inOut"
     : "hop";
-
-  const flipDelay = (isMobile() && previousLayout === "layout-3-gall3ry") ? 0.35 : 0;
 
   Flip.from(state, {
     duration: 1.75,
     ease: flipEase,
     stagger: staggerOption,
     absolute: true,
-    delay: flipDelay,
     onComplete: () => { lenis.resize(); }
   });
 
@@ -152,8 +176,6 @@ function switchLayoutHandler(newLayout) {
   } else {
     proNav.classList.remove("transparent");
   }
-
-  activeLayout = newLayout;
 
   if (newLayout === "layout-3-gall3ry") {
     if (textContainer) {
