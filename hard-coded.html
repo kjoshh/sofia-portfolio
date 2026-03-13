@@ -27,24 +27,21 @@
   <div class="nois3-grain"></div>
   <div class="header">
     <div class="wrapedu">
-      <div data-collapse="medium" class="navbar main-nav">
-        <nav role="navigation" class="nav-menu">
-          <a href="index.html" class="nav-link logo-link">
-            <span class="nav-logo-wrap">
-              <img src="brand_assets/SofiaFullname.png" alt="Sofia Cartuccia" class="nav-logo-img nav-logo-top">
-              <img src="brand_assets/sybilnew-1.png" alt="Sybil Sometimes" class="nav-logo-img nav-logo-bottom">
-            </span>
-          </a>
-          <img src="brand_assets/starbright.png" class="nav-star-sep" alt="">
-          <div class="nav-dropdown-wrap">
-            <a href="#" class="nav-link">Projects</a>
+      <div data-collapse="medium" class="navbar main-nav ">
+        <div class="nav-bg"></div>
+        <div class="wrapin">
+          <nav role="navigation" class="nav-menu">
+            <a href="index.html" class="nav-link logo-link">Sofia Cartuccia</a>
+            <div class="nav-dropdown-wrap">
+              <a href="projects.html" class="nav-link">Projects</a>
+            </div>
+            <a href="archive.html" class="nav-link">Archive</a>
+            <a href="about.html" class="nav-link">About</a>
+          </nav>
+          <div class="nav-dropdown" id="projects-dropdown">
+            <a href="forgetting-dreams.html" class="nav-link nav-dropdown-item">Forgetting Dreams</a>
+            <a href="hard-coded.html" class="nav-link nav-dropdown-item">Hard-Coded</a>
           </div>
-          <a href="archive.html" class="nav-link">Archive</a>
-          <a href="about.html" class="nav-link">About</a>
-        </nav>
-        <div class="nav-dropdown" id="projects-dropdown">
-          <a href="hard-coded.html" class="nav-link nav-dropdown-item">Hard-Coded</a>
-          <a href="forgetting-dreams.html" class="nav-link nav-dropdown-item">Forgetting Dreams</a>
         </div>
       </div>
     </div>
@@ -131,36 +128,8 @@
     <img class="lb-img" id="lb-img" src="" alt="">
     <button class="lb-btn lb-next" id="lb-next"><img src="images/arrownoly.png" alt="next"></button>
   </div>
-
-  <div class="mob-sheet" id="mobSheet">
-    <div class="mob-sheet-header" id="mobSheetToggle">
-      <img src="brand_assets/SofiaFullname.png" class="mob-sheet-logo" alt="Sofia Cartuccia">
-      <img src="brand_assets/staryo.png" class="mob-sheet-icon" alt="menu">
-      <div class="mob-sheet-header-links">
-        <a href="archive.html" class="mob-sheet-link" onclick="event.stopPropagation()">Archive</a>
-        <a href="about.html" class="mob-sheet-link" onclick="event.stopPropagation()">About</a>
-      </div>
-    </div>
-    <div class="mob-sheet-body">
-      <p class="mob-sheet-section-label">Projects</p>
-      <div class="mob-sheet-grid mob-sheet-grid--few">
-        <a href="hard-coded.html" class="mob-sheet-cell">
-          <img src="images/Hard-Coded-1.jpg" class="mob-sheet-cell-img" alt="Hard-Coded">
-          <span class="mob-sheet-cell-num">02</span>
-          <span class="mob-sheet-cell-label">Hard-Coded</span>
-        </a>
-        <a href="forgetting-dreams.html" class="mob-sheet-cell">
-          <img src="images/Forgettingdreams-1-p-500.jpg" class="mob-sheet-cell-img" alt="Forgetting Dreams">
-          <span class="mob-sheet-cell-num">01</span>
-          <span class="mob-sheet-cell-label">Forgetting Dreams</span>
-        </a>
-      </div>
-    </div>
-  </div>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="js/nav.js"></script>
-  <script src="js/mob-sheet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
