@@ -19,7 +19,6 @@
   },
   "homepage": "https://github.com/kjoshh/sofia-portfolio#readme",
   "devDependencies": {
-    "browser-sync": "^3.0.4",
-    "puppeteer": "^24.39.1"
+    "browser-sync": "^3.0.4"
   }
 }
