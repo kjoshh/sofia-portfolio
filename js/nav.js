@@ -209,14 +209,6 @@ function applyFontStagger(el) {
   const dropdownItems = dropdown ? [...dropdown.querySelectorAll('.nav-dropdown-item')] : [];
 
   if (dropdownWrap && dropdown) {
-    function alignDropdown() {
-      const projectsRect = dropdownWrap.getBoundingClientRect();
-      const wrapinRect = dropdownWrap.closest('.wrapin').getBoundingClientRect();
-      dropdown.style.paddingLeft = (projectsRect.left - wrapinRect.left) + 'px';
-    }
-    alignDropdown();
-    window.addEventListener('resize', alignDropdown);
-
     const fullHeight = () => {
       const currentMaxHeight = dropdown.style.maxHeight;
       dropdown.style.maxHeight = 'none';

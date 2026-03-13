@@ -49,8 +49,12 @@ gsap.set(infoLines, { opacity: 0, y: 10 });
 textContainer.style.display = "none";
 textContainer.style.visibility = "";
 
-gsap.set(proNav, { xPercent: -50, y: "-44vh", yPercent: 50 });
-proNav.classList.add("transparent");
+const isMobile = () => window.innerWidth <= 767;
+
+if (!isMobile()) {
+  gsap.set(proNav, { xPercent: -50, y: "-44vh", yPercent: 50 });
+  proNav.classList.add("transparent");
+}
 let activeLayout = "layout-0-gall3ry";
 
 function switchLayout(newLayout) {
@@ -101,11 +105,11 @@ function switchLayoutHandler(newLayout) {
 
   if (previousLayout === "layout-0-gall3ry") {
     gsap.to(img100, { opacity: 0, duration: 0.2, ease: "power4.inOut", delay: 0 });
-    gsap.to(proNav, { xPercent: -50, y: 0, yPercent: 0, duration: 2, ease: "power4.inOut", delay: 0 });
+    if (!isMobile()) gsap.to(proNav, { xPercent: -50, y: 0, yPercent: 0, duration: 2, ease: "power4.inOut", delay: 0 });
   }
   if (newLayout === "layout-0-gall3ry") {
     gsap.to(img100, { opacity: 1, duration: 0.5, ease: "power4.inOut", delay: 0 });
-    gsap.to(proNav, { xPercent: -50, y: "-45vh", yPercent: 50, duration: 2, ease: "power4.inOut", delay: 0 });
+    if (!isMobile()) gsap.to(proNav, { xPercent: -50, y: "-45vh", yPercent: 50, duration: 2, ease: "power4.inOut", delay: 0 });
     proNav.classList.add("transparent");
   } else {
     proNav.classList.remove("transparent");
@@ -267,4 +271,22 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") lbClose();
   if (e.key === "ArrowLeft") lbPrev();
   if (e.key === "ArrowRight") lbNext();
+});
+
+
+/* ── Mobile: default to layout-2, wire mob-proj-tabs ── */
+if (isMobile()) {
+  gall3ry.classList.remove("layout-0-gall3ry");
+  gall3ry.classList.add("layout-2-gall3ry");
+  activeLayout = "layout-2-gall3ry";
+  gsap.set(img100, { opacity: 0 });
+}
+
+document.querySelectorAll(".mob-proj-tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const layout = btn.dataset.layout;
+    switchLayout(layout);
+    document.querySelectorAll(".mob-proj-tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  });
 });

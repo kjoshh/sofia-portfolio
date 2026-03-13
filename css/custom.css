@@ -1573,3 +1573,91 @@ text-decoration: none;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
   z-index: 2;
 }
+
+
+/* ══════════════════════════════════════════
+   MOBILE — Project Pages (≤767px)
+   ══════════════════════════════════════════ */
+
+/* Desktop: hide mobile project tab pill */
+.mob-proj-tabs { display: none; }
+
+@media (max-width: 767px) {
+
+  /* Hide desktop project nav */
+  .pro-nav { display: none !important; }
+
+  /* Mobile project tab pill */
+  .mob-proj-tabs {
+    display: flex;
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 0;
+    background: rgba(15, 13, 11, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 6px 8px;
+    z-index: 9999;
+    border: 1px solid rgba(233, 229, 221, 0.06);
+  }
+
+  .mob-proj-tab {
+    font-family: Alegreya, serif;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    color: rgba(233, 229, 221, 0.5);
+    background: none;
+    border: none;
+    padding: 6px 14px;
+    cursor: pointer;
+    border-radius: 13px;
+    transition: color 0.2s, background 0.2s;
+  }
+
+  .mob-proj-tab.active {
+    color: rgba(233, 229, 221, 0.92);
+    background: rgba(233, 229, 221, 0.08);
+  }
+
+  /* layout-2 (Sequence) mobile */
+  .gall3ry.layout-2-gall3ry {
+    padding-top: 88px;
+    padding-bottom: 100px;
+  }
+
+  .gall3ry.layout-2-gall3ry .imgholder {
+    width: 92vw;
+  }
+
+  /* layout-1 (Overview) mobile: 2-column grid */
+  .gall3ry.layout-1-gall3ry {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: auto;
+    padding: 88px 12px 120px;
+  }
+
+  /* layout-3 (Info) mobile: reposition text-container */
+  .text-container {
+    position: fixed;
+    inset: 90px 24px auto 24px;
+    max-width: 100%;
+    padding-bottom: 0;
+    overflow-y: auto;
+    bottom: 80px;
+  }
+
+  /* Allow gall3ry-container to grow with content on mobile */
+  .gall3ry-container {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* Hide decorative image in Info view on mobile */
+  .gall3ry.layout-3-gall3ry .imgholder {
+    display: none;
+  }
+
+}
