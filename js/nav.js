@@ -44,15 +44,25 @@ function applyFontStagger(el) {
       const bottomSpan = wrapper.querySelector('.char-bottom');
       
       gsap.killTweensOf([topSpan, bottomSpan]);
-      
-      const yVal = isHover ? -100 : 0;
-      
-      gsap.to([topSpan, bottomSpan], {
-        yPercent: yVal,
-        duration: 0.4,
-        delay: i * 0.03,
-        ease: "power3.inOut"
-      });
+
+      if (isHover) {
+        gsap.to([topSpan, bottomSpan], {
+          yPercent: -100,
+          duration: 0.4,
+          delay: i * 0.03,
+          ease: "power3.inOut",
+          onComplete: () => gsap.set(topSpan, { opacity: 0 }),
+          onUpdate: function() { if (this.progress() > 0.91) gsap.set(topSpan, { opacity: 0 }); }
+        });
+      } else {
+        gsap.set(topSpan, { opacity: 1 });
+        gsap.to([topSpan, bottomSpan], {
+          yPercent: 0,
+          duration: 0.4,
+          delay: i * 0.03,
+          ease: "power3.inOut"
+        });
+      }
     });
   }
 
@@ -163,43 +173,42 @@ function applyFontStagger(el) {
   topEls.forEach(el => {
     el._isCurrentPage = el.classList.contains('active');
     applyFontStagger(el);
-    if (el._isCurrentPage) {
-      el.querySelectorAll('.layout-nav-char').forEach(span => span.classList.add('post-font'));
-    }
   });
 
   // Dropdown items get the same font stagger (no active state management)
   document.querySelectorAll('.nav-dropdown-item').forEach(el => applyFontStagger(el));
 
   // ── Logo image toggle ──
-  // Each hover swaps between the two logos. The incoming logo always rises from below;
-  // the outgoing exits through the top. State persists on mouse leave.
   const logoLink = document.querySelector('.main-nav .logo-link');
   if (logoLink) {
     const top    = logoLink.querySelector('.nav-logo-top');    // Sofia (default visible)
     const bottom = logoLink.querySelector('.nav-logo-bottom'); // Sybil
+    const isIndex = ['', 'index.html'].includes(window.location.pathname.split('/').pop());
 
-    if (top && bottom) {
-      // Initial state: Sofia visible at 0, Sybil parked below
+    if (isIndex && top && bottom) {
+      // Index only: swap between the two logos. Incoming rises from below; outgoing exits top.
       gsap.set(bottom, { yPercent: 100 });
 
       let sybilShowing = false;
 
       logoLink.addEventListener('mouseenter', () => {
         if (!sybilShowing) {
-          // Sybil rises from below, Sofia exits top
           gsap.set(bottom, { yPercent: 100 });
           gsap.to(top,    { yPercent: -100, duration: 0.6, ease: 'power3.inOut' });
           gsap.to(bottom, { yPercent: 0,    duration: 0.6, ease: 'power3.inOut' });
           sybilShowing = true;
         } else {
-          // Sofia rises from below, Sybil exits top
           gsap.set(top, { yPercent: 100 });
           gsap.to(bottom, { yPercent: -100, duration: 0.6, ease: 'power3.inOut' });
           gsap.to(top,    { yPercent: 0,    duration: 0.6, ease: 'power3.inOut' });
           sybilShowing = false;
         }
       });
+    } else if (!isIndex && top) {
+      // Other pages: hide the second logo entirely, simple opacity dip on the main logo
+      if (bottom) gsap.set(bottom, { display: 'none' });
+      logoLink.addEventListener('mouseenter', () => gsap.to(top, { opacity: 0.8, duration: 0.2, ease: 'power2.out' }));
+      logoLink.addEventListener('mouseleave', () => gsap.to(top, { opacity: 1,   duration: 0.3, ease: 'power2.out' }));
     }
   }
 

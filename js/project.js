@@ -251,14 +251,13 @@ proNavEls.forEach(el => {
 function updateProNavActive(activeEl) {
   proNavEls.forEach(el => {
     el._isCurrentPage = el === activeEl;
+    if (el._staggerOff) el._staggerOff();
     if (el === activeEl) {
       el.classList.add("active");
       el.classList.remove("notactive");
-      if (el._staggerOn && !el.querySelector('.layout-nav-char.post-font')) el._staggerOn();
     } else {
       el.classList.add("notactive");
       el.classList.remove("active");
-      if (el._staggerOff && el.querySelector('.layout-nav-char.post-font')) el._staggerOff();
     }
   });
 }
@@ -279,7 +278,6 @@ function clearProNavActive() {
     if (el === logoEl) {
       el.classList.add("active");
       el.classList.remove("notactive");
-      el.querySelectorAll('.layout-nav-char').forEach(span => span.classList.add('post-font'));
     } else {
       el.classList.add("notactive");
       el.classList.remove("active");
