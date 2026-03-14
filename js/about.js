@@ -1,5 +1,7 @@
 /* ── WebGL shader background ── */
 (function () {
+  // Disable on touch/mobile — no hover interaction, performance concern
+  if ('ontouchstart' in window || window.innerWidth < 768) return;
   const vertexShader = `
     varying vec2 v_uv;
     void main() {
@@ -175,12 +177,25 @@ gsap.from(".corner", {
 /* ── Italy time clock ── */
 (function () {
   const el = document.getElementById("italy-time");
+  const elMob = document.getElementById("italy-time-mob");
   const fmt = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/Rome",
     hour: "2-digit",
     minute: "2-digit"
   });
-  function tick() { el.textContent = fmt.format(new Date()); }
+  function tick() {
+    const t = fmt.format(new Date());
+    if (el) el.textContent = t;
+    if (elMob) elMob.textContent = t;
+  }
   tick();
   setInterval(tick, 1000);
 })();
+
+/* ── Mobile contact rows entrance ── */
+if (window.innerWidth < 768) {
+  gsap.to(".contact-row, .contact-footnote", {
+    opacity: 1, y: 0, duration: 0.55,
+    stagger: 0.07, ease: "power2.out", delay: 0.4
+  });
+}
