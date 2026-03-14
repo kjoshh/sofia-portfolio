@@ -1382,15 +1382,15 @@ text-decoration: none;
 }
 
 .pro-nav {
-  font-family: Alegreya, sans-serif;
+  font-family: Alegreya, serif;
   font-size: 14.5px;
 
   z-index: 999990;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   pointer-events: auto;
-  background-color: #29282385;
-  border-radius: 20.17px;
+  background: rgba(15, 13, 11, 0.96);
+  border-radius: 13px;
+  border: 1px solid rgba(233, 229, 221, 0.07);
+  overflow: hidden;
   display: flex;
   flex-flow: row;
   justify-content: space-between;
@@ -1399,6 +1399,32 @@ text-decoration: none;
   position: absolute;
   inset: auto auto 18.9867px 50%;
   /* transform: translate(-50%, -50%); */
+}
+
+/* Dust/scratch grain — analogue darkroom feel */
+.pro-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('../brand_assets/BGDust.png');
+  background-size: cover;
+  opacity: 0.14;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Fine noise for extra texture depth */
+.pro-nav::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('../brand_assets/grain.jpg');
+  background-size: 200px 200px;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .logo {
@@ -1775,13 +1801,38 @@ text-decoration: none;
     left: 50%;
     transform: translateX(-50%);
     gap: 0;
-    background: rgba(15, 13, 11, 0.92);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 20px;
+    background: rgba(15, 13, 11, 0.96);
+    border-radius: 13px;
     padding: 8px 8px 6px;
     z-index: 9999;
-    border: 1px solid rgba(233, 229, 221, 0.06);
+    border: 1px solid rgba(233, 229, 221, 0.07);
+    overflow: hidden;
+  }
+
+  /* Dust/scratch grain — analogue darkroom feel */
+  .mob-proj-tabs::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('../brand_assets/BGDust.png');
+    background-size: cover;
+    opacity: 0.14;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Fine noise for extra texture depth */
+  .mob-proj-tabs::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('../brand_assets/grain.jpg');
+    background-size: 200px 200px;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 2;
   }
 
   .mob-proj-title {
