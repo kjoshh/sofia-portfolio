@@ -254,23 +254,6 @@
 }
 
 
-/* Archive lightbox overrides */
-.archive-page .lb-btn {
-  font-family: Alegreya, sans-serif;
-  font-size: 1.6rem;
-  color: #ffffff99;
-  line-height: 1;
-  transition: opacity 0.25s ease, color 0.2s;
-}
-
-.archive-page .lb-btn:hover {
-  color: #fff;
-}
-
-.archive-page .lb-close {
-  font-size: 1.4rem;
-}
-
 
 /* ══════════════════════════════════════════
    PROJECT PAGE — Forgetting Dreams
@@ -458,7 +441,7 @@
   overflow: hidden;
   vertical-align: bottom;
   /* Add explicit height so the overflow actually clips */
-  height: 1.15em;
+  /* height: 1.15em; */
 }
 
 .char-top,
@@ -580,6 +563,7 @@ body.about-page {
   border-radius: 6px;
   padding: 24px 28px;
   opacity: 0.95;
+  margin-bottom: 60px;
 }
 
 .about-bio {
@@ -1270,7 +1254,7 @@ text-decoration: none;
   .cornern {
     position: static;
     width: 100%;
-    padding: 0 24px calc(56px + env(safe-area-inset-bottom));
+    padding: 0 24px calc(80px + env(safe-area-inset-bottom));
     display: block;
     border-top: none;
     background: transparent;
@@ -1333,7 +1317,7 @@ text-decoration: none;
     font-size: 10px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: rgba(233, 229, 221, 0.28);
+    color: rgba(233, 229, 221, 0.35);
   }
 
 }
