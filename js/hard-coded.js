@@ -5,7 +5,7 @@ function updateOverviewCellHeight() {
 
   if (window.innerWidth <= 767) {
     const gap = 8;
-    const availH = window.innerHeight - 88 - 80; // below mob-sheet, above tab pill
+    const availH = window.innerHeight - 88 - 120; // below mob-sheet, above tab pill
     // Find minimum cols so cell height >= 70px
     let bestCols = 2;
     for (let c = 2; c <= 6; c++) {
@@ -147,7 +147,7 @@ function switchLayoutHandler(newLayout) {
 
   let staggerOption = 0.025;
   if (previousLayout === "layout-1-gall3ry" && newLayout === "layout-2-gall3ry") {
-    staggerOption = {duration:2, each: 0.05, from: "end", ease: "power3.Out" };
+    staggerOption = { duration: 2, each: 0.05, from: "end", ease: "power3.Out" };
   }
   if (previousLayout === "layout-0-gall3ry") {
     staggerOption = { each: 0.05, from: "end" };
@@ -227,7 +227,7 @@ const hoverPreviewImg = hoverPreview.querySelector("img");
 gsap.set(hoverPreview, { xPercent: -50, yPercent: -50 });
 
 const leftTo = gsap.quickTo(hoverPreview, "left", { duration: 0.6, ease: "power3.out" });
-const topTo  = gsap.quickTo(hoverPreview, "top",  { duration: 0.6, ease: "power3.out" });
+const topTo = gsap.quickTo(hoverPreview, "top", { duration: 0.6, ease: "power3.out" });
 
 window.addEventListener("mousemove", (e) => {
   if (activeLayout !== "layout-1-gall3ry") return;
@@ -290,8 +290,8 @@ function clearProNavActive() {
 
 /* ── Lightbox (overview layout) ── */
 const lbHolders = Array.from(document.querySelectorAll(".imgholder"));
-const lbOverlay  = document.getElementById("lb-overlay");
-const lbImg      = document.getElementById("lb-img");
+const lbOverlay = document.getElementById("lb-overlay");
+const lbImg = document.getElementById("lb-img");
 const lbProgress = document.getElementById("lb-progress");
 let lbCurrent = 0;
 
