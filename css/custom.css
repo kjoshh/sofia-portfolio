@@ -473,8 +473,7 @@
   font-size: 1.19em;
   opacity: 1 !important;
   position: absolute;
-  top: calc(100% - 0.25em);
-  /* Offset upwards natively instead of using transform */
+  top: 100%;
   left: 0;
   width: 100%;
   text-align: center;
