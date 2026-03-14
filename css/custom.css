@@ -458,7 +458,7 @@
   overflow: hidden;
   vertical-align: bottom;
   /* Add explicit height so the overflow actually clips */
-  /* height: 1.15em; */
+  height: 1.15em;
 }
 
 .char-top,
@@ -778,7 +778,7 @@ text-decoration: none;
     font-size: 12.5px;
     letter-spacing: 0.06em;
     flex: 0 0 auto;
-    color: hsla(50, 23%, 95%, 0.6) !important;
+    color: hsla(50, 23%, 95%, 0.55) !important;
     text-transform: uppercase;
   }
 
@@ -821,9 +821,9 @@ text-decoration: none;
     padding: 16px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     letter-spacing: 0.04em;
-    opacity: 0.85;
+    opacity: 1;
     width: 100%;
-    color: hsla(50, 23%, 95%, 0.9) !important;
+    color: hsla(50, 23%, 95%, 0.92) !important;
   }
 
   .main-nav.mobile-open>.wrapin>.nav-menu>.nav-link:last-child {
@@ -957,7 +957,7 @@ text-decoration: none;
     display: block;
     filter: invert(1) saturate(0) brightness(3);
     mix-blend-mode: screen;
-    opacity: 0.5;
+    opacity: 0.55;
     transition: opacity 0.2s ease;
   }
 
@@ -976,7 +976,7 @@ text-decoration: none;
   }
 
   .mob-sheet.is-open .mob-sheet-icon {
-    opacity: 0.85;
+    opacity: 0.92;
   }
 
   .mob-sheet-logo-link {
@@ -997,13 +997,13 @@ text-decoration: none;
     font-size: 16.5px;
     letter-spacing: 0.02em;
     text-transform: uppercase;
-    color: rgba(233, 229, 221, 0.45);
+    color: rgba(233, 229, 221, 0.55);
     transition: color 0.2s ease;
   }
 
   .mob-sheet.is-open .mob-sheet-menu-label::after {
     content: attr(data-open);
-    color: rgba(233, 229, 221, 0.65);
+    color: rgba(233, 229, 221, 0.55);
   }
 
   .mob-sheet-body {
@@ -1016,7 +1016,7 @@ text-decoration: none;
   }
 
   .mob-sheet.is-open .mob-sheet-dots {
-    color: rgba(233, 229, 221, 0.6);
+    color: rgba(233, 229, 221, 0.55);
   }
 
   .mob-sheet-section-label {
@@ -1025,7 +1025,7 @@ text-decoration: none;
     letter-spacing: 0.14em;
     margin-bottom: 0;
     text-transform: uppercase;
-    color: rgba(233, 229, 221, 0.3);
+    color: rgba(233, 229, 221, 0.28);
     position: relative;
     z-index: 20;
     padding: 8px 17.5px 2px;
@@ -1109,7 +1109,7 @@ text-decoration: none;
     right: 9px;
     font-family: Post, serif;
     font-size: 9px;
-    color: rgba(233, 229, 221, 0.4);
+    color: rgba(233, 229, 221, 0.28);
     letter-spacing: 0.12em;
     z-index: 2;
   }
@@ -1139,7 +1139,7 @@ text-decoration: none;
   }
 
   .mob-sheet-link:active {
-    color: rgba(233, 229, 221, 0.9);
+    color: rgba(233, 229, 221, 0.92);
   }
 
   /* ── About page mobile layout ── */
@@ -1306,7 +1306,7 @@ text-decoration: none;
   .contact-row-value {
     font-family: Alegreya, serif;
     font-size: 17px;
-    color: rgba(233, 229, 221, 0.78);
+    color: rgba(233, 229, 221, 0.92);
     text-decoration: none;
     letter-spacing: 0.02em;
     line-height: 1.4;
@@ -1333,7 +1333,7 @@ text-decoration: none;
     font-size: 10px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: rgba(233, 229, 221, 0.2);
+    color: rgba(233, 229, 221, 0.28);
   }
 
 }
@@ -1867,7 +1867,7 @@ text-decoration: none;
     font-size: 11.5px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(233, 229, 221, 0.3);
+    color: rgba(233, 229, 221, 0.28);
     pointer-events: none;
     padding-bottom: 6px;
     border-bottom: 1px solid rgba(233, 229, 221, 0.07);
@@ -1883,7 +1883,7 @@ text-decoration: none;
     font-family: Alegreya, serif;
     font-size: 13px;
     letter-spacing: 0.06em;
-    color: rgba(233, 229, 221, 0.5);
+    color: rgba(233, 229, 221, 0.55);
     background: none;
     border: none;
     padding: 6px 14px;
