@@ -5,7 +5,8 @@ function updateOverviewCellHeight() {
 
   if (window.innerWidth <= 767) {
     const gap = 8;
-    const availH = window.innerHeight - 88 - 80;
+    const availH = window.innerHeight - 88 - 80; // below mob-sheet, above tab pill
+    // Find minimum cols so cell height >= 70px
     let bestCols = 2;
     for (let c = 2; c <= 6; c++) {
       bestCols = c;
@@ -22,9 +23,8 @@ function updateOverviewCellHeight() {
     const gap = 10;
     const padding = 89.89;
     const availH = window.innerHeight - 2 * padding;
-    const desiredH = window.innerWidth * 0.135;
     const maxH = (availH - gap * (rows - 1)) / rows;
-    const cellH = Math.min(desiredH, maxH);
+    const cellH = maxH;
     document.querySelector(".gall3ry-container").style.setProperty("--overview-cell-h", cellH + "px");
     if (grid) grid.style.gridTemplateColumns = "";
   }
