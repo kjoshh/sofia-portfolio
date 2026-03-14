@@ -1200,8 +1200,15 @@ text-decoration: none;
     z-index: 10;
   }
 
+  .greet-line1 {
+    font-size: 34px;
+    line-height: 1.15;
+  }
+
   .greet-line2 {
     white-space: normal;
+    font-size: 20px;
+    line-height: 1.4;
   }
 
   /* Scroll hint indicator */
@@ -1238,14 +1245,32 @@ text-decoration: none;
     width: 100%;
     top: auto;
     right: auto;
-    padding: 40px 24px 0;
+    padding: 48px 24px 0;
+    font-size: 17px;
+    line-height: 1.75;
+  }
+
+  .about-bio {
+    margin: 0 0 40px;
+  }
+
+  .about-bio p {
+    margin: 0 0 14px;
+  }
+
+  .about-section {
+    margin-bottom: 28px;
+  }
+
+  .about-section-title {
+    padding-bottom: 4px;
   }
 
   /* Footer: remove fixed, flow naturally */
   .cornern {
     position: static;
     width: 100%;
-    padding: 0 24px calc(40px + env(safe-area-inset-bottom));
+    padding: 0 24px calc(56px + env(safe-area-inset-bottom));
     display: block;
     border-top: none;
     background: transparent;
@@ -1260,7 +1285,7 @@ text-decoration: none;
   .contact-row {
     display: flex;
     align-items: baseline;
-    padding: 12px 0;
+    padding: 16px 0;
     border-bottom: 1px solid rgba(231, 231, 231, 0.07);
     opacity: 0;
     transform: translateY(8px);
@@ -1271,22 +1296,23 @@ text-decoration: none;
 
   .contact-row-num {
     font-family: Post, serif;
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.12em;
-    color: rgba(233, 229, 221, 0.22);
+    color: rgba(233, 229, 221, 0.30);
     flex-shrink: 0;
     width: 28px;
   }
 
   .contact-row-value {
     font-family: Alegreya, serif;
-    font-size: 15px;
+    font-size: 17px;
     color: rgba(233, 229, 221, 0.78);
     text-decoration: none;
     letter-spacing: 0.02em;
     line-height: 1.4;
     flex: 1;
-    word-break: break-all;
+    word-break: normal;
+    overflow-wrap: break-word;
     transition: color 0.15s ease;
   }
   .contact-row-value--italic { font-style: italic; }
@@ -1304,7 +1330,7 @@ text-decoration: none;
   .contact-footnote-label,
   .contact-footnote-time {
     font-family: Post, serif;
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: rgba(233, 229, 221, 0.2);
@@ -1388,19 +1414,18 @@ text-decoration: none;
   z-index: 999990;
   pointer-events: auto;
   background: rgba(15, 13, 11, 0.96);
-  border-radius: 13px;
-  border: 1px solid rgba(233, 229, 221, 0.07);
+  border-radius: 999px;
   overflow: hidden;
   display: flex;
   flex-flow: row;
   justify-content: space-between;
   align-items: center;
-  padding: 11.86px 14.24px;
   position: absolute;
   inset: auto auto 18.9867px 50%;
-  /* transform: translate(-50%, -50%); */
 }
-
+.nav-menu.pro{
+  padding:0;
+}
 /* Dust/scratch grain — analogue darkroom feel */
 .pro-nav::before {
   content: '';
