@@ -390,6 +390,12 @@
   max-height: 100vh;
 }
 
+.gall3ry.layout-2-gall3ry .imgholder img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 .gall3ry.layout-3-gall3ry {
   position: relative;
   width: 100%;
@@ -640,6 +646,9 @@ body.about-page {
   z-index: 90;
   pointer-events: none;
 }
+
+/* Hide mobile contact rows on desktop */
+.contact-rows { display: none; }
 
 .cornern {
   position: fixed;
@@ -1237,16 +1246,69 @@ text-decoration: none;
   .cornern {
     position: static;
     width: 100%;
-    padding: 24px 24px calc(32px + env(safe-area-inset-bottom));
-    flex-wrap: wrap;
-    gap: 8px 0;
-    border-top: 1px solid rgba(231, 231, 231, 0.08);
+    padding: 0 24px calc(40px + env(safe-area-inset-bottom));
+    display: block;
+    border-top: none;
     background: transparent;
-    justify-content: flex-start;
   }
 
-  .corner + .corner::before {
-    margin: 0 14px;
+  /* Hide pipe-separated items on mobile */
+  .cornern .corner { display: none; }
+
+  /* Mobile contact rows */
+  .contact-rows { display: block; width: 100%; }
+
+  .contact-row {
+    display: flex;
+    align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(231, 231, 231, 0.07);
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .contact-row--last {
+    border-bottom: 1px solid rgba(231, 231, 231, 0.15);
+  }
+
+  .contact-row-num {
+    font-family: Post, serif;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: rgba(233, 229, 221, 0.22);
+    flex-shrink: 0;
+    width: 28px;
+  }
+
+  .contact-row-value {
+    font-family: Alegreya, serif;
+    font-size: 15px;
+    color: rgba(233, 229, 221, 0.78);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    flex: 1;
+    word-break: break-all;
+    transition: color 0.15s ease;
+  }
+  .contact-row-value--italic { font-style: italic; }
+  a.contact-row-value:active { color: rgba(233, 229, 221, 1); }
+
+  .contact-footnote {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .contact-footnote-label,
+  .contact-footnote-time {
+    font-family: Post, serif;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(233, 229, 221, 0.2);
   }
 
 }
