@@ -175,9 +175,18 @@ function applyFontStagger(el) {
 
   function nudgeStar() {
     if (!navStar) return;
-    starAngle += 45;
+    starAngle += 35;
     gsap.to(navStar, { rotation: starAngle, duration: 0.8, ease: 'elastic.out(1, 0.4)' });
   }
+
+  function resetStar() {
+    if (!navStar) return;
+    starAngle = 0;
+    gsap.to(navStar, { rotation: 0, duration: 0.6, ease: 'power2.inOut' });
+  }
+
+  const mainNavForStar = document.querySelector('.main-nav');
+  if (mainNavForStar) mainNavForStar.addEventListener('mouseleave', resetStar);
 
   // Apply font stagger + cross-hover to top nav links (exclude logo-link — it uses images, not text)
   const topEls = [
@@ -195,7 +204,10 @@ function applyFontStagger(el) {
   if (logoForStar) logoForStar.addEventListener('mouseenter', nudgeStar);
 
   // Dropdown items get the same font stagger (no active state management)
-  document.querySelectorAll('.nav-dropdown-item').forEach(el => applyFontStagger(el));
+  document.querySelectorAll('.nav-dropdown-item').forEach(el => {
+    applyFontStagger(el);
+    el.addEventListener('mouseenter', nudgeStar);
+  });
 
   // ── Logo image toggle ──
   const logoLink = document.querySelector('.main-nav .logo-link');
@@ -374,6 +386,7 @@ function applyFontStagger(el) {
       const label = cell.querySelector('.desk-nav-cell-label');
 
       cell.addEventListener('mouseenter', () => {
+        nudgeStar();
         gsap.to(cell, { y: -2, duration: 0.3, ease: 'power2.out' });
         if (img) gsap.to(img, { scale: 1.04, duration: 0.4, ease: 'power2.out' });
         if (label) gsap.to(label, { color: 'rgba(233, 229, 221, 1)', duration: 0.25, ease: 'power2.out' });
