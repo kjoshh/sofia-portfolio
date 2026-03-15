@@ -1503,6 +1503,7 @@ text-decoration: none;
 
 .nav-link.active {
   color: rgba(233, 229, 221, 0.92);
+  cursor: default;
 }
 
 .nav-link.notactive {
