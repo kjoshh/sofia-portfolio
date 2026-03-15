@@ -69,7 +69,11 @@ function applyFontStagger(el) {
   el._staggerOff = () => animateEl(false);
   el._staggerOn  = () => animateEl(true);
   el.addEventListener("mouseenter", () => { if (!el.classList.contains("active")) animateEl(true); });
-  el.addEventListener("mouseleave", () => { if (!el.classList.contains("active")) animateEl(false); });
+  el.addEventListener("mouseleave", () => {
+    // If this link is inside the dropdown wrap, don't reverse while dropdown is open
+    if (el.closest('.nav-dropdown-wrap.is-open')) return;
+    if (!el.classList.contains("active")) animateEl(false);
+  });
 }
 
 
@@ -295,6 +299,12 @@ function applyFontStagger(el) {
 
       dropdownWrap.classList.remove('is-open');
 
+      // Reverse font stagger on the Projects link
+      const projLink = dropdownWrap.querySelector('.nav-link');
+      if (projLink && projLink._staggerOff && !projLink.classList.contains('active')) {
+        projLink._staggerOff();
+      }
+
       closeTl = gsap.timeline();
 
       // Cards shrink out fast
@@ -346,8 +356,8 @@ function applyFontStagger(el) {
       const label = cell.querySelector('.desk-nav-cell-label');
 
       cell.addEventListener('mouseenter', () => {
-        gsap.to(cell, { y: -3, duration: 0.3, ease: 'power2.out' });
-        if (img) gsap.to(img, { scale: 1.06, duration: 0.4, ease: 'power2.out' });
+        gsap.to(cell, { y: -2, duration: 0.3, ease: 'power2.out' });
+        if (img) gsap.to(img, { scale: 1.04, duration: 0.4, ease: 'power2.out' });
         if (label) gsap.to(label, { color: 'rgba(233, 229, 221, 1)', duration: 0.25, ease: 'power2.out' });
       });
 
