@@ -212,29 +212,124 @@ function applyFontStagger(el) {
     }
   }
 
-  // ── Project Dropdown (runs on all pages) ──
+  // ── Project Dropdown — Quechua-inspired reveal (desktop only) ──
   const dropdownWrap = document.querySelector('.nav-dropdown-wrap');
   const dropdown = document.getElementById('projects-dropdown');
+  const deskCells = dropdown ? [...dropdown.querySelectorAll('.desk-nav-cell')] : [];
+  const deskCellImgs = dropdown ? [...dropdown.querySelectorAll('.desk-nav-cell-img')] : [];
+  const deskLabels = dropdown ? [...dropdown.querySelectorAll('.desk-nav-label')] : [];
   const dropdownItems = dropdown ? [...dropdown.querySelectorAll('.nav-dropdown-item')] : [];
 
   if (dropdownWrap && dropdown) {
+    let openTl = null;
+    let closeTl = null;
+
     const fullHeight = () => {
-      const currentMaxHeight = dropdown.style.maxHeight;
+      const prev = dropdown.style.maxHeight;
       dropdown.style.maxHeight = 'none';
       const h = dropdown.scrollHeight;
-      dropdown.style.maxHeight = currentMaxHeight;
+      dropdown.style.maxHeight = prev;
       return h;
     };
 
-    dropdownWrap.addEventListener('mouseenter', () => {
-      gsap.to(dropdown, { maxHeight: fullHeight(), duration: 0.25, ease: 'power2.out' });
-      gsap.to(dropdownItems, { opacity: 1, duration: 0.2, stagger: 0.06, delay: 0.05, ease: 'power2.out' });
-    });
+    const openDropdown = () => {
+      if (closeTl) { closeTl.kill(); closeTl = null; }
+
+      dropdownWrap.classList.add('is-open');
+
+      openTl = gsap.timeline();
+
+      // Container expand
+      openTl.to(dropdown, {
+        maxHeight: fullHeight(),
+        duration: 0.5,
+        ease: 'expo.out',
+      }, 0);
+
+      // Cards stagger in with scale overshoot
+      openTl.fromTo(deskCells, {
+        scale: 0.85,
+        yPercent: 15,
+        opacity: 0,
+      }, {
+        scale: 1,
+        yPercent: 0,
+        opacity: 1,
+        duration: 0.55,
+        stagger: 0.07,
+        ease: 'back.out(1.4)',
+      }, 0.05);
+
+      // Image zoom settle
+      openTl.fromTo(deskCellImgs, {
+        scale: 1.15,
+      }, {
+        scale: 1,
+        duration: 0.6,
+        stagger: 0.07,
+        ease: 'power2.out',
+      }, 0.05);
+
+      // Labels fade in
+      openTl.fromTo(deskLabels, {
+        opacity: 0,
+        yPercent: 8,
+      }, {
+        opacity: 1,
+        yPercent: 0,
+        duration: 0.3,
+        ease: 'power2.out',
+      }, 0.15);
+
+      // Dropdown text items (font-stagger links)
+      openTl.to(dropdownItems, {
+        opacity: 1,
+        duration: 0.2,
+        stagger: 0.06,
+        ease: 'power2.out',
+      }, 0.05);
+    };
 
     const closeDropdown = () => {
-      gsap.to(dropdown, { maxHeight: 0, duration: 0.2, ease: 'power2.in' });
-      gsap.to(dropdownItems, { opacity: 0, duration: 0.15, ease: 'power2.in' });
+      if (openTl) { openTl.kill(); openTl = null; }
+
+      dropdownWrap.classList.remove('is-open');
+
+      closeTl = gsap.timeline();
+
+      // Cards shrink out fast
+      closeTl.to(deskCells, {
+        opacity: 0,
+        scale: 0.9,
+        yPercent: 10,
+        duration: 0.25,
+        stagger: 0.03,
+        ease: 'power2.in',
+      }, 0);
+
+      // Labels fade out
+      closeTl.to(deskLabels, {
+        opacity: 0,
+        duration: 0.15,
+        ease: 'power2.in',
+      }, 0);
+
+      // Dropdown text items
+      closeTl.to(dropdownItems, {
+        opacity: 0,
+        duration: 0.15,
+        ease: 'power2.in',
+      }, 0);
+
+      // Container collapse
+      closeTl.to(dropdown, {
+        maxHeight: 0,
+        duration: 0.35,
+        ease: 'expo.inOut',
+      }, 0.08);
     };
+
+    dropdownWrap.addEventListener('mouseenter', openDropdown);
 
     const mainNavWrapper = document.querySelector('.main-nav');
     if (mainNavWrapper) mainNavWrapper.addEventListener('mouseleave', closeDropdown);
