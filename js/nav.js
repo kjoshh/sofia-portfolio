@@ -42,15 +42,15 @@ function applyFontStagger(el) {
     charWrappers.forEach((wrapper, i) => {
       const topSpan = wrapper.querySelector('.char-top');
       const bottomSpan = wrapper.querySelector('.char-bottom');
-      
+
       gsap.killTweensOf([topSpan, bottomSpan]);
 
       if (isHover) {
         gsap.to([topSpan, bottomSpan], {
           yPercent: -100,
-          duration: 0.4,
+          duration: 0.3,
           delay: i * 0.03,
-          ease: "power3.inOut",
+          ease: "power4.out",
           onComplete: () => gsap.set(topSpan, { opacity: 0 }),
           onUpdate: function() { if (this.progress() > 0.91) gsap.set(topSpan, { opacity: 0 }); }
         });
@@ -58,9 +58,9 @@ function applyFontStagger(el) {
         gsap.set(topSpan, { opacity: 1 });
         gsap.to([topSpan, bottomSpan], {
           yPercent: 0,
-          duration: 0.4,
+          duration: 0.3,
           delay: i * 0.03,
-          ease: "power3.inOut"
+          ease: "power1.out",
         });
       }
     });

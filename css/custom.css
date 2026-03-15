@@ -34,39 +34,31 @@
   height: 100vh;
   position: fixed;
   pointer-events: none;
-  opacity: 0.1;
-  z-index: 100;
+  opacity: 0.05;
+  z-index: 9999;
   background-image: url("../images/BGDust.png");
 }
 
-.nois3 {
-  width: 100vw;
-  height: 100vh;
-  position: fixed;
-  pointer-events: none;
-  opacity: 0.1;
-  z-index: 100;
-  background-image: url("../images/Noise.png");
-}
-
-.nois3-grain {
+.grain {
   position: fixed;
   inset: 0;
   pointer-events: none;
+  z-index: 9999;
   overflow: hidden;
-  opacity: 0.08;
-  z-index: 100;
 }
 
-.nois3-grain::after {
+.grain::after {
   content: "";
   position: absolute;
-  width: 200vw;
-  height: 200vh;
-  left: -50%;
-  top: -50%;
+  width: 300%;
+  height: 300%;
+  left: -100%;
+  top: -100%;
   background-image: url("../images/Noise.png");
-  animation: grain 2s steps(6) infinite;
+  background-size: 300px 300px;
+  background-repeat: repeat;
+  opacity: 0.25;
+  animation: grain 2s steps(1) infinite;
 }
 
 @keyframes grain {
@@ -704,10 +696,10 @@ text-decoration: none;
     display: block;
   }
 
-  /* Slightly reduce noise overlays on mobile for battery */
-  .nois3-grain {
-    animation: none;
-    opacity: 0.05;
+  /* Reduce grain on mobile for battery */
+  .grain::after {
+    opacity: 0.16;
+    animation-duration: 3s;
   }
 
   /* ── Nav: move to bottom, full-width pill ── */
@@ -883,7 +875,7 @@ text-decoration: none;
     /* Warm near-black — like darkroom paper, not glass */
     background: rgba(15, 13, 11, 0.96);
     border-radius: 13px;
-    z-index: 999990;
+    z-index: 9998;
   }
 
   .mob-sheet--top {
@@ -1334,7 +1326,7 @@ text-decoration: none;
 .main-nav {
   font-family: Alegreya, serif;
   font-size: 14.5px;
-  z-index: 999990;
+  z-index: 9998;
   pointer-events: auto;
   padding: 0;
   display: flex;
@@ -1385,7 +1377,7 @@ text-decoration: none;
   font-family: Alegreya, serif;
   font-size: 14.5px;
 
-  z-index: 999990;
+  z-index: 9998;
   pointer-events: auto;
   background: rgba(15, 13, 11, 0.96);
   border-radius: 999px;
@@ -1397,6 +1389,7 @@ text-decoration: none;
   position: absolute;
   inset: auto auto 18.9867px 50%;
 }
+
 .nav-menu.pro{
   padding:0;
 }
@@ -1576,7 +1569,7 @@ text-decoration: none;
 }
 
 .header {
-  z-index: 999;
+  z-index: 9998;
   pointer-events: none;
   width: 100vw;
   height: 100vh;
@@ -1794,10 +1787,11 @@ text-decoration: none;
     background: rgba(15, 13, 11, 0.96);
     border-radius: 13px;
     padding: 8px 8px 6px;
-    z-index: 9999;
+    z-index: 9998;
     border: 1px solid rgba(233, 229, 221, 0.07);
     overflow: hidden;
   }
+
 
   /* Dust/scratch grain — analogue darkroom feel */
   .mob-proj-tabs::before {
