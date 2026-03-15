@@ -237,6 +237,9 @@ function applyFontStagger(el) {
     };
 
     const openDropdown = () => {
+      // Already open — don't re-trigger (prevents flash on re-hover)
+      if (dropdownWrap.classList.contains('is-open')) return;
+
       if (closeTl) { closeTl.kill(); closeTl = null; }
 
       dropdownWrap.classList.add('is-open');
