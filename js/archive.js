@@ -47,7 +47,7 @@ const lenis = new Lenis();
       tween = gsap.to(state, {
         progress: 1,
         duration: 0.55,
-        ease: "power2.inOut",
+        ease: "power4.inOut",
         onUpdate: draw
       });
     });
@@ -56,7 +56,7 @@ const lenis = new Lenis();
       tween = gsap.to(state, {
         progress: 0,
         duration: 0.4,
-        ease: "power2.inOut",
+        ease: "power4.inOut",
         onUpdate: draw
       });
     });
