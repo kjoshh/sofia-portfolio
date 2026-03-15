@@ -169,6 +169,16 @@ function applyFontStagger(el) {
     });
   });
 
+  // ── Star nudge on any nav link hover ──
+  const navStar = document.querySelector('.nav-star-sep');
+  let starAngle = 0;
+
+  function nudgeStar() {
+    if (!navStar) return;
+    starAngle += 30;
+    gsap.to(navStar, { rotation: starAngle, duration: 0.4, ease: 'back.out(1.6)' });
+  }
+
   // Apply font stagger + cross-hover to top nav links (exclude logo-link — it uses images, not text)
   const topEls = [
     ...document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item):not(.logo-link)'),
@@ -177,7 +187,12 @@ function applyFontStagger(el) {
   topEls.forEach(el => {
     el._isCurrentPage = el.classList.contains('active');
     applyFontStagger(el);
+    el.addEventListener('mouseenter', nudgeStar);
   });
+
+  // Logo hover also nudges star
+  const logoForStar = document.querySelector('.main-nav .logo-link');
+  if (logoForStar) logoForStar.addEventListener('mouseenter', nudgeStar);
 
   // Dropdown items get the same font stagger (no active state management)
   document.querySelectorAll('.nav-dropdown-item').forEach(el => applyFontStagger(el));
