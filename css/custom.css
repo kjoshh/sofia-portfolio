@@ -1727,13 +1727,6 @@ text-decoration: none;
   text-decoration: none;
   opacity: 0;
   will-change: transform, opacity;
-  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              box-shadow 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.desk-nav-cell:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .desk-nav-cell-img {
@@ -1741,11 +1734,6 @@ text-decoration: none;
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.desk-nav-cell:hover .desk-nav-cell-img {
-  transform: scale(1.06);
 }
 
 /* Darkroom gradient — text reads clean against image */
@@ -1771,11 +1759,6 @@ text-decoration: none;
   color: rgba(233, 229, 221, 0.92);
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
   z-index: 2;
-  transition: color 0.3s ease;
-}
-
-.desk-nav-cell:hover .desk-nav-cell-label {
-  color: rgba(233, 229, 221, 1);
 }
 
 

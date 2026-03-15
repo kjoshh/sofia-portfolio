@@ -339,6 +339,24 @@ function applyFontStagger(el) {
         link.addEventListener('mouseenter', closeDropdown);
       }
     });
+
+    // Card hover — lift + image zoom + label brighten (GSAP so it composites with stagger transforms)
+    deskCells.forEach(cell => {
+      const img = cell.querySelector('.desk-nav-cell-img');
+      const label = cell.querySelector('.desk-nav-cell-label');
+
+      cell.addEventListener('mouseenter', () => {
+        gsap.to(cell, { y: -3, duration: 0.3, ease: 'power2.out' });
+        if (img) gsap.to(img, { scale: 1.06, duration: 0.4, ease: 'power2.out' });
+        if (label) gsap.to(label, { color: 'rgba(233, 229, 221, 1)', duration: 0.25, ease: 'power2.out' });
+      });
+
+      cell.addEventListener('mouseleave', () => {
+        gsap.to(cell, { y: 0, duration: 0.3, ease: 'power2.out' });
+        if (img) gsap.to(img, { scale: 1, duration: 0.4, ease: 'power2.out' });
+        if (label) gsap.to(label, { color: 'rgba(233, 229, 221, 0.92)', duration: 0.3, ease: 'power2.out' });
+      });
+    });
   }
 
 })();
