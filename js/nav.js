@@ -175,8 +175,8 @@ function applyFontStagger(el) {
 
   function nudgeStar() {
     if (!navStar) return;
-    starAngle += 30;
-    gsap.to(navStar, { rotation: starAngle, duration: 0.4, ease: 'back.out(1.6)' });
+    starAngle += 45;
+    gsap.to(navStar, { rotation: starAngle, duration: 0.8, ease: 'elastic.out(1, 0.4)' });
   }
 
   // Apply font stagger + cross-hover to top nav links (exclude logo-link — it uses images, not text)
