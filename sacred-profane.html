@@ -329,15 +329,15 @@ margin-bottom: 0%;
       }
 
       // Animate photo fade in
-      gsap.to(newPhoto, { opacity: 1, duration: 0.25, delay: 0.25, ease: 'power4.in' });
+      gsap.to(newPhoto, { opacity: 1, duration: 0.25, delay: 0.05, ease: 'power4.in' });
 
       // Animate border clock-sweep in
       const sweep = { progress: 0 };
       gsap.to(sweep, {
         progress: 1,
-        duration: 0.75,
+        duration: 1,
         delay: 0.1,
-        ease: 'power4.out',
+        ease: 'power2.out',
         onUpdate: () => { newBorder.style.clipPath = clockWipe(sweep.progress); }
       });
 
@@ -438,7 +438,7 @@ margin-bottom: 0%;
 
     /* ── Matter.js physics world ── */
     const { Engine, World, Bodies, Body, Runner, Events } = Matter;
-    const engine = Engine.create({ gravity: { x: 0, y: 1.5 } });
+    const engine = Engine.create({ gravity: { x: 0, y: 1.5 }, enableSleeping: true, positionIterations: 10, velocityIterations: 8 });
     const world = engine.world;
     const runner = Runner.create();
     Runner.run(runner, engine);
@@ -454,11 +454,11 @@ margin-bottom: 0%;
 
       const fr = frameWrap.getBoundingClientRect();
       const pad = fr.height * 0.04;
-      const thick = 20;
+      const thick = 60;
       // Floor
       World.add(world, Bodies.rectangle(
         fr.left + fr.width / 2, fr.bottom - pad, fr.width * 1.2, thick,
-        { isStatic: true, label: 'wall', restitution: 0.3, friction: 0.6 }
+        { isStatic: true, label: 'wall', restitution: 0.1, friction: 0.6 }
       ));
       // Left wall
       World.add(world, Bodies.rectangle(
@@ -511,11 +511,12 @@ margin-bottom: 0%;
         // Create physics body for this debris after a stagger delay
         setTimeout(() => {
           const body = Bodies.rectangle(startX, startY, 30, 20, {
-            restitution: 0.35,
-            friction: 0.5,
-            frictionAir: 0.01,
+            restitution: 0.5,
+            friction: 0.4,
+            frictionAir: 0.005,
             angle: (gsap.getProperty(outEl, 'rotation') || 0) * Math.PI / 180,
-            density: 0.002,
+            density: 0.006,
+            sleepThreshold: 30,
           });
           // Give it a small random sideways nudge
           Body.setVelocity(body, {
