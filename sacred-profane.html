@@ -242,7 +242,6 @@ margin-bottom: 0%;
   <div class="grain"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
   <script>
     /* ── Refs ── */
     const cursor = document.getElementById('cursor');
@@ -436,58 +435,21 @@ margin-bottom: 0%;
       }
     }
 
-    /* ── Matter.js physics world ── */
-    const { Engine, World, Bodies, Body, Runner, Events } = Matter;
-    const engine = Engine.create({ gravity: { x: 0, y: 1.5 }, enableSleeping: true, positionIterations: 10, velocityIterations: 8 });
-    const world = engine.world;
-    const runner = Runner.create();
-    Runner.run(runner, engine);
-
-    // Track debris elements paired with their physics bodies
-    const debrisPairs = [];
-
-    // Build static walls (floor + sides of frame)
-    function buildWalls() {
-      // Remove old walls
-      const oldStatic = world.bodies.filter(b => b.isStatic && b.label === 'wall');
-      World.remove(world, oldStatic);
-
-      const fr = frameWrap.getBoundingClientRect();
-      const pad = fr.height * 0.04;
-      const thick = 60;
-      // Floor
-      World.add(world, Bodies.rectangle(
-        fr.left + fr.width / 2, fr.bottom - pad, fr.width * 1.2, thick,
-        { isStatic: true, label: 'wall', restitution: 0.1, friction: 0.6 }
-      ));
-      // Left wall
-      World.add(world, Bodies.rectangle(
-        fr.left + pad + thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
-        { isStatic: true, label: 'wall' }
-      ));
-      // Right wall
-      World.add(world, Bodies.rectangle(
-        fr.right - pad * 0 - thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
-        { isStatic: true, label: 'wall' }
-      ));
-    }
-    buildWalls();
-    window.addEventListener('resize', buildWalls);
-
-    // Sync DOM elements to physics bodies each frame
-    Events.on(engine, 'afterUpdate', () => {
-      for (const pair of debrisPairs) {
-        const pos = pair.body.position;
-        const ang = pair.body.angle * (180 / Math.PI);
-        pair.el.style.transform = `translate(${pos.x - 17}px, ${pos.y - 12}px) rotate(${ang}deg)`;
-      }
-    });
-
-    /* ── Swap: new letter drops from top, old one becomes physics debris ── */
+    /* ── Swap: scatter outgoing letters to chaos, bring new ones in ── */
     function swapTo(name) {
       if (name === currentName) return;
       currentName = name;
       calcPositions();
+
+      // Chaos area centered around the word formation zone
+      const totalW = 14 * LETTER_W + SPACE_W;
+      const rect = frameWrap.getBoundingClientRect();
+      const anchorX = rect.left + rect.width / 2;
+      const anchorY = rect.top + 10;
+      const chaosXMin = anchorX - totalW / 2 - 40;
+      const chaosXMax = anchorX + totalW / 2 + 40;
+      const chaosYMin = anchorY - 60;
+      const chaosYMax = anchorY + 60;
 
       const swapSlots = slots.filter(s => !s.isMatch);
 
@@ -497,41 +459,43 @@ margin-bottom: 0%;
         const baseY = slot.y - 12;
         const delay = idx * 0.03 + Math.random() * 0.04;
 
-        // Clone the outgoing letter as debris
-        const debris = outEl.cloneNode(true);
-        debris.style.pointerEvents = 'none';
-        letterField.appendChild(debris);
+        // Scatter outgoing letter to a random chaos position, then fade out
+        const chaosX = chaosXMin + Math.random() * (chaosXMax - chaosXMin) - 21;
+        const chaosY = chaosYMin + Math.random() * (chaosYMax - chaosYMin) - 12;
+        const chaosRot = (Math.random() - 0.5) * 60;
 
-        const startX = gsap.getProperty(outEl, 'x') + 17;
-        const startY = gsap.getProperty(outEl, 'y') + 12;
+        gsap.to(outEl, {
+          x: chaosX,
+          y: chaosY,
+          rotation: chaosRot,
+          opacity: 0,
+          duration: 0.5,
+          delay: delay,
+          ease: 'power2.in',
+          overwrite: true,
+          onComplete: () => {
+            // Reset above slot for future reuse
+            gsap.set(outEl, { x: slot.x - 21, y: baseY - SWAP_DIST, rotation: slot.restRot, opacity: 0 });
+          }
+        });
 
-        // Hide original and reset for future reuse
-        gsap.set(outEl, { opacity: 0, y: baseY - SWAP_DIST });
+        // Bring incoming letter from a random chaos position into its slot
+        const inChaosX = chaosXMin + Math.random() * (chaosXMax - chaosXMin) - 21;
+        const inChaosY = chaosYMin + Math.random() * (chaosYMax - chaosYMin) - 12;
+        const inChaosRot = (Math.random() - 0.5) * 60;
 
-        // Create physics body for this debris after a stagger delay
-        setTimeout(() => {
-          const body = Bodies.rectangle(startX, startY, 30, 20, {
-            restitution: 0.5,
-            friction: 0.4,
-            frictionAir: 0.005,
-            angle: (gsap.getProperty(outEl, 'rotation') || 0) * Math.PI / 180,
-            density: 0.006,
-            sleepThreshold: 30,
-          });
-          // Give it a small random sideways nudge
-          Body.setVelocity(body, {
-            x: (Math.random() - 0.5) * 2,
-            y: 0
-          });
-          World.add(world, body);
-          debrisPairs.push({ el: debris, body });
-          debris.style.opacity = '0.9';
-        }, delay * 1000);
-
-        // Drop new letter in from above
         gsap.fromTo(inEl,
-          { x: slot.x - 21, y: baseY - SWAP_DIST, rotation: slot.restRot, opacity: 0 },
-          { y: baseY, opacity: 0.9, duration: 0.4, delay: delay + 0.06, ease: 'power2.out', overwrite: true }
+          { x: inChaosX, y: inChaosY, rotation: inChaosRot, opacity: 0 },
+          {
+            x: slot.x - 21,
+            y: baseY,
+            rotation: slot.restRot,
+            opacity: 0.9,
+            duration: 0.55,
+            delay: delay + 0.15,
+            ease: 'power2.out',
+            overwrite: true
+          }
         );
       });
     }
