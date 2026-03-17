@@ -1,0 +1,272 @@
+/* ══════════════════════════════════════════
+   Landing — Base
+   ══════════════════════════════════════════ */
+
+:root {
+  --bg-sofia:  #292823;
+  --bg-sybil:  #1f2128;
+  --text-warm:  #e9e5dd;
+  --text-dim:   rgba(233, 229, 221, 0.35);
+  --bg-current: var(--bg-sofia);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background-color: var(--bg-current);
+  color: var(--text-warm);
+  font-family: Alegreya, serif;
+  overflow: hidden;
+  height: 100vh;
+  height: 100dvh;
+  transition: background-color 1.2s ease;
+  cursor: default;
+}
+
+
+/* ══════════════════════════════════════════
+   Landing — Background Image Layers
+   ══════════════════════════════════════════ */
+
+.bg-img {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.bg-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* ══════════════════════════════════════════
+   Landing — Grain & Dust (self-contained)
+   ══════════════════════════════════════════ */
+
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.grain::after {
+  content: "";
+  position: absolute;
+  width: 300%;
+  height: 300%;
+  inset: -150% 0% 0% -150%;
+  max-width: none;
+  background-image: url("../images/Noise.png");
+  background-size: 300px 300px;
+  background-repeat: repeat;
+  opacity: 0.22;
+  animation: grain 2.5s steps(1) infinite;
+  transition: opacity 1.2s ease;
+}
+
+body.flipped .grain::after {
+  opacity: 0.32;
+}
+
+@keyframes grain {
+  0%, 100% { background-position: 0 0; }
+  10% { background-position: -5% -10%; }
+  20% { background-position: -15% 5%; }
+  30% { background-position: 7% -25%; }
+  40% { background-position: 20% 25%; }
+  50% { background-position: -25% 10%; }
+  60% { background-position: 15% 5%; }
+  70% { background-position: 0% 15%; }
+  80% { background-position: 25% 35%; }
+  90% { background-position: -10% 10%; }
+}
+
+.dusti {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  pointer-events: none;
+  opacity: 0.05;
+  z-index: 101;
+  background-image: url("../images/BGDust.png");
+}
+
+
+/* ══════════════════════════════════════════
+   Landing — Layout
+   ══════════════════════════════════════════ */
+
+.landing {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 60vh;
+  height: 100vh;
+  height: 100dvh;
+  gap: 3rem;
+  isolation: isolate;
+  mix-blend-mode: difference;
+}
+
+
+/* ══════════════════════════════════════════
+   Landing — Post font (for Sybil state)
+   ══════════════════════════════════════════ */
+
+@font-face {
+  font-family: Post;
+  src: url('../fonts/Post.otf') format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+/* ══════════════════════════════════════════
+   Landing — Name / Letter Tiles
+   ══════════════════════════════════════════ */
+
+.landing-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  user-select: none;
+}
+
+.letter-tile {
+  display: inline-block;
+  position: relative;
+  height: 1.2em;
+  cursor: default;
+}
+
+/* Both faces occupy the same space */
+.letter-tile .letter-front,
+.letter-tile .letter-back {
+  display: block;
+  font-size: inherit;
+  line-height: 1.2;
+  color: #ffffff;
+  will-change: opacity, transform, filter;
+  /* Transitions handled by GSAP now for spring easing */
+  transition: none;
+}
+
+.letter-tile .letter-front {
+  position: relative;
+  font-family: Alegreya, serif;
+  font-weight: 400;
+}
+
+.letter-tile .letter-back {
+  position: absolute;
+  inset: 0;
+  display: block;
+  text-align: center;
+  font-family: Post, serif;
+  font-weight: 400;
+  line-height: 1.2;
+  opacity: 0;
+  transform: scale(0) translateY(0.1em);
+  filter: blur(4px);
+}
+
+/* Space tiles */
+.letter-tile.is-space {
+  width: 0.3em;
+  pointer-events: none;
+}
+
+/* Typography sizing */
+.landing-name {
+  font-size: clamp(32px, 5.9vw, 85px);
+  letter-spacing: normal;
+}
+
+
+/* ══════════════════════════════════════════
+   Landing — Enter Link (magnetic)
+   ══════════════════════════════════════════ */
+
+.landing-enter {
+  font-family: Alegreya, serif;
+  font-size: 0.875rem;
+  font-style: italic;
+  letter-spacing: 0.15em;
+  text-transform: lowercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  position: relative;
+  will-change: transform;
+  transition: color 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-enter::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background: var(--text-warm);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-enter:hover,
+.landing-enter:focus-visible {
+  color: var(--text-warm);
+}
+
+.landing-enter:hover::after,
+.landing-enter:focus-visible::after {
+  width: 100%;
+}
+
+.landing-enter:active {
+  opacity: 0.7;
+}
+
+
+
+/* ══════════════════════════════════════════
+   Landing — Parallax layers
+   ══════════════════════════════════════════ */
+
+.grain,
+.dusti {
+  will-change: transform;
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+/* ══════════════════════════════════════════
+   Landing — Responsive
+   ══════════════════════════════════════════ */
+
+@media (max-width: 767px) {
+  .landing-name {
+    font-size: clamp(1rem, 4vw, 1.6rem);
+  }
+
+  .landing {
+    gap: 2rem;
+  }
+
+  body {
+    cursor: default;
+  }
+}
+
+@media (max-width: 479px) {
+  .landing-name {
+    font-size: clamp(0.9rem, 5vw, 1.2rem);
+  }
+}

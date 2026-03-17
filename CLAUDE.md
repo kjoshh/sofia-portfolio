@@ -1,0 +1,63 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Photography/art portfolio for Sofia Cartuccia (alias "Sybil Sometimes"). Static site with no build step — vanilla HTML, CSS, and JS. Originally scaffolded from Webflow, now hand-maintained.
+
+## Commands
+
+- **Dev server:** `node serve.mjs` (serves project root at `http://localhost:3000`). Run in background before screenshotting. Don't start a second instance if already running.
+- **Alt dev server:** `npm start` (browser-sync, auto-reloads on HTML/CSS/JS changes)
+- **Screenshot:** `node screenshot.mjs http://localhost:3000 [optional-label]` — saves auto-incremented PNGs to `./temporary screenshots/`. Uses Puppeteer with local Chrome at `/Applications/Google Chrome.app`. Viewport: 1440×900 @2x.
+- **No build, lint, or test commands.**
+
+## Architecture
+
+- **Pages:** `index.html` (landing/home), `about.html`, `archive.html`, plus individual project pages (`hard-coded.html`, `forgetting-dreams.html`, etc.) and experimental pages (`sacred-profane.html`, `grain-*.html`, `star-map.html`, etc.)
+- **CSS:** `css/normalize.css` + `css/webflow.css` (Webflow base), `css/custom.css` (all custom styles — cursor, overlays, nav, project pages, about, archive), `css/landing.css` (landing page specific)
+- **JS (all vanilla, no framework):**
+  - `js/nav.js` — shared nav: staggered character animation on logo hover (swaps "Sofia Cartuccia" ↔ "Sybil Sometimes"), dropdown menu, star rotation on hover
+  - `js/index.js` — landing page: fluid nav-bar wobble via procedural noise-based border-radius animation
+  - `js/cursor.js` — custom cursor (mix-blend-mode difference, enlarges on hover over links)
+  - `js/project.js` — project page: parallax hero, sticky sidebar, image reveals on scroll
+  - `js/projects.js` — projects listing behavior
+  - `js/mob-sheet.js` — mobile bottom-sheet navigation
+  - `js/landing.js` — landing page experiments
+  - `js/about.js`, `js/archive.js` — page-specific scripts
+- **Fonts:** Google Fonts Alegreya (serif, for body/headings) + local `fonts/Post.otf` (display font, used via `post-font` class for the "Sybil Sometimes" alternate name)
+- **Brand assets:** `brand_assets/` contains logos (`SofiaFullname.png`, `sybilnew-1.png`), stars (`starbright.png`, `staryo.png`), grain textures, and backdrop images. Always use these — never substitute placeholders.
+- **Visual overlays:** Most pages layer a background image + `.dusti` (dust texture at 5% opacity) + `.grain` (animated grain via background-position keyframes) for a textured film look.
+- **Nav pattern:** Desktop uses `.main-nav` with a morphing blob border-radius + projects dropdown. Mobile uses `.mob-sheet` bottom sheet. Both are present in every page's HTML.
+
+## Always Do First
+- **Invoke the `frontend-design` skill** before writing any frontend code, every session, no exceptions.
+
+## Reference Image Workflow
+- If a reference image is provided: match layout, spacing, typography, and color exactly. Do not improve or add to the design.
+- Screenshot your output, compare against reference, fix mismatches, re-screenshot. Do at least 2 comparison rounds.
+- After screenshotting, read the PNG from `temporary screenshots/` with the Read tool to analyze it.
+- Be specific in comparisons: note exact px differences in spacing, font size, color hex values, alignment.
+
+## Anti-Generic Guardrails
+- **Colors:** Never use default palette (indigo-500, blue-600, etc.). Derive from the existing brand.
+- **Shadows:** Layered, color-tinted with low opacity. Never flat `shadow-md`.
+- **Typography:** Pair display/serif with clean sans. Tight tracking (`-0.03em`) on large headings, generous line-height (`1.7`) on body.
+- **Gradients:** Layer multiple radial gradients. Add grain/texture via SVG noise filter.
+- **Animations:** Only animate `transform` and `opacity`. Never `transition-all`. Use spring-style easing.
+- **Interactive states:** Every clickable element needs hover, focus-visible, and active states.
+- **Images:** Gradient overlay + color treatment with `mix-blend-multiply`.
+
+## Git Workflow
+- **After every meaningful set of changes, commit and push to GitHub.**
+- Use `git add` for specific changed files (not `git add -A`), then commit with a clean message, then `git push`.
+- Remote: `origin` → `https://github.com/kjoshh/sofia-portfolio.git`, branch: `main`
+
+## Hard Rules
+- Do not add sections, features, or content not in the reference
+- Do not "improve" a reference design — match it
+- Do not stop after one screenshot pass
+- Do not use `transition-all`
+- Do not use default blue/indigo as primary color
+- Always serve on localhost — never screenshot a `file:///` URL

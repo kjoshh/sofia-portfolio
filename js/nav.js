@@ -169,15 +169,6 @@ function applyFontStagger(el) {
     });
   });
 
-  // ── Star spin on logo hover ──
-  const navStar = document.querySelector('.nav-star-sep');
-  const logoForStar = document.querySelector('.main-nav .logo-link');
-  if (navStar && logoForStar) {
-    logoForStar.addEventListener('mouseenter', () => {
-      gsap.to(navStar, { rotation: '-=250', duration: 0.8, ease: 'power3.inOut' });
-    });
-  }
-
   // Apply font stagger + cross-hover to top nav links (exclude logo-link — it uses images, not text)
   const topEls = [
     ...document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item):not(.logo-link)'),
@@ -199,9 +190,8 @@ function applyFontStagger(el) {
     const isIndex = ['', 'index.html'].includes(window.location.pathname.split('/').pop());
 
     if (isIndex && top && bottom) {
-      // Index only: swap between the two logos. Incoming rises from below; outgoing exits top.
+      // Index: swap between the two logos on hover
       gsap.set(bottom, { yPercent: 100 });
-
       let sybilShowing = false;
 
       logoLink.addEventListener('mouseenter', () => {
@@ -218,7 +208,6 @@ function applyFontStagger(el) {
         }
       });
     } else if (!isIndex && top) {
-      // Other pages: hide the second logo entirely, simple opacity dip on the main logo
       if (bottom) gsap.set(bottom, { display: 'none' });
       logoLink.addEventListener('mouseenter', () => gsap.to(top, { opacity: 0.8, duration: 0.2, ease: 'power2.out' }));
       logoLink.addEventListener('mouseleave', () => gsap.to(top, { opacity: 1,   duration: 0.3, ease: 'power2.out' }));

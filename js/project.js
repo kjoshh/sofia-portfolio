@@ -3,7 +3,7 @@ function updateOverviewCellHeight() {
   const imgCount = document.querySelectorAll(".imgholder").length;
   const grid = document.querySelector(".gall3ry");
 
-  if (window.innerWidth <= 767) {
+  if (window.innerWidth <= 991) {
     const gap = 8;
     const availH = window.innerHeight - 88 - 120; // below mob-sheet, above tab pill
     // Find minimum cols so cell height >= 70px
@@ -84,13 +84,30 @@ gsap.set(infoLines, { opacity: 0, y: 10 });
 textContainer.style.display = "none";
 textContainer.style.visibility = "";
 
-const isMobile = () => window.innerWidth <= 767;
+const isMobile = () => window.innerWidth <= 991;
+const isTablet = () => false; // tablet now uses mobile nav
+
+// Compute nav Y offset for layout-0: position nav just below the centered image cluster
+function getLayout0NavY() {
+  // #img100 is 235px wide, rotated 90deg → visual height ≈ 235px
+  const clusterHalfH = 235 / 2;
+  const gap = -10;
+  // Nav base is at bottom:45px; shift it so it sits (gap)px below the centered cluster
+  return -(window.innerHeight * 0.57) + clusterHalfH + gap + 45;
+}
 
 if (!isMobile()) {
-  gsap.set(proNav, { xPercent: -50, y: "-44vh", yPercent: 50 });
+  gsap.set(proNav, { xPercent: -50, y: getLayout0NavY(), yPercent: 50 });
   proNav.classList.add("transparent");
 }
 let activeLayout = "layout-0-gall3ry";
+
+// Reposition nav on resize when in layout-0
+window.addEventListener("resize", () => {
+  if (activeLayout === "layout-0-gall3ry" && !isMobile()) {
+    gsap.set(proNav, { y: getLayout0NavY() });
+  }
+});
 
 function switchLayout(newLayout) {
   if (newLayout === activeLayout) return;
@@ -116,7 +133,7 @@ function switchLayoutHandler(newLayout) {
 
   // On mobile, leaving Info tab: images are display:none so there's no Flip "from" position.
   // Fade text out immediately, delay class change so images only appear after text clears.
-  if (isMobile() && previousLayout === "layout-3-gall3ry") {
+  if ((isMobile() || isTablet()) && previousLayout === "layout-3-gall3ry") {
     if (textContainer) {
       gsap.killTweensOf(infoLines);
       gsap.to(infoLines, {
@@ -138,6 +155,29 @@ function switchLayoutHandler(newLayout) {
         { opacity: 1, duration: 0.6, stagger: 0.03, ease: "power2.out", onComplete: () => { lenis.resize(); } }
       );
     }, 350);
+    return;
+  }
+
+  // On mobile/tablet, entering Info tab: skip Flip so inline styles don't override CSS display:none
+  if (isMobile() && newLayout === "layout-3-gall3ry") {
+    gsap.to(imgholders, {
+      opacity: 0, duration: 0.3, ease: "power2.in",
+      onComplete: () => {
+        gall3ry.classList.remove(previousLayout);
+        gall3ry.classList.add(newLayout);
+        gsap.set(imgholders, { clearProps: "all" });
+        proNav.classList.remove("transparent");
+        if (textContainer) {
+          textContainer.style.display = "block";
+          gsap.set(textContainer, { autoAlpha: 1 });
+          gsap.fromTo(infoLines,
+            { opacity: 0, y: 10 },
+            { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, ease: "power2.out" }
+          );
+        }
+        lenis.resize();
+      }
+    });
     return;
   }
 
@@ -167,13 +207,35 @@ function switchLayoutHandler(newLayout) {
 
   if (previousLayout === "layout-0-gall3ry") {
     gsap.to(img100, { opacity: 0, duration: 0.2, ease: "power4.inOut", delay: 0 });
-    if (!isMobile()) gsap.to(proNav, { xPercent: -50, y: 0, yPercent: 0, duration: 2, ease: "power4.inOut", delay: 0 });
+    if (!isMobile()) {
+      gsap.to(proNav, { xPercent: -50, y: 0, yPercent: 0, duration: 2, ease: "power4.inOut", delay: 0 });
+      // Animate background in smoothly instead of instant class toggle
+      proNav.classList.remove("transparent");
+      gsap.fromTo(proNav,
+        { backgroundColor: "rgba(15, 13, 11, 0)" },
+        { backgroundColor: "rgba(15, 13, 11, 0.96)", duration: 0.8, ease: "power2.inOut", delay: 0.3 }
+      );
+    } else {
+      proNav.classList.remove("transparent");
+    }
   }
   if (newLayout === "layout-0-gall3ry") {
     gsap.to(img100, { opacity: 1, duration: 0.5, ease: "power4.inOut", delay: 0 });
-    if (!isMobile()) gsap.to(proNav, { xPercent: -50, y: "-45vh", yPercent: 50, duration: 2, ease: "power4.inOut", delay: 0 });
-    proNav.classList.add("transparent");
-  } else {
+    if (!isMobile()) {
+      gsap.to(proNav, { xPercent: -50, y: getLayout0NavY(), yPercent: 50, duration: 2, ease: "power4.inOut", delay: 0 });
+      // Animate background out smoothly, then apply transparent class
+      gsap.to(proNav, {
+        backgroundColor: "rgba(15, 13, 11, 0)",
+        duration: 0.6, ease: "power2.inOut",
+        onComplete: () => {
+          proNav.classList.add("transparent");
+          gsap.set(proNav, { clearProps: "backgroundColor" });
+        }
+      });
+    } else {
+      proNav.classList.add("transparent");
+    }
+  } else if (previousLayout !== "layout-0-gall3ry") {
     proNav.classList.remove("transparent");
   }
 

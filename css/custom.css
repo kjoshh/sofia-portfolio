@@ -262,20 +262,29 @@
 .gall3ry.layout-0-gall3ry {
   position: relative;
   width: 100vw;
+  
 }
 
 .gall3ry.layout-0-gall3ry .imgholder {
+  aspect-ratio: 3 / 4;
+
   position: absolute;
-  top: 36.5vh;
-  width: 5vw;
-  height: 8vw;
+  top: 43%;
+  left: 50%;
+  /* opacity: 0.9; */
+  width: 100px;
+  margin-top: calc(-0.5 * 100px * 4 / 3);
+  margin-left: calc(-0.5 * 100px);
 }
+
 
 #img100 {
   position: absolute;
-  top: 35vh;
-  width: 13.5vw;
-  transform: rotate(-90deg);
+  top: 43%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  width: 235px;
+  margin-top: -8px;
 }
 
 .gall3ry.layout-0-gall3ry .imgholder img {
@@ -361,13 +370,21 @@
   width: 100%;
   height: 100%;
   transform: translateX(0%);
+  display: flex;
+  justify-content: center;
 }
 
 .gall3ry.layout-3-gall3ry .imgholder {
   position: absolute;
   top: 190px;
-  right: 125px;
+  right: 18%;
   width: 20vw;
+}
+
+@media (max-width: 1200px) {
+  .gall3ry.layout-3-gall3ry .imgholder {
+    display: none !important;
+  }
 }
 
 #hover-preview {
@@ -409,6 +426,10 @@
   background-color: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+.pro-nav.transparent::before,
+.pro-nav.transparent::after {
+  opacity: 0 !important;
 }
 
 /* Layout nav font slot machine wrappers */
@@ -657,10 +678,10 @@ text-decoration: none;
 .mob-sheet { display: none; }
 
 /* ══════════════════════════════════════════
-   MOBILE — Index Page (≤767px)
+   MOBILE + TABLET — Index Page (≤991px)
    ══════════════════════════════════════════ */
 
-@media (max-width: 767px) {
+@media (max-width: 991px) {
 
   .main-nav { display: none !important; }
 
@@ -1291,10 +1312,32 @@ text-decoration: none;
 
 /* ══════════════════════════════════════════
    TABLET — 768px–991px (index page)
+   Merged into the ≤991px mobile block above;
+   these rules still apply only to wider mobiles.
    ══════════════════════════════════════════ */
 
 @media (min-width: 768px) and (max-width: 991px) {
+  /* Info layout tablet: fullscreen text like mobile, hide gallery image */
+  .text-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: 0 !important;
+    transform: translateX(-50%);
+    width: calc(100% - 80px);
+    max-width: 550px;
+    padding-top: 90px;
+    padding-bottom: 130px;
+    overflow-y: auto;
+    text-align: left;
+  }
 
+  .gall3ry.layout-3-gall3ry .imgholder {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
 }
 
 @font-face {
@@ -1372,7 +1415,7 @@ text-decoration: none;
   justify-content: space-between;
   align-items: center;
   position: absolute;
-  inset: auto auto 18.9867px 50%;
+  inset: auto auto 45px 50%;
 }
 
 .nav-menu.pro{
@@ -1389,6 +1432,7 @@ text-decoration: none;
   mix-blend-mode: screen;
   pointer-events: none;
   z-index: 1;
+  transition: opacity 0.8s ease;
 }
 
 /* Fine noise for extra texture depth */
@@ -1400,6 +1444,7 @@ text-decoration: none;
   background-size: 200px 200px;
   opacity: 0.06;
   mix-blend-mode: overlay;
+  transition: opacity 0.8s ease;
   pointer-events: none;
   z-index: 2;
 }
@@ -1459,6 +1504,60 @@ text-decoration: none;
 
 }
 
+/* ── Nav Logo Morph (per-letter Sofia → Sybil) ── */
+
+.nav-logo-morph {
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+  font-family: Alegreya, serif;
+  font-weight: 400;
+  font-size: 18px;
+  letter-spacing: 0.01em;
+  color: #e9e5dd;
+  white-space: nowrap;
+}
+
+.nav-logo-morph .nl-tile {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+}
+
+.nav-logo-morph .nl-tile.nl-space {
+  width: 0.3em;
+  pointer-events: none;
+}
+
+.nav-logo-morph .nl-front,
+.nav-logo-morph .nl-back {
+  display: block;
+  font-size: inherit;
+  line-height: 1.2;
+  color: inherit;
+  will-change: opacity, transform, filter;
+  transition: none;
+}
+
+.nav-logo-morph .nl-front {
+  position: relative;
+  font-family: Alegreya, serif;
+  font-weight: 400;
+}
+
+.nav-logo-morph .nl-back {
+  position: absolute;
+  inset: 0;
+  display: block;
+  text-align: center;
+  font-family: Post, serif;
+  font-weight: 400;
+  line-height: 1.2;
+  opacity: 0;
+  transform: scale(0);
+  filter: blur(3px);
+}
+
 .nav-star-sep {
   width: 16px;
   height: 16px;
@@ -1492,7 +1591,7 @@ text-decoration: none;
 }
 
 .nav-link.notactive {
-  color: rgba(233, 229, 221, 0.55);
+  color: rgba(233, 229, 221, 0.7);
 }
 
 .imgbg {
@@ -1591,7 +1690,7 @@ text-decoration: none;
   max-width: 550px;
   display: none;
   position: absolute;
-  inset: 190px auto auto 125px;
+  inset: 190px auto auto 18%;
 }
 
 .info-para {
@@ -1749,13 +1848,13 @@ text-decoration: none;
 
 
 /* ══════════════════════════════════════════
-   MOBILE — Project Pages (≤767px)
+   MOBILE + TABLET — Project Pages (≤991px)
    ══════════════════════════════════════════ */
 
 /* Desktop: hide mobile project tab pill */
 .mob-proj-tabs { display: none; }
 
-@media (max-width: 767px) {
+@media (max-width: 991px) {
 
   /* Hide desktop project nav */
   .pro-nav { display: none !important; }
@@ -1775,6 +1874,7 @@ text-decoration: none;
     z-index: 9998;
     border: 1px solid rgba(233, 229, 221, 0.07);
     overflow: hidden;
+    justify-content: center;
   }
 
 
@@ -1858,17 +1958,20 @@ text-decoration: none;
     padding: 88px 12px 120px;
   }
 
-  /* layout-3 (Info) mobile: full-height scrollable container, pills float on top */
+  /* layout-3 (Info) mobile/tablet: full-height scrollable container, pills float on top */
   .text-container {
     position: fixed;
     top: 0;
-    left: 24px;
-    right: 24px;
+    left: 50%;
+    right: auto;
     bottom: 0;
-    max-width: 100%;
+    transform: translateX(-50%);
+    width: calc(100% - 48px);
+    max-width: 550px;
     padding-top: 90px;
     padding-bottom: 130px;
     overflow-y: auto;
+    text-align: left;
   }
 
   /* Allow gall3ry-container to grow with content on mobile */
@@ -1879,7 +1982,7 @@ text-decoration: none;
 
   /* Hide decorative image in Info view on mobile */
   .gall3ry.layout-3-gall3ry .imgholder {
-    display: none;
+    display: none !important;
   }
 
 }

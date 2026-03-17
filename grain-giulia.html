@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grain — Giulia Style</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1e1e1b;
+      color: #e8e5e0;
+      font-family: system-ui, sans-serif;
+      height: 200vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Grain overlay — single animated layer ── */
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+
+    .grain::after {
+	content: '';
+	position: absolute;
+	width: 300%;
+	height: 300%;
+	left: -100%;
+	top: -100%;
+	background-image: url('images/Noise.png');
+	background-size: 300px 300px;
+	background-repeat: repeat;
+	opacity: 0.14;
+	animation: grain 2s steps(1) infinite;
+}
+
+    @keyframes grain {
+      0%  { transform: translate(0, 0); }
+      10% { transform: translate(-5%, -10%); }
+      20% { transform: translate(-15%, 5%); }
+      30% { transform: translate(7%, -25%); }
+      40% { transform: translate(-5%, 25%); }
+      50% { transform: translate(-15%, 10%); }
+      60% { transform: translate(15%, 0%); }
+      70% { transform: translate(0%, 15%); }
+      80% { transform: translate(3%, 35%); }
+      90% { transform: translate(-10%, 10%); }
+    }
+    .nois3 {
+	width: 100vw;
+	height: 100vh;
+	position: fixed;
+	pointer-events: none;
+	opacity: 0.015;
+	z-index: 100;
+	background-image: url("../images/Noise.png");
+}
+.dusti {
+	width: 100vw;
+	height: 100vh;
+	position: fixed;
+	pointer-events: none;
+	opacity: 0.035;
+	z-index: 100;
+	background-image: url("../images/BGDust.png");
+}
+    /* ── Some content to scroll over ── */
+    .hero {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(48px, 10vw, 140px);
+      font-weight: 300;
+      letter-spacing: -0.03em;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .section {
+      padding: 120px 60px;
+    }
+
+    .section h2 {
+      font-size: clamp(32px, 5vw, 64px);
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+    }
+
+    .section p {
+      max-width: 520px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: rgba(232, 229, 224, 0.6);
+    }
+  
+  </style>
+</head>
+<body>
+  <div class="grain"></div>
+  <div class="dusti"></div>
+  <div class="hero">
+    <h1>Grain Test</h1>
+  </div>
+
+  <div class="section">
+    <h2>Scroll to see it</h2>
+    <p>Single animated noise layer, tiled at 256px, steps(1) hard-cut animation, very low opacity. This replicates the Giulia Gartner grain feel using your existing Noise.png asset.</p>
+  </div>
+</body>
+</html>
