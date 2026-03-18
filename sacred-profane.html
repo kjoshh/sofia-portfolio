@@ -13,27 +13,7 @@
     html, body { height: 100%; overflow: hidden; }
     body {
       font-family: 'Alegreya', Georgia, serif;
-      cursor: default;
       background: #1e1e1b;
-    }
-
-    /* ── Cursor ── */
-    .cursor {
-      position: fixed;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #e9e5dd;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-      z-index: 100000;
-      mix-blend-mode: difference;
-      transition: width 0.25s ease, height 0.25s ease;
-    }
-    .cursor.hover { width: 50px; height: 50px; }
-    @media (max-width: 767px) {
-      .cursor { display: none; }
-      body { cursor: auto; }
     }
 
     /* ── Scene ── */
@@ -189,7 +169,7 @@ object-fit: contain;
 </head>
 <body>
 
-  <div class="cursor" id="cursor"></div>
+
 
   <div data-collapse="medium" class="navbar main-nav">
     <div class="wrapin">
@@ -247,7 +227,7 @@ object-fit: contain;
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script>
     /* ── Refs ── */
-    const cursor = document.getElementById('cursor');
+
     const letterField = document.getElementById('letterField');
     const frameWrap = document.getElementById('frameWrap');
 
@@ -349,150 +329,178 @@ object-fit: contain;
     /* ── Slot-based letter swap ── */
     // S O F I A _ C A R T U C C I A
     // S Y B I L _ S O M E T I M E S
-    // Matching: pos 0 (S), pos 3 (I) — stay in place
+    // Same pos: S@0, I@3 — stay in place
+    // Cross-slide: O(1→7), T(9→10), I(13→11) — slide to new position
+    // Unique: scatter out / chaos in
     const sofiaChars = 'sofia cartuccia'.split('');
     const sybilChars = 'sybil sometimes'.split('');
 
     const LETTER_W = 35;
     const SPACE_W = 50;
-    const SWAP_DIST = 45;
 
-    const slots = [];
-
+    // Non-space character indices
+    const charIndices = [];
     for (let i = 0; i < sofiaChars.length; i++) {
-      if (sofiaChars[i] === ' ') continue;
-
-      const sc = sofiaChars[i];
-      const yc = sybilChars[i];
-      const isMatch = sc === yc;
-
-      const sofiaEl = document.createElement('img');
-      sofiaEl.className = 'letter-el';
-      sofiaEl.src = `brand_assets/Letters/${sc}.png`;
-      sofiaEl.alt = sc;
-      letterField.appendChild(sofiaEl);
-      let sybilEl = null;
-      if (!isMatch) {
-        sybilEl = document.createElement('img');
-        sybilEl.className = 'letter-el';
-        sybilEl.src = `brand_assets/Letters/${yc}.png`;
-        sybilEl.alt = yc;
-        letterField.appendChild(sybilEl);
-      }
-
-      slots.push({
-        nameIndex: i,
-        isMatch,
-        sofiaEl,
-        sybilEl,
-        restRot: (Math.random() - 0.5) * 3,
-        x: 0,
-        y: 0,
-      });
+      if (sofiaChars[i] !== ' ') charIndices.push(i);
     }
 
-    /* ── Position calculations ── */
-    function calcPositions() {
+    // Step 1: Same-position matches
+    const samePosSet = new Set();
+    for (const ni of charIndices) {
+      if (sofiaChars[ni] === sybilChars[ni]) samePosSet.add(ni);
+    }
+
+    // Step 2: Cross-position matches (greedy)
+    const crossMatches = [];
+    const usedSofia = new Set(samePosSet);
+    const usedSybil = new Set(samePosSet);
+    for (const si of charIndices) {
+      if (usedSofia.has(si)) continue;
+      for (const yi of charIndices) {
+        if (usedSybil.has(yi)) continue;
+        if (sofiaChars[si] === sybilChars[yi]) {
+          crossMatches.push({ sofiaNameIdx: si, sybilNameIdx: yi });
+          usedSofia.add(si);
+          usedSybil.add(yi);
+          break;
+        }
+      }
+    }
+
+    const unmatchedSofiaIdx = charIndices.filter(i => !usedSofia.has(i));
+    const unmatchedSybilIdx = charIndices.filter(i => !usedSybil.has(i));
+
+    // Helper: create letter image
+    function makeLetterEl(char) {
+      const el = document.createElement('img');
+      el.className = 'letter-el';
+      el.src = `brand_assets/Letters/${char}.png`;
+      el.alt = char;
+      letterField.appendChild(el);
+      return el;
+    }
+
+    // Build slot arrays
+    const staySlots = [...samePosSet].map(ni => ({
+      nameIdx: ni,
+      el: makeLetterEl(sofiaChars[ni]),
+      restRot: (Math.random() - 0.5) * 3,
+    }));
+
+    const slideSlots = crossMatches.map(m => ({
+      sofiaNameIdx: m.sofiaNameIdx,
+      sybilNameIdx: m.sybilNameIdx,
+      el: makeLetterEl(sofiaChars[m.sofiaNameIdx]),
+      restRot: (Math.random() - 0.5) * 3,
+    }));
+
+    const sofiaOnlySlots = unmatchedSofiaIdx.map(ni => ({
+      nameIdx: ni,
+      el: makeLetterEl(sofiaChars[ni]),
+      restRot: (Math.random() - 0.5) * 3,
+    }));
+
+    const sybilOnlySlots = unmatchedSybilIdx.map(ni => ({
+      nameIdx: ni,
+      el: makeLetterEl(sybilChars[ni]),
+      restRot: (Math.random() - 0.5) * 3,
+    }));
+
+    /* ── Position helpers ── */
+    function getSlotX(nameIdx, startX) {
+      if (nameIdx < 5) return startX + nameIdx * LETTER_W + LETTER_W / 2;
+      return startX + 5 * LETTER_W + SPACE_W + (nameIdx - 6) * LETTER_W + LETTER_W / 2;
+    }
+
+    function getAnchor() {
       const rect = frameWrap.getBoundingClientRect();
       const anchorY = rect.top + 10;
       const anchorX = rect.left + rect.width / 2;
       const totalW = 14 * LETTER_W + SPACE_W;
       const startX = anchorX - totalW / 2;
-
-      for (const slot of slots) {
-        const i = slot.nameIndex;
-        if (i < 5) {
-          slot.x = startX + i * LETTER_W + LETTER_W / 2;
-        } else {
-          slot.x = startX + 5 * LETTER_W + SPACE_W + (i - 6) * LETTER_W + LETTER_W / 2;
-        }
-        slot.y = anchorY;
-      }
+      return { anchorX, anchorY, startX, totalW };
     }
 
     /* ── Initial placement (Sofia visible) ── */
     function initPositions() {
-      calcPositions();
-      for (const slot of slots) {
-        gsap.set(slot.sofiaEl, {
-          x: slot.x - 21,
-          y: slot.y - 12,
-          rotation: slot.restRot,
-          opacity: 0.9
-        });
-        if (slot.sybilEl) {
-          gsap.set(slot.sybilEl, {
-            x: slot.x - 21,
-            y: slot.y - 12 - SWAP_DIST,
-            rotation: slot.restRot,
-            opacity: 0
-          });
-        }
+      const { anchorY, startX } = getAnchor();
+      for (const s of staySlots) {
+        gsap.set(s.el, { x: getSlotX(s.nameIdx, startX) - 21, y: anchorY - 12, rotation: s.restRot, opacity: 0.9 });
+      }
+      for (const s of slideSlots) {
+        gsap.set(s.el, { x: getSlotX(s.sofiaNameIdx, startX) - 21, y: anchorY - 12, rotation: s.restRot, opacity: 0.9 });
+      }
+      for (const s of sofiaOnlySlots) {
+        gsap.set(s.el, { x: getSlotX(s.nameIdx, startX) - 21, y: anchorY - 12, rotation: s.restRot, opacity: 0.9 });
+      }
+      for (const s of sybilOnlySlots) {
+        gsap.set(s.el, { x: getSlotX(s.nameIdx, startX) - 21, y: anchorY - 12, rotation: s.restRot, opacity: 0 });
       }
     }
 
-    /* ── Swap: scatter outgoing letters to chaos, bring new ones in ── */
+    /* ── Swap: shared letters slide, unique letters scatter/appear ── */
     function swapTo(name) {
       if (name === currentName) return;
       currentName = name;
-      calcPositions();
+      const { anchorX, anchorY, startX, totalW } = getAnchor();
 
-      // Chaos area centered around the word formation zone
-      const totalW = 14 * LETTER_W + SPACE_W;
-      const rect = frameWrap.getBoundingClientRect();
-      const anchorX = rect.left + rect.width / 2;
-      const anchorY = rect.top + 10;
       const chaosXMin = anchorX - totalW / 2 - 40;
       const chaosXMax = anchorX + totalW / 2 + 40;
       const chaosYMin = anchorY - 60;
       const chaosYMax = anchorY + 60;
+      function rChaosX() { return chaosXMin + Math.random() * (chaosXMax - chaosXMin) - 21; }
+      function rChaosY() { return chaosYMin + Math.random() * (chaosYMax - chaosYMin) - 12; }
+      function rChaosRot() { return (Math.random() - 0.5) * 60; }
 
-      const swapSlots = slots.filter(s => !s.isMatch);
-
-      swapSlots.forEach((slot, idx) => {
-        const outEl = name === 'sybil' ? slot.sofiaEl : slot.sybilEl;
-        const inEl = name === 'sybil' ? slot.sybilEl : slot.sofiaEl;
-        const baseY = slot.y - 12;
+      // Shared letters slide to their new position
+      slideSlots.forEach((slot, idx) => {
+        const targetIdx = name === 'sybil' ? slot.sybilNameIdx : slot.sofiaNameIdx;
         const delay = idx * 0.03 + Math.random() * 0.04;
-
-        // Scatter outgoing letter to a random chaos position, then fade out
-        const chaosX = chaosXMin + Math.random() * (chaosXMax - chaosXMin) - 21;
-        const chaosY = chaosYMin + Math.random() * (chaosYMax - chaosYMin) - 12;
-        const chaosRot = (Math.random() - 0.5) * 60;
-
-        gsap.to(outEl, {
-          x: chaosX,
-          y: chaosY,
-          rotation: chaosRot,
-          opacity: 0,
-          duration: 0.5,
-          delay: delay,
-          ease: 'power2.in',
-          overwrite: true,
-          onComplete: () => {
-            // Reset above slot for future reuse
-            gsap.set(outEl, { x: slot.x - 21, y: baseY - SWAP_DIST, rotation: slot.restRot, opacity: 0 });
-          }
+        gsap.to(slot.el, {
+          x: getSlotX(targetIdx, startX) - 21, y: anchorY - 12,
+          rotation: slot.restRot, opacity: 0.9,
+          duration: 0.75, delay, ease: 'power4.in', overwrite: true,
         });
+      });
 
-        // Bring incoming letter from a random chaos position into its slot
-        const inChaosX = chaosXMin + Math.random() * (chaosXMax - chaosXMin) - 21;
-        const inChaosY = chaosYMin + Math.random() * (chaosYMax - chaosYMin) - 12;
-        const inChaosRot = (Math.random() - 0.5) * 60;
+      // Sofia-only letters
+      sofiaOnlySlots.forEach((slot, idx) => {
+        const delay = idx * 0.03 + Math.random() * 0.04;
+        if (name === 'sybil') {
+          // Scatter out
+          gsap.to(slot.el, {
+            x: rChaosX(), y: rChaosY(), rotation: rChaosRot(),
+            opacity: 0, duration: 0.5, delay, ease: 'power2.in', overwrite: true,
+          });
+        } else {
+          // Come back from chaos
+          gsap.fromTo(slot.el,
+            { x: rChaosX(), y: rChaosY(), rotation: rChaosRot(), opacity: 0 },
+            { x: getSlotX(slot.nameIdx, startX) - 21, y: anchorY - 12,
+              rotation: slot.restRot, opacity: 0.9,
+              duration: 0.55, delay: delay + 0.15, ease: 'power2.out', overwrite: true }
+          );
+        }
+      });
 
-        gsap.fromTo(inEl,
-          { x: inChaosX, y: inChaosY, rotation: inChaosRot, opacity: 0 },
-          {
-            x: slot.x - 21,
-            y: baseY,
-            rotation: slot.restRot,
-            opacity: 0.9,
-            duration: 0.55,
-            delay: delay + 0.15,
-            ease: 'power2.out',
-            overwrite: true
-          }
-        );
+      // Sybil-only letters
+      sybilOnlySlots.forEach((slot, idx) => {
+        const delay = idx * 0.03 + Math.random() * 0.04;
+        if (name === 'sybil') {
+          // Come in from chaos
+          gsap.fromTo(slot.el,
+            { x: rChaosX(), y: rChaosY(), rotation: rChaosRot(), opacity: 0 },
+            { x: getSlotX(slot.nameIdx, startX) - 21, y: anchorY - 12,
+              rotation: slot.restRot, opacity: 0.9,
+              duration: 0.55, delay: delay + 0.15, ease: 'power2.out', overwrite: true }
+          );
+        } else {
+          // Scatter out
+          gsap.to(slot.el, {
+            x: rChaosX(), y: rChaosY(), rotation: rChaosRot(),
+            opacity: 0, duration: 0.5, delay, ease: 'power2.in', overwrite: true,
+          });
+        }
       });
     }
 
@@ -500,18 +508,23 @@ object-fit: contain;
 
     /* ── Resize ── */
     window.addEventListener('resize', () => {
-      calcPositions();
-      for (const slot of slots) {
-        const activeEl = currentName === 'sofia' ? slot.sofiaEl : (slot.sybilEl || slot.sofiaEl);
-        gsap.set(activeEl, { x: slot.x - 21, y: slot.y - 12 });
-        if (slot.sybilEl) {
-          const inactiveEl = currentName === 'sofia' ? slot.sybilEl : slot.sofiaEl;
-          gsap.set(inactiveEl, { x: slot.x - 21, y: slot.y - 12 - SWAP_DIST, opacity: 0 });
-        }
+      const { anchorY, startX } = getAnchor();
+      for (const s of staySlots) {
+        gsap.set(s.el, { x: getSlotX(s.nameIdx, startX) - 21, y: anchorY - 12 });
+      }
+      for (const s of slideSlots) {
+        const idx = currentName === 'sofia' ? s.sofiaNameIdx : s.sybilNameIdx;
+        gsap.set(s.el, { x: getSlotX(idx, startX) - 21, y: anchorY - 12 });
+      }
+      for (const s of sofiaOnlySlots) {
+        if (currentName === 'sofia') gsap.set(s.el, { x: getSlotX(s.nameIdx, startX) - 21, y: anchorY - 12 });
+      }
+      for (const s of sybilOnlySlots) {
+        if (currentName === 'sybil') gsap.set(s.el, { x: getSlotX(s.nameIdx, startX) - 21, y: anchorY - 12 });
       }
     });
   </script>
-  <script src="js/cursor.js"></script>
+
   <script src="js/nav.js"></script>
 
 </body>
