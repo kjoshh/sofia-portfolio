@@ -30,7 +30,7 @@
     /* ── Framed photo ── */
     .frame-wrap {
       position: relative;
-      width: 50vw;
+      width: 45vw;
       aspect-ratio: 3 / 2;
       max-height: 75vh;
       z-index: 2;
@@ -75,7 +75,7 @@ object-fit: contain;
       margin-right: 2%;
       z-index: 2;
       pointer-events: none;
-      clip-path: polygon(50% 50%, 0% 0%, 0% 0%);
+      clip-path: polygon(50% 50%, 0% 100%, 0% 100%);
     }
     .frame-border-hover img {
       width: 100%;
@@ -138,7 +138,20 @@ object-fit: contain;
       pointer-events: none;
       z-index: 9998;
       background-image: url("images/BGDust.png");
-      opacity: 0.05;
+      opacity: 0.15;
+    }
+
+    /* ── Vignette ── */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 9997;
+      pointer-events: none;
+      background: radial-gradient(
+        ellipse at center,
+        transparent 50%,
+        rgba(10, 8, 6, 0.5) 100%
+      );
     }
 
     /* ── Letter field ── */
@@ -152,11 +165,19 @@ object-fit: contain;
     .letter-el {
       position: absolute;
       width: auto;
-      height: 25px;
+      height: 1.35vw;
       will-change: transform, opacity;
       user-select: none;
       -webkit-user-drag: none;
       pointer-events: auto;
+    }
+
+    /* ── Dust particles canvas ── */
+    .dust-particles {
+      position: fixed;
+      inset: 0;
+      z-index: 9996;
+      pointer-events: none;
     }
 
     /* ── Fade-in ── */
@@ -221,6 +242,8 @@ object-fit: contain;
 
   <div class="letter-field" id="letterField"></div>
 
+  <canvas class="dust-particles" id="dustCanvas"></canvas>
+  <div class="vignette"></div>
   <div class="dust"></div>
   <div class="grain"></div>
 
@@ -239,22 +262,22 @@ object-fit: contain;
     const frameBorderEl = document.getElementById('frameBorderHover');
     const outerBorder = frameWrap.querySelector('.frame-border');
 
-    /* Clock-sweep clip-path: sweeps clockwise from top-left corner */
+    /* Clock-sweep clip-path: sweeps clockwise from bottom-left corner */
     function clockWipe(progress) {
       const sweep = progress * 360;
-      const pts = ['50% 50%', '0% 0%'];
+      const pts = ['50% 50%', '0% 100%'];
       const corners = [
-        { rel: 90,  p: '100% 0%' },
-        { rel: 180, p: '100% 100%' },
-        { rel: 270, p: '0% 100%' },
+        { rel: 90,  p: '0% 0%' },
+        { rel: 180, p: '100% 0%' },
+        { rel: 270, p: '100% 100%' },
       ];
       for (const c of corners) {
         if (sweep > c.rel) pts.push(c.p);
       }
       if (progress >= 1) {
-        pts.push('0% 0%');
+        pts.push('0% 100%');
       } else {
-        const absAngle = (315 + sweep) % 360;
+        const absAngle = (225 + sweep) % 360;
         const rad = (absAngle - 90) * Math.PI / 180;
         const dx = Math.cos(rad);
         const dy = Math.sin(rad);
@@ -271,6 +294,8 @@ object-fit: contain;
     /* ── Hover in / out ── */
     let isHovered = false;
     const bgSybilEl = document.getElementById('bgSybil');
+    let sweepTween = null;
+    let sweepObj = { progress: 0 };
 
     function hoverIn() {
       if (isHovered) return;
@@ -282,14 +307,15 @@ object-fit: contain;
       // Sybil photo fade in
       gsap.to(bgSybilEl, { opacity: 1, duration: 0.4, delay: 0.35, ease: 'power4.in', x:20, overwrite: true });
 
-      // Border clock-sweep in
-      const sweepIn = { progress: 0 };
-      gsap.to(sweepIn, {
+      // Border clock-sweep in — kill any prior sweep first
+      if (sweepTween) sweepTween.kill();
+      sweepObj.progress = 0;
+      sweepTween = gsap.to(sweepObj, {
         progress: 1,
         duration: 0.75,
         delay: 0.35,
         ease: 'power2.out',
-        onUpdate: () => { frameBorderEl.style.clipPath = clockWipe(sweepIn.progress); }
+        onUpdate: () => { frameBorderEl.style.clipPath = clockWipe(sweepObj.progress); }
       });
       // Border slide in from left (match Sybil photo timing)
       gsap.to(frameBorderEl, { x: 20, duration: 0.4, delay: 0.35, ease: 'power4.in', overwrite: true });
@@ -308,13 +334,16 @@ object-fit: contain;
       // Sybil photo fade out
       gsap.to(bgSybilEl, {x:-10, opacity: 0, duration: 0.35, ease: 'power2.in', delay:0.1, overwrite: true });
 
-      // Border clock-sweep out (reverse)
-      const sweepOut = { progress: 1 };
-      gsap.to(sweepOut, {
+      // Border clock-sweep out — kill any prior sweep first
+      if (sweepTween) sweepTween.kill();
+      const currentProgress = sweepObj.progress;
+      sweepObj.progress = currentProgress;
+      sweepTween = gsap.to(sweepObj, {
         progress: 0,
-        duration: 0.5,
+        duration: 0.5 * currentProgress,
         ease: 'power2.in',
-        onUpdate: () => { frameBorderEl.style.clipPath = clockWipe(sweepOut.progress); }
+        onUpdate: () => { frameBorderEl.style.clipPath = clockWipe(sweepObj.progress); },
+        onComplete: () => { frameBorderEl.style.clipPath = clockWipe(0); }
       });
       // Border slide back
       gsap.to(frameBorderEl, { x: 0, duration: 0.5, ease: 'power2.in', overwrite: true });
@@ -335,8 +364,10 @@ object-fit: contain;
     const sofiaChars = 'sofia cartuccia'.split('');
     const sybilChars = 'sybil sometimes'.split('');
 
-    const LETTER_W = 35;
-    const SPACE_W = 50;
+    function getLW() { return window.innerWidth * 0.017; }  // ~35px at 1440
+    function getSW() { return window.innerWidth * 0.02; }  // ~50px at 1440
+    let LETTER_W = getLW();
+    let SPACE_W = getSW();
 
     // Non-space character indices
     const charIndices = [];
@@ -414,7 +445,7 @@ object-fit: contain;
 
     function getAnchor() {
       const rect = frameWrap.getBoundingClientRect();
-      const anchorY = rect.top + 10;
+      const anchorY = rect.top + 5;
       const anchorX = rect.left + rect.width / 2;
       const totalW = 14 * LETTER_W + SPACE_W;
       const startX = anchorX - totalW / 2;
@@ -473,13 +504,12 @@ object-fit: contain;
             opacity: 0, duration: 0.5, delay, ease: 'power2.in', overwrite: true,
           });
         } else {
-          // Come back from chaos
-          gsap.fromTo(slot.el,
-            { x: rChaosX(), y: rChaosY(), rotation: rChaosRot(), opacity: 0 },
-            { x: getSlotX(slot.nameIdx, startX) - 21, y: anchorY - 12,
-              rotation: slot.restRot, opacity: 0.9,
-              duration: 0.55, delay: delay + 0.15, ease: 'power2.out', overwrite: true }
-          );
+          // Come back from wherever they currently are
+          gsap.to(slot.el, {
+            x: getSlotX(slot.nameIdx, startX) - 21, y: anchorY - 12,
+            rotation: slot.restRot, opacity: 0.9,
+            duration: 0.5, delay: delay + 0.25, ease: 'power2.out', overwrite: true,
+          });
         }
       });
 
@@ -487,13 +517,12 @@ object-fit: contain;
       sybilOnlySlots.forEach((slot, idx) => {
         const delay = idx * 0.03 + Math.random() * 0.04;
         if (name === 'sybil') {
-          // Come in from chaos
-          gsap.fromTo(slot.el,
-            { x: rChaosX(), y: rChaosY(), rotation: rChaosRot(), opacity: 0 },
-            { x: getSlotX(slot.nameIdx, startX) - 21, y: anchorY - 12,
-              rotation: slot.restRot, opacity: 0.9,
-              duration: 0.55, delay: delay + 0.15, ease: 'power2.out', overwrite: true }
-          );
+          // Come in from wherever they currently are
+          gsap.to(slot.el, {
+            x: getSlotX(slot.nameIdx, startX) - 21, y: anchorY - 12,
+            rotation: slot.restRot, opacity: 0.9,
+            duration: 0.55, delay: delay + 0.15, ease: 'power2.out', overwrite: true,
+          });
         } else {
           // Scatter out
           gsap.to(slot.el, {
@@ -506,8 +535,142 @@ object-fit: contain;
 
     initPositions();
 
+    /* ── Mouse parallax: letters shift based on cursor position ── */
+    // Each letter gets a random depth factor so they move at different rates
+    const allSlots = [
+      ...staySlots.map(s => ({ el: s.el })),
+      ...slideSlots.map(s => ({ el: s.el })),
+      ...sofiaOnlySlots.map(s => ({ el: s.el })),
+      ...sybilOnlySlots.map(s => ({ el: s.el })),
+    ].map(s => ({
+      ...s,
+      depth: 0.15 + Math.random() * 0.15,      // how much it moves
+      lag: 0.035 + Math.random() * 0.15,          // how fast it follows (lower = laggier)
+      flipX: Math.random() > 0.3 ? 1 : -1,     // some letters move opposite direction
+      flipY: Math.random() > 0.3 ? 1 : -1,
+      cx: 0, cy: 0,                             // current smoothed offset
+    }));
+
+    let mouseX = 0.5, mouseY = 0.5;
+    const PARALLAX_X = 14;
+    const PARALLAX_Y = 10;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX / window.innerWidth;
+      mouseY = e.clientY / window.innerHeight;
+    });
+
+    function parallaxTick() {
+      const tx = (mouseX - 0.5) * 2;
+      const ty = (mouseY - 0.5) * 2;
+
+      for (const s of allSlots) {
+        const targetX = tx * PARALLAX_X * s.depth * s.flipX;
+        const targetY = ty * PARALLAX_Y * s.depth * s.flipY;
+        s.cx += (targetX - s.cx) * s.lag;
+        s.cy += (targetY - s.cy) * s.lag;
+        s.el.style.marginLeft = s.cx + 'px';
+        s.el.style.marginTop = s.cy + 'px';
+      }
+      requestAnimationFrame(parallaxTick);
+    }
+    requestAnimationFrame(parallaxTick);
+
+    /* ── Floating dust particles ── */
+    (function () {
+      const canvas = document.getElementById('dustCanvas');
+      const ctx = canvas.getContext('2d');
+      let W, H;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const NUM = 65;
+      const particles = [];
+
+      for (let i = 0; i < NUM; i++) {
+        const warmth = Math.random();
+        particles.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: 0.4 + Math.random() * 1.25,           // radius 0.4–1.6px
+          vx: (Math.random() - 0.5) * 0.15,        // very slow horizontal drift
+          vy: -0.05 - Math.random() * 0.12,         // slow upward float (like heated dust)
+          alpha: 0.08 + Math.random() * 0.18,       // subtle opacity
+          // warm tones: mix between pale cream and warm amber
+          cr: 200 + Math.floor(warmth * 55),         // 200–255
+          cg: 180 + Math.floor(warmth * 40),         // 180–220
+          cb: 150 + Math.floor(warmth * 30),          // 150–180
+          drift: Math.random() * Math.PI * 2,        // phase for sinusoidal sway
+          driftSpeed: 0.003 + Math.random() * 0.006,
+          driftAmp: 0.2 + Math.random() * 0.4,
+          rot: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.008,
+          // irregular shape: 5-7 points with random radii
+          shape: (() => {
+            const n = 5 + Math.floor(Math.random() * 3);
+            return Array.from({ length: n }, (_, j) => ({
+              angle: (j / n) * Math.PI * 2,
+              wobble: 0.55 + Math.random() * 0.9,
+            }));
+          })(),
+        });
+      }
+
+      function tick() {
+        ctx.clearRect(0, 0, W, H);
+
+        for (const p of particles) {
+          p.drift += p.driftSpeed;
+          p.x += p.vx + Math.sin(p.drift) * p.driftAmp;
+          p.y += p.vy;
+
+          // wrap around edges
+          if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
+          if (p.x < -5) p.x = W + 5;
+          if (p.x > W + 5) p.x = -5;
+
+          p.rot += p.rotSpeed;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.beginPath();
+          const pts = p.shape;
+          const n = pts.length;
+          // smooth closed blob via midpoints between shape vertices
+          const px0 = Math.cos(pts[0].angle) * p.r * pts[0].wobble;
+          const py0 = Math.sin(pts[0].angle) * p.r * pts[0].wobble;
+          const px1 = Math.cos(pts[1 % n].angle) * p.r * pts[1 % n].wobble;
+          const py1 = Math.sin(pts[1 % n].angle) * p.r * pts[1 % n].wobble;
+          ctx.moveTo((px0 + px1) / 2, (py0 + py1) / 2);
+          for (let k = 1; k <= n; k++) {
+            const cur = pts[k % n];
+            const nxt = pts[(k + 1) % n];
+            const cx = Math.cos(cur.angle) * p.r * cur.wobble;
+            const cy = Math.sin(cur.angle) * p.r * cur.wobble;
+            const nx = Math.cos(nxt.angle) * p.r * nxt.wobble;
+            const ny = Math.sin(nxt.angle) * p.r * nxt.wobble;
+            ctx.quadraticCurveTo(cx, cy, (cx + nx) / 2, (cy + ny) / 2);
+          }
+          ctx.closePath();
+          ctx.fillStyle = `rgba(${p.cr},${p.cg},${p.cb},${p.alpha})`;
+          ctx.fill();
+          ctx.restore();
+        }
+
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    })();
+
     /* ── Resize ── */
     window.addEventListener('resize', () => {
+      LETTER_W = getLW();
+      SPACE_W = getSW();
       const { anchorY, startX } = getAnchor();
       for (const s of staySlots) {
         gsap.set(s.el, { x: getSlotX(s.nameIdx, startX) - 21, y: anchorY - 12 });
