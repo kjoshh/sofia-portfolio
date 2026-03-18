@@ -59,12 +59,13 @@
     /* Background image behind photo on hover */
     .frame-bg-hover {
       position: absolute;
-      inset: 2% 2%;
-margin-left: 0%;
-margin-bottom: 0%;
+      inset: 0% 0%;
 
+width:82%;
+margin-left: 13%;
+object-fit: contain;
       z-index: 1;
-      background: url("brand_assets/backgroundbd.png") center / cover no-repeat;
+      background: url("brand_assets/backgroundbd.png") center / contain no-repeat;
       clip-path: inset(0 100% 0 0);
     }
 
@@ -82,14 +83,16 @@ margin-bottom: 0%;
       z-index: 1;
       background: #1e1e1b url("images/Sybilbg.jpg") center / cover no-repeat;
       opacity: 0;
+      margin-right:2%;
       margin-bottom: 5%;
     }
-    /* newfriome grunge frame: same inset as Sybil */
+    /* newfriome grunge frame */
     .frame-border-hover {
       position: absolute;
       inset: 21% 23%;
       margin-bottom: 5%;
 
+      margin-right: 2%;
       z-index: 2;
       pointer-events: none;
       clip-path: polygon(50% 50%, 0% 0%, 0% 0%);
@@ -285,67 +288,63 @@ margin-bottom: 0%;
       return `polygon(${pts.join(', ')})`;
     }
 
-    /* ── Stack a new layer on each hover ── */
-    let layerCount = 0;
+    /* ── Hover in / out ── */
+    let isHovered = false;
+    const bgSybilEl = document.getElementById('bgSybil');
 
-    // Alternate between two image sets
-    const bgImages = ['brand_assets/backidroppi.png', 'brand_assets/backgroundbd.png'];
-    const photoImages = ['images/0017_17A.jpg', 'images/Sybilbg.jpg'];
+    function hoverIn() {
+      if (isHovered) return;
+      isHovered = true;
 
-    function addLayer() {
-      layerCount++;
-      const setIndex = layerCount % 2; // toggles 1→0, 2→1, 3→0 ...
+      // Bg wipe in
+      gsap.to(bgHoverEl, { clipPath: 'inset(0 0% 0 0)', duration: 0.75, ease: 'power3.inOut', overwrite: true });
 
-      // Clone bg-hover only on first layer
-      let newBg = null;
-      if (layerCount === 1) {
-        newBg = bgHoverEl.cloneNode(true);
-        newBg.removeAttribute('id');
-        newBg.style.backgroundImage = `url("${bgImages[setIndex]}")`;
-        newBg.style.clipPath = 'inset(0 100% 0 0)';
-        newBg.style.zIndex = layerCount;
-        frameWrap.insertBefore(newBg, outerBorder);
-      }
+      // Sybil photo fade in
+      gsap.to(bgSybilEl, { opacity: 1, duration: 0.4, delay: 0.35, ease: 'power4.in', x:20, overwrite: true });
 
-      // Clone photo, swap its background image
-      const newPhoto = document.getElementById('bgSybil').cloneNode(true);
-      newPhoto.removeAttribute('id');
-      newPhoto.style.backgroundImage = `url("${photoImages[setIndex]}")`;
-      newPhoto.style.opacity = '0';
-      newPhoto.style.zIndex = layerCount + 1;
-      frameWrap.insertBefore(newPhoto, outerBorder);
-
-      // Clone grunge border
-      const newBorder = frameBorderEl.cloneNode(true);
-      newBorder.removeAttribute('id');
-      newBorder.style.clipPath = 'polygon(50% 50%, 0% 0%, 0% 0%)';
-      newBorder.style.zIndex = layerCount + 2;
-      frameWrap.insertBefore(newBorder, outerBorder);
-
-      // Animate bg wipe in (first layer only)
-      if (newBg) {
-        gsap.to(newBg, { clipPath: 'inset(0 0% 0 0)', duration: 1, ease: 'power2.out' });
-      }
-
-      // Animate photo fade in
-      gsap.to(newPhoto, { opacity: 1, duration: 0.25, delay: 0.05, ease: 'power4.in' });
-
-      // Animate border clock-sweep in
-      const sweep = { progress: 0 };
-      gsap.to(sweep, {
+      // Border clock-sweep in
+      const sweepIn = { progress: 0 };
+      gsap.to(sweepIn, {
         progress: 1,
-        duration: 1,
-        delay: 0.1,
+        duration: 0.75,
+        delay: 0.35,
         ease: 'power2.out',
-        onUpdate: () => { newBorder.style.clipPath = clockWipe(sweep.progress); }
+        onUpdate: () => { frameBorderEl.style.clipPath = clockWipe(sweepIn.progress); }
       });
+      // Border slide in from left (match Sybil photo timing)
+      gsap.to(frameBorderEl, { x: 20, duration: 0.4, delay: 0.35, ease: 'power4.in', overwrite: true });
 
-      // Swap letters
-      const nextName = currentName === 'sofia' ? 'sybil' : 'sofia';
-      swapTo(nextName);
+      // Swap letters to sybil
+      swapTo('sybil');
     }
 
-    frameWrap.addEventListener('mouseenter', addLayer);
+    function hoverOut() {
+      if (!isHovered) return;
+      isHovered = false;
+
+      // Bg wipe out
+      gsap.to(bgHoverEl, { clipPath: 'inset(0 100% 0 0)', duration: 0.5, ease: 'power2.in', overwrite: true, delay:0.2 });
+
+      // Sybil photo fade out
+      gsap.to(bgSybilEl, {x:-10, opacity: 0, duration: 0.35, ease: 'power2.in', delay:0.1, overwrite: true });
+
+      // Border clock-sweep out (reverse)
+      const sweepOut = { progress: 1 };
+      gsap.to(sweepOut, {
+        progress: 0,
+        duration: 0.5,
+        ease: 'power2.in',
+        onUpdate: () => { frameBorderEl.style.clipPath = clockWipe(sweepOut.progress); }
+      });
+      // Border slide back
+      gsap.to(frameBorderEl, { x: 0, duration: 0.5, ease: 'power2.in', overwrite: true });
+
+      // Swap letters back to sofia
+      swapTo('sofia');
+    }
+
+    frameWrap.addEventListener('mouseenter', hoverIn);
+    frameWrap.addEventListener('mouseleave', hoverOut);
 
     /* ── Slot-based letter swap ── */
     // S O F I A _ C A R T U C C I A
@@ -372,8 +371,6 @@ margin-bottom: 0%;
       sofiaEl.src = `brand_assets/Letters/${sc}.png`;
       sofiaEl.alt = sc;
       letterField.appendChild(sofiaEl);
-      sofiaEl.addEventListener('mouseenter', () => { if (currentName === 'sofia') addLayer(); });
-
       let sybilEl = null;
       if (!isMatch) {
         sybilEl = document.createElement('img');
@@ -381,7 +378,6 @@ margin-bottom: 0%;
         sybilEl.src = `brand_assets/Letters/${yc}.png`;
         sybilEl.alt = yc;
         letterField.appendChild(sybilEl);
-        sybilEl.addEventListener('mouseenter', () => { if (currentName === 'sybil') addLayer(); });
       }
 
       slots.push({
