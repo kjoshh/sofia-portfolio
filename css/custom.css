@@ -1,4 +1,23 @@
 /* ══════════════════════════════════════════
+   SHARED — Page Transition Overlay
+   ══════════════════════════════════════════ */
+
+.page-transition {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  background-color: #292823;
+  pointer-events: none;
+}
+
+body.is-transitioning,
+body.is-transitioning * {
+  cursor: wait !important;
+}
+
+/* ══════════════════════════════════════════
    SHARED — Cursor
    ══════════════════════════════════════════ */
 
@@ -35,7 +54,7 @@
   position: fixed;
   pointer-events: none;
   opacity: 0.05;
-  z-index: 9999;
+  z-index: 10000;
   background-image: url("../images/BGDust.png");
 }
 
@@ -43,7 +62,7 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 10000;
   overflow: hidden;
 }
 
@@ -1986,3 +2005,49 @@ text-decoration: none;
   }
 
 }
+
+
+/* ══════════════════════════════════════════
+   Project Page — Entrance Reveal (initial states)
+   ══════════════════════════════════════════ */
+
+/* Hero film roll: invisible until JS reveals */
+#img100 {
+  opacity: 0;
+}
+
+/* Gallery images: invisible until stagger reveal */
+.gall3ry.layout-0-gall3ry .imgholder {
+  opacity: 0;
+}
+
+/* Desktop pro-nav: hidden until final reveal step */
+@media (min-width: 992px) {
+  .pro-nav {
+    opacity: 0;
+  }
+}
+
+/* After entrance reveal completes, override initial hidden states */
+body.entrance-revealed #img100 {
+  opacity: 1;
+}
+body.entrance-revealed .gall3ry.layout-0-gall3ry .imgholder {
+  opacity: 1;
+}
+@media (min-width: 992px) {
+  body.entrance-revealed .pro-nav {
+    opacity: 1;
+  }
+}
+
+/* ══════════════════════════════════════════
+   Page Transitions
+   ══════════════════════════════════════════ */
+
+/* Prevent white flash between page loads */
+html {
+  background: #292823;
+}
+
+

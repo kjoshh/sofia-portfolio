@@ -102,7 +102,7 @@ object-fit: contain;
       position: fixed;
       inset: 0;
       pointer-events: none;
-      z-index: 9999;
+      z-index: 10000;
       overflow: hidden;
     }
     .grain::after {
@@ -189,9 +189,7 @@ object-fit: contain;
   </style>
 </head>
 <body>
-
-
-
+  <div class="page-transition" style="display: block; opacity: 1;"></div>
   <div data-collapse="medium" class="navbar main-nav">
     <div class="wrapin">
       <div class="nav-bg"></div>
@@ -689,6 +687,7 @@ object-fit: contain;
   </script>
 
   <script src="js/nav.js"></script>
+  <script src="js/transition.js"></script>
 
 </body>
 </html>

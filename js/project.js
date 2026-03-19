@@ -109,6 +109,136 @@ window.addEventListener("resize", () => {
   }
 });
 
+
+/* ── Entrance reveal animation ── */
+(function entranceReveal() {
+  const imgholders = Array.from(gall3ry.querySelectorAll(".imgholder"));
+
+  // Custom eases
+  CustomEase.create(
+    "reveal",
+    "M0,0 C0.12,0.72 0.25,1.06 0.45,1.06 0.65,1.06 0.78,1 1,1"
+  );
+  CustomEase.create(
+    "clipReveal",
+    "M0,0 C0.25,0.46 0.45,0.94 1,1"
+  );
+
+  if (!isMobile()) {
+    /* ── Desktop timeline ── */
+    const tl = gsap.timeline({ delay: 0.25 });
+
+    // Step 1: Hero fade + gentle zoom-out
+    gsap.set(img100, { scale: 1.08, opacity: 0 });
+    tl.to(img100, {
+      opacity: 1,
+      scale: 1,
+      duration: 1.2,
+      ease: "clipReveal",
+    }, 0);
+
+    // Step 2: Gallery images stagger in
+    tl.fromTo(imgholders,
+      { opacity: 0, scale: 0.6 },
+      {
+        opacity: 1,
+        scale: 1,
+        duration: 0.9,
+        stagger: { each: 0.06, from: "center" },
+        ease: "reveal",
+      },
+      "-=0.5"
+    );
+
+    // Step 3: Pro-nav container fade in + slide up, then stagger individual links
+    const proNavLinks = proNav.querySelectorAll(".nav-link");
+    gsap.set(proNavLinks, { opacity: 0, y: 8 });
+    tl.fromTo(proNav,
+      { opacity: 0, y: getLayout0NavY() + 25 },
+      {
+        opacity: 1,
+        y: getLayout0NavY(),
+        duration: 0.7,
+        ease: "power3.out",
+      },
+      "-=0.5"
+    );
+    tl.to(proNavLinks, {
+      opacity: 1,
+      y: 0,
+      duration: 0.45,
+      stagger: 0.17,
+      ease: "power3.out",
+    }, "-=0.6");
+
+    // Cleanup: mark body so CSS overrides initial hidden states, then clear GSAP inline styles
+    tl.call(() => {
+      document.body.classList.add("entrance-revealed");
+      gsap.set(imgholders, { clearProps: "all" });
+      gsap.set(img100, { clearProps: "scale,opacity" });
+      gsap.set(proNavLinks, { clearProps: "opacity,y" });
+      // Re-apply GSAP-managed proNav positioning (these are not CSS-managed)
+      gsap.set(proNav, { xPercent: -50, y: getLayout0NavY(), yPercent: 50, opacity: 1 });
+    });
+
+  } else {
+    /* ── Mobile timeline ── */
+    const mobSheet = document.getElementById("mobSheet");
+    const mobProjTabs = document.getElementById("mobProjTabs");
+    const tl = gsap.timeline({ delay: 0.15 });
+
+    // Images slide up with stagger
+    tl.fromTo(imgholders,
+      { opacity: 0, y: 60 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        stagger: { each: 0.05, from: "start" },
+        ease: "power3.out",
+      },
+      0
+    );
+
+    // Mob-sheet and mob-proj-tabs fade in
+    if (mobSheet) {
+      tl.fromTo(mobSheet,
+        { opacity: 0, y: -15 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+        0.3
+      );
+    }
+    if (mobProjTabs) {
+      tl.fromTo(mobProjTabs,
+        { opacity: 0, y: 15 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+        0.3
+      );
+    }
+
+    // Cleanup
+    tl.call(() => {
+      document.body.classList.add("entrance-revealed");
+      gsap.set(imgholders, { clearProps: "all" });
+      if (mobSheet) gsap.set(mobSheet, { clearProps: "opacity,y" });
+      if (mobProjTabs) gsap.set(mobProjTabs, { clearProps: "opacity,y" });
+    });
+  }
+
+  // bfcache: on back-nav, show everything immediately (no animation)
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted) {
+      document.body.classList.add("entrance-revealed");
+      gsap.set(img100, { clearProps: "opacity,scale" });
+      gsap.set(imgholders, { clearProps: "all" });
+      if (!isMobile()) {
+        gsap.set(proNav, { opacity: 1, xPercent: -50, y: getLayout0NavY(), yPercent: 50 });
+      }
+    }
+  });
+})();
+
+
 function switchLayout(newLayout) {
   if (newLayout === activeLayout) return;
   if (activeLayout === "layout-2-gall3ry" && lenis.scroll > 0) {
