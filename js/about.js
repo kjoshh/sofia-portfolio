@@ -1,15 +1,16 @@
-/* ── WebGL shader background ── */
+/* ── WebGL shader background (vanilla — no Three.js) ── */
 (function () {
-  // Disable on touch/mobile — no hover interaction, performance concern
   if ('ontouchstart' in window || window.innerWidth < 768) return;
-  const vertexShader = `
+
+  const VERT = `
+    attribute vec2 a_pos;
     varying vec2 v_uv;
     void main() {
-      v_uv = uv;
-      gl_Position = vec4(position, 1.0);
+      v_uv = a_pos * 0.5 + 0.5;
+      gl_Position = vec4(a_pos, 0.0, 1.0);
     }
   `;
-  const fragmentShader = `
+  const FRAG = `
     precision highp float;
     uniform sampler2D u_texture;
     uniform vec2 u_mouse;
@@ -25,11 +26,11 @@
     float noise(vec2 p) {
       vec2 i = floor(p); vec2 f = fract(p);
       vec2 u = f * f * (3.0 - 2.0 * f);
-      return mix(mix(hash(i+vec2(0,0)),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);
+      return mix(mix(hash(i),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);
     }
     float turbulence(vec2 p) {
       float t = 0.0; float w = 0.5;
-      for (int i = 0; i < 8; i++) { t += abs(noise(p)) * w; p *= 2.0; w *= 0.5; }
+      for (int i = 0; i < 6; i++) { t += abs(noise(p)) * w; p *= 2.0; w *= 0.5; }
       return t;
     }
     void main() {
@@ -62,71 +63,138 @@
   };
 
   const container = document.querySelector(".about-bg");
-  const img = container.querySelector("img");
-  const targetMouse = new THREE.Vector2(0.5, 0.5);
-  const lerpedMouse = new THREE.Vector2(0.5, 0.5);
-  let targetRadius = 0, scene, camera, renderer, uniforms;
+  const imgEl = container.querySelector("img");
+  const targetMouse = { x: 0.5, y: 0.5 };
+  const lerpedMouse = { x: 0.5, y: 0.5 };
+  let targetRadius = 0, currentRadius = 0, time = 0;
+  let gl, program, locs, rafId;
 
-  new THREE.TextureLoader().load(img.src, (texture) => {
-    const imageAspect = texture.image.width / texture.image.height;
-    texture.minFilter = THREE.LinearMipMapLinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    scene = new THREE.Scene();
-    camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-    uniforms = {
-      u_texture:             { value: texture },
-      u_mouse:               { value: new THREE.Vector2(0.5, 0.5) },
-      u_time:                { value: 0 },
-      u_resolution:          { value: new THREE.Vector2(container.clientWidth, container.clientHeight) },
-      u_radius:              { value: 0 },
-      u_speed:               { value: config.maskSpeed },
-      u_imageAspect:         { value: imageAspect },
-      u_turbulenceIntensity: { value: config.turbulenceIntensity },
-    };
-    const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(2, 2),
-      new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader })
-    );
-    scene.add(mesh);
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    img.style.display = "none";
-    container.appendChild(renderer.domElement);
-    animate();
-  });
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function compileShader(gl, type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+
+  function init(image) {
+    const imageAspect = image.naturalWidth / image.naturalHeight;
+    const canvas = document.createElement("canvas");
+    const dpr = Math.min(window.devicePixelRatio, 1.5);
+    canvas.width = container.clientWidth * dpr;
+    canvas.height = container.clientHeight * dpr;
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.display = "block";
+
+    gl = canvas.getContext("webgl", { antialias: false, alpha: false });
+    if (!gl) return;
+
+    const vs = compileShader(gl, gl.VERTEX_SHADER, VERT);
+    const fs = compileShader(gl, gl.FRAGMENT_SHADER, FRAG);
+    program = gl.createProgram();
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+    gl.linkProgram(program);
+    gl.useProgram(program);
+
+    // Fullscreen quad
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(program, "a_pos");
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    // Texture
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+    // Uniform locations
+    locs = {};
+    ["u_texture","u_mouse","u_time","u_resolution","u_radius","u_speed","u_imageAspect","u_turbulenceIntensity"]
+      .forEach(name => { locs[name] = gl.getUniformLocation(program, name); });
+
+    // Set static uniforms
+    gl.uniform1i(locs.u_texture, 0);
+    gl.uniform1f(locs.u_speed, config.maskSpeed);
+    gl.uniform1f(locs.u_imageAspect, imageAspect);
+    gl.uniform1f(locs.u_turbulenceIntensity, config.turbulenceIntensity);
+    gl.uniform2f(locs.u_resolution, canvas.width, canvas.height);
+
+    imgEl.style.display = "none";
+    container.appendChild(canvas);
+    // Render one frame (grayscale, radius 0) then sleep
+    drawFrame();
+  }
+
+  let running = false;
+
+  function wake() {
+    if (running) return;
+    running = true;
+    rafId = requestAnimationFrame(animate);
+  }
 
   document.addEventListener("mousemove", (e) => {
     const rect = container.getBoundingClientRect();
     const inside = e.clientX >= rect.left && e.clientX <= rect.right
                 && e.clientY >= rect.top  && e.clientY <= rect.bottom;
     if (inside) {
-      targetMouse.set(
-        (e.clientX - rect.left) / rect.width,
-        1 - (e.clientY - rect.top) / rect.height
-      );
+      targetMouse.x = (e.clientX - rect.left) / rect.width;
+      targetMouse.y = 1 - (e.clientY - rect.top) / rect.height;
       targetRadius = config.maskRadius;
     } else {
       targetRadius = 0;
     }
+    wake();
   });
 
+  function drawFrame() {
+    gl.uniform2f(locs.u_mouse, lerpedMouse.x, lerpedMouse.y);
+    gl.uniform1f(locs.u_time, time);
+    gl.uniform1f(locs.u_radius, currentRadius);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
   function animate() {
-    requestAnimationFrame(animate);
-    lerpedMouse.lerp(targetMouse, config.lerpFactor);
-    if (uniforms) {
-      uniforms.u_mouse.value.copy(lerpedMouse);
-      uniforms.u_time.value += 0.01;
-      uniforms.u_radius.value += (targetRadius - uniforms.u_radius.value) * config.radiusLerpSpeed;
+    lerpedMouse.x = lerp(lerpedMouse.x, targetMouse.x, config.lerpFactor);
+    lerpedMouse.y = lerp(lerpedMouse.y, targetMouse.y, config.lerpFactor);
+    currentRadius += (targetRadius - currentRadius) * config.radiusLerpSpeed;
+    time += 0.01;
+    drawFrame();
+
+    // Sleep when radius has fully settled to 0
+    if (targetRadius === 0 && currentRadius < 0.001) {
+      currentRadius = 0;
+      running = false;
+      return;
     }
-    if (renderer) renderer.render(scene, camera);
+    rafId = requestAnimationFrame(animate);
   }
 
   window.addEventListener("resize", () => {
-    if (!renderer) return;
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    if (uniforms) uniforms.u_resolution.value.set(container.clientWidth, container.clientHeight);
+    if (!gl) return;
+    const dpr = Math.min(window.devicePixelRatio, 1.5);
+    gl.canvas.width = container.clientWidth * dpr;
+    gl.canvas.height = container.clientHeight * dpr;
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.uniform2f(locs.u_resolution, gl.canvas.width, gl.canvas.height);
   });
+
+  // Load image then init
+  if (imgEl.complete) {
+    init(imgEl);
+  } else {
+    imgEl.addEventListener("load", () => init(imgEl));
+  }
 })();
 
 
