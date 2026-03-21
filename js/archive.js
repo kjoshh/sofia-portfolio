@@ -69,15 +69,29 @@ const items = Array.from(document.querySelectorAll(".archive-grid-item"));
 const overlay = document.getElementById("lb-overlay");
 const lbImg = document.getElementById("lb-img");
 const lbProgress = document.getElementById("lb-progress");
+const lbCounterCurrent = document.querySelector(".lb-counter-current");
+const lbCounterTotal = document.querySelector(".lb-counter-total");
 let current = 0;
+
+if (lbCounterTotal) lbCounterTotal.textContent = String(items.length).padStart(2, "0");
 
 function updateProgress() {
   lbProgress.style.width = ((current + 1) / items.length * 100) + "%";
+  if (lbCounterCurrent) {
+    gsap.to(lbCounterCurrent, {
+      opacity: 0, duration: 0.1, ease: "power2.in",
+      onComplete: () => {
+        lbCounterCurrent.textContent = String(current + 1).padStart(2, "0");
+        gsap.to(lbCounterCurrent, { opacity: 1, duration: 0.12, ease: "power2.out" });
+      }
+    });
+  }
 }
 function openLightbox(index) {
   current = index;
   lbImg.src = items[current].dataset.full;
   overlay.classList.add("open");
+  if (lbCounterCurrent) lbCounterCurrent.textContent = String(current + 1).padStart(2, "0");
   updateProgress();
 }
 function closeLightbox() {
@@ -107,17 +121,23 @@ document.addEventListener("keydown", (e) => {
 });
 
 
-/* ── Staggered IntersectionObserver fade-in ── */
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      const item = entry.target;
-      const idx = items.indexOf(item);
-      const delay = Math.min(idx * 40, 600);
-      setTimeout(() => item.classList.add("visible"), delay);
-      observer.unobserve(item);
-    }
-  });
-}, { threshold: 0.05 });
+/* ── Scale + fade reveal with ScrollTrigger.batch ── */
+gsap.registerPlugin(ScrollTrigger);
+gsap.set(items, { scale: 0.92, opacity: 0 });
 
-items.forEach((item) => observer.observe(item));
+ScrollTrigger.batch(items, {
+  onEnter: (batch) => {
+    /* Sort left→right so stagger sweeps across columns */
+    batch.sort((a, b) =>
+      a.getBoundingClientRect().left - b.getBoundingClientRect().left
+    );
+    gsap.to(batch, {
+      scale: 1,
+      opacity: 1,
+      duration: 0.9,
+      ease: "power2.out",
+      stagger: 0.07,
+    });
+  },
+  once: true,
+});

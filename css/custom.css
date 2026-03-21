@@ -1,4 +1,12 @@
 /* ══════════════════════════════════════════
+   SHARED — Base Overrides
+   ══════════════════════════════════════════ */
+
+body {
+  background-color: #1e1e1b;
+}
+
+/* ══════════════════════════════════════════
    SHARED — Page Transition Overlay
    ══════════════════════════════════════════ */
 
@@ -37,6 +45,16 @@ body.is-transitioning * {
 .cursor.hover {
   width: 55px;
   height: 55px;
+}
+
+/* Hide cursor during page transitions */
+.is-transitioning .cursor {
+  opacity: 0 !important;
+  transition: opacity 200ms ease;
+}
+.page-transition[style*="opacity: 1"] ~ .cursor,
+.page-transition[style*="opacity:1"] ~ .cursor {
+  opacity: 0;
 }
 
 @media (max-width: 767px) {
@@ -117,13 +135,7 @@ body.is-transitioning * {
 }
 
 .lb-progress {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 2px;
-  background: #e9e5dd;
-  transition: width 0.3s ease;
-  width: 0%;
+  display: none;
 }
 
 .lb-img {
@@ -166,6 +178,41 @@ body.is-transitioning * {
 .lb-close {
   top: 16px;
   right: 20px;
+}
+
+.lb-counter {
+  position: absolute;
+  bottom: 28px;
+  right: 36px;
+  font-family: 'Alegreya', serif;
+  font-style: italic;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.lb-overlay.open:hover .lb-counter,
+.lb-overlay.open .lb-counter {
+  opacity: 1;
+}
+
+.lb-counter-current {
+  color: rgba(233, 229, 221, 0.55);
+}
+
+.lb-counter-sep {
+  color: rgba(233, 229, 221, 0.25);
+  margin: 0 1px;
+}
+
+.lb-counter-total {
+  color: rgba(233, 229, 221, 0.4);
 }
 
 .lb-btn.lb-prev img {
@@ -238,6 +285,7 @@ body.is-transitioning * {
   width: 100%;
   height: auto;
   display: block;
+  cursor: pointer;
 }
 
 .ink-canvas {
@@ -321,7 +369,7 @@ body.is-transitioning * {
   grid-template-columns: repeat(5, 1fr);
   grid-auto-rows: var(--overview-cell-h, 13.5vw);
   gap: 10px;
-  padding: 89.89px;
+  padding: 88px 89.89px 110px;
   box-sizing: border-box;
 }
 
@@ -335,19 +383,23 @@ body.is-transitioning * {
 }
 
 .gall3ry.layout-1-gall3ry .imgholder img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transition: all 400ms ease;
+  max-width: 100%;
+  max-height: 100%;
+  transition: filter 400ms ease, opacity 400ms ease;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
-.gall3ry.layout-1-gall3ry .imgholder:hover img {
-  filter: brightness(0.8);
-  opacity: 0.8;
+.gall3ry.layout-1-gall3ry .imgholder img:hover {
+  filter: contrast(1.15) brightness(0.8);
+  opacity: 0.85;
+  cursor: pointer;
+
 }
 
 .layout-1-gall3ry .imgholder {
   cursor: default;
+  pointer-events: none;
 }
 
 .imgholder {
@@ -492,6 +544,7 @@ body.is-transitioning * {
 
 .lb-btn img:hover {
   opacity: 1;
+  cursor: pointer;
 }
 
 .lb-close img {
@@ -544,11 +597,21 @@ body.about-page {
   font-family: Alegreya, serif;
   font-size: 20px;
   color: #e7e7e7;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 0, 0, 0.6), 0 0 80px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
   line-height: 1.55;
   max-width: max-content !important;
   pointer-events: auto;
   border-radius: 6px;
+}
+
+.about-greeting::before {
+  content: "";
+  position: absolute;
+  inset: -40px -50px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.15) 35%, transparent 70%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .greet-line1 {
@@ -572,16 +635,40 @@ body.about-page {
   right: 8.5%;
   z-index: 10;
   width: 28%;
+  max-height: calc(100vh - 33% - 40px);
+  overflow-y: auto;
+  scrollbar-width: none;
   font-family: Alegreya, serif;
   font-size: 18px;
   color: #e7e7e7;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 0, 0, 0.6), 0 0 80px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
   line-height: 1.65;
   border-radius: 6px;
   padding: 24px 28px;
   opacity: 0.95;
   margin-bottom: 60px;
 }
+
+.about-right::-webkit-scrollbar {
+  display: none;
+}
+
+.about-right.fade-bottom {
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 80%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 80%, transparent 100%);
+}
+
+.about-right.fade-top {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 100%);
+}
+
+.about-right.fade-both {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+}
+
+/* .about-right::before shadow removed — text-shadow handles readability */
 
 .about-bio {
   margin: 0 0 22px;
@@ -1606,7 +1693,7 @@ text-decoration: none;
 
 .nav-link.active {
   color: rgba(233, 229, 221, 0.92);
-  cursor: default;
+  cursor: pointer;
 }
 
 .nav-link.notactive {
@@ -2042,6 +2129,43 @@ body.entrance-revealed .gall3ry.layout-0-gall3ry .imgholder {
 }
 
 /* ══════════════════════════════════════════
+   About Page — Entrance Reveal (initial states)
+   ══════════════════════════════════════════ */
+
+.about-page .about-bg {
+  opacity: 0;
+}
+.about-page .about-greeting {
+  opacity: 0;
+}
+.about-page .about-scroll-hint {
+  opacity: 0;
+}
+.about-page .main-nav {
+  opacity: 0;
+}
+.about-page .about-content-mobile {
+  opacity: 0;
+}
+
+/* After entrance reveal completes */
+body.entrance-revealed.about-page .about-bg {
+  opacity: 1;
+}
+body.entrance-revealed.about-page .about-greeting {
+  opacity: 1;
+}
+body.entrance-revealed.about-page .about-scroll-hint {
+  opacity: 1;
+}
+body.entrance-revealed.about-page .main-nav {
+  opacity: 1;
+}
+body.entrance-revealed.about-page .about-content-mobile {
+  opacity: 1;
+}
+
+/* ══════════════════════════════════════════
    Page Transitions
    ══════════════════════════════════════════ */
 
@@ -2050,4 +2174,196 @@ html {
   background: #292823;
 }
 
+/* ══════════════════════════════════════════
+   Landing Page (index.html)
+   ══════════════════════════════════════════ */
 
+body.landing-page {
+  font-family: 'Alegreya', Georgia, serif;
+  background: #1e1e1b;
+  height: 100%;
+  overflow: hidden;
+}
+html:has(body.landing-page) {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Scene ── */
+.scene {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Framed photo ── */
+.frame-wrap {
+  position: relative;
+  width: 45vw;
+  aspect-ratio: 3 / 2;
+  max-height: 75vh;
+  z-index: 2;
+  overflow: hidden;
+}
+.frame-bg-hover {
+  position: absolute;
+  inset: 0% 0%;
+  width: 96%;
+  margin-left: 4%;
+  object-fit: contain;
+  z-index: 1;
+  background: url("../brand_assets/backgroundbd.png") center / contain no-repeat;
+  clip-path: inset(0 100% 0 0);
+}
+.frame-photo {
+  position: absolute;
+  inset: 5% 3%;
+  z-index: 0;
+  background: #1e1e1b url("../images/0017_17A.jpg") center / cover no-repeat;
+}
+.frame-photo-sybil {
+  position: absolute;
+  inset: 25% 25%;
+  z-index: 1;
+  background: #1e1e1b url("../images/Sybilbg.jpg") center / cover no-repeat;
+  opacity: 0;
+  margin-right: 2%;
+  margin-bottom: 5%;
+}
+.frame-border-hover {
+  position: absolute;
+  inset: 21% 23%;
+  margin-bottom: 5%;
+  margin-right: 2%;
+  z-index: 2;
+  pointer-events: none;
+  clip-path: polygon(50% 50%, 0% 100%, 0% 100%);
+}
+.frame-border-hover img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  mix-blend-mode: multiply;
+}
+.frame-border {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.frame-border img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  mix-blend-mode: multiply;
+}
+
+/* ── Dust overlay (index-specific) ── */
+.dust {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background-image: url("../images/BGDust.png");
+  opacity: 0.15;
+}
+
+/* ── Vignette ── */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(10, 8, 6, 0.5) 100%
+  );
+}
+
+/* ── Letter field ── */
+.letter-field {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  overflow: visible;
+}
+.letter-el {
+  position: absolute;
+  width: auto;
+  height: 46px; /* fallback; JS sets actual value from frame width */
+  will-change: transform, opacity;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: auto;
+}
+
+/* ══════════════════════════════════════════
+   PROJECT — Sequence Counter (film strip frame counter)
+   ══════════════════════════════════════════ */
+
+.seq-counter {
+  position: fixed;
+  bottom: 48px;
+  right: 36px;
+  z-index: 9997;
+  pointer-events: none;
+  opacity: 0;
+  font-family: 'Alegreya', serif;
+  font-style: italic;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  transition: opacity 0.4s ease;
+}
+
+.seq-counter.visible {
+  opacity: 1;
+}
+
+.seq-counter-current {
+  color: rgba(233, 229, 221, 0.55);
+}
+
+.seq-counter-sep {
+  color: rgba(233, 229, 221, 0.25);
+  margin: 0 1px;
+}
+
+.seq-counter-total {
+  color: rgba(233, 229, 221, 0.4);
+}
+
+.seq-counter::after {
+  content: '';
+  position: absolute;
+  inset: -6px -10px;
+  background-image: url('../brand_assets/grain.jpg');
+  background-size: 200px 200px;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+@media screen and (max-width: 991px) {
+  .seq-counter {
+    display: none;
+  }
+}
+
+/* ── Dust particles canvas ── */
+.dust-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 9996;
+  pointer-events: none;
+}

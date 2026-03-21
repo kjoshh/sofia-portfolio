@@ -58,9 +58,9 @@ function applyFontStagger(el) {
         gsap.set(topSpan, { opacity: 1 });
         gsap.to([topSpan, bottomSpan], {
           yPercent: 0,
-          duration: 0.3,
+          duration: 0.35,
           delay: i * 0.03,
-          ease: "power1.out",
+          ease: "power2.inOut",
         });
       }
     });
@@ -189,28 +189,41 @@ function applyFontStagger(el) {
     const bottom = logoLink.querySelector('.nav-logo-bottom'); // Sybil
     const isIndex = ['', 'index.html'].includes(window.location.pathname.split('/').pop());
 
-    if (isIndex && top && bottom) {
-      // Index: swap between the two logos on hover
-      gsap.set(bottom, { yPercent: 100 });
-      let sybilShowing = false;
-
-      logoLink.addEventListener('mouseenter', () => {
-        if (!sybilShowing) {
-          gsap.set(bottom, { yPercent: 100 });
-          gsap.to(top,    { yPercent: -100, duration: 0.6, ease: 'power3.inOut' });
-          gsap.to(bottom, { yPercent: 0,    duration: 0.6, ease: 'power3.inOut' });
-          sybilShowing = true;
-        } else {
-          gsap.set(top, { yPercent: 100 });
-          gsap.to(bottom, { yPercent: -100, duration: 0.6, ease: 'power3.inOut' });
-          gsap.to(top,    { yPercent: 0,    duration: 0.6, ease: 'power3.inOut' });
-          sybilShowing = false;
-        }
-      });
-    } else if (!isIndex && top) {
+    if (top) {
       if (bottom) gsap.set(bottom, { display: 'none' });
-      logoLink.addEventListener('mouseenter', () => gsap.to(top, { opacity: 0.8, duration: 0.2, ease: 'power2.out' }));
-      logoLink.addEventListener('mouseleave', () => gsap.to(top, { opacity: 1,   duration: 0.3, ease: 'power2.out' }));
+
+      // Split logo into two clip-path halves to animate the gap on hover
+      const setupSplit = () => {
+        const w = top.offsetWidth || top.naturalWidth * (20 / top.naturalHeight);
+        const h = 20; // CSS height
+
+        const splitWrap = document.createElement('div');
+        splitWrap.style.cssText = `position:relative;width:${w}px;height:${h}px;display:block;`;
+
+        const leftHalf = top.cloneNode(true);
+        const rightHalf = top.cloneNode(true);
+
+        const baseStyle = `position:absolute;top:0;left:0;height:${h}px;width:auto;display:block;opacity:0.92;`;
+        leftHalf.style.cssText  = baseStyle + 'clip-path:inset(0 60% 0 0);';
+        rightHalf.style.cssText = baseStyle + 'clip-path:inset(0 0 0 30%);';
+
+        top.parentNode.insertBefore(splitWrap, top);
+        splitWrap.appendChild(leftHalf);
+        splitWrap.appendChild(rightHalf);
+        top.style.display = 'none';
+
+        logoLink.addEventListener('mouseenter', () => {
+          gsap.to(leftHalf,  { x: 2.5,   duration: 0.8, ease: 'power3.out' });
+          gsap.to(rightHalf, { x: -2.5, duration: 0.8, ease: 'power3.out' });
+        });
+        logoLink.addEventListener('mouseleave', () => {
+          gsap.to(leftHalf,  { x: 0, duration: 0.7, ease: 'power3.out' });
+          gsap.to(rightHalf, { x: 0, duration: 0.7, ease: 'power3.out' });
+        });
+      };
+
+      if (top.complete) setupSplit();
+      else top.addEventListener('load', setupSplit);
     }
   }
 
@@ -349,6 +362,20 @@ function applyFontStagger(el) {
       if (!link.closest('.nav-dropdown-wrap')) {
         link.addEventListener('mouseenter', closeDropdown);
       }
+    });
+
+    // Close dropdown on item click (animate out before navigating)
+    [...dropdownItems, ...deskCells].forEach(item => {
+      item.addEventListener('click', (e) => {
+        const link = item.closest('a') || item.querySelector('a');
+        const href = link ? link.getAttribute('href') : null;
+        if (href) {
+          e.preventDefault();
+          closeDropdown();
+          // Navigate after close animation completes
+          gsap.delayedCall(0.4, () => { window.location.href = href; });
+        }
+      });
     });
 
     // Card hover — lift + image zoom + label brighten (GSAP so it composites with stagger transforms)

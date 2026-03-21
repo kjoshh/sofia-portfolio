@@ -21,10 +21,10 @@ function updateOverviewCellHeight() {
     const cols = 5;
     const rows = Math.ceil(imgCount / cols);
     const gap = 10;
-    const padding = 89.89;
-    const availH = window.innerHeight - 2 * padding;
-    const maxH = (availH - gap * (rows - 1)) / rows;
-    const cellH = maxH;
+    const padTop = 88;    // nav bottom (~68px) + 20px gap
+    const padBot = 110;   // pro-nav clearance (~90px from bottom) + 20px gap
+    const availH = window.innerHeight - padTop - padBot;
+    const cellH = (availH - gap * (rows - 1)) / rows;
     document.querySelector(".gall3ry-container").style.setProperty("--overview-cell-h", cellH + "px");
     if (grid) grid.style.gridTemplateColumns = "";
   }
@@ -129,7 +129,7 @@ window.addEventListener("resize", () => {
     const tl = gsap.timeline({ delay: 0.25 });
 
     // Step 1: Hero fade + gentle zoom-out
-    gsap.set(img100, { scale: 1.08, opacity: 0 });
+    gsap.set(img100, { scale: 1.25, opacity: 0 });
     tl.to(img100, {
       opacity: 1,
       scale: 1,
@@ -150,35 +150,27 @@ window.addEventListener("resize", () => {
       "-=0.5"
     );
 
-    // Step 3: Pro-nav container fade in + slide up, then stagger individual links
+    // Step 3: Pro-nav blur-to-sharp rack-focus reveal
     const proNavLinks = proNav.querySelectorAll(".nav-link");
-    gsap.set(proNavLinks, { opacity: 0, y: 8 });
     tl.fromTo(proNav,
-      { opacity: 0, y: getLayout0NavY() + 25 },
+      { opacity: 0, y: getLayout0NavY(), filter: "blur(8px)" },
       {
         opacity: 1,
+        filter: "blur(0px)",
         y: getLayout0NavY(),
-        duration: 0.7,
-        ease: "power3.out",
+        duration: 0.9,
+        ease: "clipReveal",
       },
-      "-=0.5"
+      "-=0.7"
     );
-    tl.to(proNavLinks, {
-      opacity: 1,
-      y: 0,
-      duration: 0.45,
-      stagger: 0.17,
-      ease: "power3.out",
-    }, "-=0.6");
 
     // Cleanup: mark body so CSS overrides initial hidden states, then clear GSAP inline styles
     tl.call(() => {
       document.body.classList.add("entrance-revealed");
       gsap.set(imgholders, { clearProps: "all" });
       gsap.set(img100, { clearProps: "scale,opacity" });
-      gsap.set(proNavLinks, { clearProps: "opacity,y" });
       // Re-apply GSAP-managed proNav positioning (these are not CSS-managed)
-      gsap.set(proNav, { xPercent: -50, y: getLayout0NavY(), yPercent: 50, opacity: 1 });
+      gsap.set(proNav, { xPercent: -50, y: getLayout0NavY(), yPercent: 50, opacity: 1, clearProps: "filter" });
     });
 
   } else {
@@ -257,6 +249,15 @@ function switchLayoutHandler(newLayout) {
   activeLayout = newLayout;
   const imgholders = Array.from(gall3ry.querySelectorAll(".imgholder"));
 
+  // Sequence counter: show/hide based on layout
+  if (window._seqCounter) {
+    if (newLayout === "layout-2-gall3ry" && !isMobile()) {
+      window._seqCounter.show();
+    } else {
+      window._seqCounter.hide();
+    }
+  }
+
   // Kill any in-progress animations and clear all stale inline styles before Flip measures
   gsap.killTweensOf(imgholders);
   gsap.set(imgholders, { clearProps: "all" });
@@ -311,6 +312,11 @@ function switchLayoutHandler(newLayout) {
     return;
   }
 
+  // Hide img100 instantly before class swap to prevent position jump
+  if (previousLayout === "layout-0-gall3ry") {
+    gsap.set(img100, { opacity: 0 });
+  }
+
   const state = Flip.getState(imgholders);
   gall3ry.classList.remove(previousLayout);
   gall3ry.classList.add(newLayout);
@@ -336,14 +342,13 @@ function switchLayoutHandler(newLayout) {
   });
 
   if (previousLayout === "layout-0-gall3ry") {
-    gsap.to(img100, { opacity: 0, duration: 0.2, ease: "power4.inOut", delay: 0 });
     if (!isMobile()) {
       gsap.to(proNav, { xPercent: -50, y: 0, yPercent: 0, duration: 2, ease: "power4.inOut", delay: 0 });
       // Animate background in smoothly instead of instant class toggle
       proNav.classList.remove("transparent");
       gsap.fromTo(proNav,
         { backgroundColor: "rgba(15, 13, 11, 0)" },
-        { backgroundColor: "rgba(15, 13, 11, 0.96)", duration: 0.8, ease: "power2.inOut", delay: 0.3 }
+        { backgroundColor: "rgba(15, 13, 11, 0.96)", duration: 0.8, ease: "power2.inOut", delay: 1.4 }
       );
     } else {
       proNav.classList.remove("transparent");
@@ -356,7 +361,7 @@ function switchLayoutHandler(newLayout) {
       // Animate background out smoothly, then apply transparent class
       gsap.to(proNav, {
         backgroundColor: "rgba(15, 13, 11, 0)",
-        duration: 0.6, ease: "power2.inOut",
+        duration: 0.6, ease: "power2.inOut", delay: 1.2,
         onComplete: () => {
           proNav.classList.add("transparent");
           gsap.set(proNav, { clearProps: "backgroundColor" });
@@ -483,15 +488,29 @@ const lbHolders = Array.from(document.querySelectorAll(".imgholder"));
 const lbOverlay = document.getElementById("lb-overlay");
 const lbImg = document.getElementById("lb-img");
 const lbProgress = document.getElementById("lb-progress");
+const lbCounterCurrent = document.querySelector(".lb-counter-current");
+const lbCounterTotal = document.querySelector(".lb-counter-total");
 let lbCurrent = 0;
+
+if (lbCounterTotal) lbCounterTotal.textContent = String(lbHolders.length).padStart(2, "0");
 
 function lbUpdateProgress() {
   lbProgress.style.width = ((lbCurrent + 1) / lbHolders.length * 100) + "%";
+  if (lbCounterCurrent) {
+    gsap.to(lbCounterCurrent, {
+      opacity: 0, duration: 0.1, ease: "power2.in",
+      onComplete: () => {
+        lbCounterCurrent.textContent = String(lbCurrent + 1).padStart(2, "0");
+        gsap.to(lbCounterCurrent, { opacity: 1, duration: 0.12, ease: "power2.out" });
+      }
+    });
+  }
 }
 function lbOpen(index) {
   lbCurrent = index;
   lbImg.src = lbHolders[lbCurrent].querySelector("img").src;
   lbOverlay.classList.add("open");
+  if (lbCounterCurrent) lbCounterCurrent.textContent = String(lbCurrent + 1).padStart(2, "0");
   lbUpdateProgress();
 }
 function lbClose() { lbOverlay.classList.remove("open"); }
@@ -507,7 +526,8 @@ function lbNext() {
 }
 
 lbHolders.forEach((holder, i) => {
-  holder.addEventListener("click", () => {
+  const img = holder.querySelector("img");
+  (img || holder).addEventListener("click", () => {
     if (activeLayout !== "layout-1-gall3ry") return;
     lbOpen(i);
   });
@@ -540,3 +560,75 @@ document.querySelectorAll(".mob-proj-tab").forEach(btn => {
     btn.classList.add("active");
   });
 });
+
+
+/* ── Sequence counter (film strip frame indicator) ── */
+(function seqCounter() {
+  const counter = document.getElementById("seqCounter");
+  if (!counter) return;
+
+  const currentSpan = counter.querySelector(".seq-counter-current");
+  const totalSpan = counter.querySelector(".seq-counter-total");
+  const imgholders = Array.from(gall3ry.querySelectorAll(".imgholder"));
+  let observer = null;
+  let currentIndex = 0;
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+
+  // Set total count
+  totalSpan.textContent = pad(imgholders.length);
+
+  function updateCurrent(newIndex) {
+    if (newIndex === currentIndex && counter.classList.contains("visible")) return;
+    currentIndex = newIndex;
+    gsap.to(currentSpan, {
+      opacity: 0,
+      duration: 0.12,
+      ease: "power2.in",
+      onComplete: () => {
+        currentSpan.textContent = pad(currentIndex + 1);
+        gsap.to(currentSpan, { opacity: 1, duration: 0.15, ease: "power2.out" });
+      }
+    });
+  }
+
+  const ratios = new Map();
+
+  function createObserver() {
+    if (observer) observer.disconnect();
+    ratios.clear();
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const idx = imgholders.indexOf(entry.target);
+        if (idx !== -1) ratios.set(idx, entry.intersectionRatio);
+      });
+      let bestIndex = 0;
+      let bestRatio = 0;
+      ratios.forEach((ratio, idx) => {
+        if (ratio > bestRatio) { bestRatio = ratio; bestIndex = idx; }
+      });
+      updateCurrent(bestIndex);
+    }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+
+    imgholders.forEach(el => observer.observe(el));
+  }
+
+  function show() {
+    currentIndex = 0;
+    currentSpan.textContent = pad(1);
+    totalSpan.textContent = pad(imgholders.length);
+    createObserver();
+    counter.classList.add("visible");
+  }
+
+  function hide() {
+    counter.classList.remove("visible");
+    if (observer) { observer.disconnect(); observer = null; }
+  }
+
+  // Expose for switchLayout integration
+  window._seqCounter = { show, hide };
+
+  // If mobile starts in layout-2, show immediately
+  if (activeLayout === "layout-2-gall3ry" && !isMobile()) show();
+})();
