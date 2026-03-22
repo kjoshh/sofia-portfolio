@@ -1,11 +1,18 @@
 /* ── Overview cell height: all images fit in viewport ── */
+// Measure safe-area-inset-bottom for viewport calculations
+const _sabEl = document.createElement('div');
+_sabEl.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);pointer-events:none;visibility:hidden';
+document.body.appendChild(_sabEl);
+const _safeAreaBottom = _sabEl.offsetHeight;
+_sabEl.remove();
+
 function updateOverviewCellHeight() {
   const imgCount = document.querySelectorAll(".imgholder").length;
   const grid = document.querySelector(".gall3ry");
 
   if (window.innerWidth <= 991) {
     const gap = 8;
-    const availH = window.innerHeight - 88 - 120; // below mob-sheet, above tab pill
+    const availH = window.innerHeight - 88 - 120 - _safeAreaBottom; // below mob-sheet, above tab pill + safe area
     // Find minimum cols so cell height >= 70px
     let bestCols = 2;
     for (let c = 2; c <= 6; c++) {

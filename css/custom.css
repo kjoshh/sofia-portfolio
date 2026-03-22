@@ -238,6 +238,7 @@ body.is-transitioning * {
 @media (max-width: 767px) {
   .archive-grid {
     columns: 2;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -2061,7 +2062,7 @@ text-decoration: none;
   /* layout-2 (Sequence) mobile */
   .gall3ry.layout-2-gall3ry {
     padding-top: 88px;
-    padding-bottom: 100px;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
   .gall3ry.layout-2-gall3ry .imgholder {
@@ -2072,7 +2073,7 @@ text-decoration: none;
   .gall3ry.layout-1-gall3ry {
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: var(--overview-cell-h, 13.5vw);
-    padding: 88px 12px 120px;
+    padding: 88px 12px calc(120px + env(safe-area-inset-bottom, 0px));
   }
 
   /* layout-3 (Info) mobile/tablet: full-height scrollable container, pills float on top */
@@ -2086,7 +2087,7 @@ text-decoration: none;
     width: calc(100% - 48px);
     max-width: 550px;
     padding-top: 90px;
-    padding-bottom: 130px;
+    padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
     text-align: left;
   }
