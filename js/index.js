@@ -798,14 +798,15 @@ if (isMobile) {
       // Kill tweens and snap outgoing to rest position
       gsap.killTweensOf(outEl);
       gsap.killTweensOf(inEl);
-      // Snap outgoing to rest position but keep hidden (avoid flash)
-      gsap.set(outEl, { x: slot.x - m.offsetX, y: baseY, rotation: slot.restRot, opacity: 0 });
+      // Snap outgoing to rest position, visible, so clone inherits correct state
+      gsap.set(outEl, { x: slot.x - m.offsetX, y: baseY, rotation: slot.restRot, opacity: 0.9 });
 
-      // Clone as debris — inherits rest position, falls visually
+      // Clone as debris — inherits rest position + opacity, seamlessly replaces outEl
       const debris = outEl.cloneNode(true);
       debris.style.pointerEvents = 'none';
       letterField.appendChild(debris);
 
+      // Hide original and park above for next swap-in
       gsap.set(outEl, { opacity: 0, y: baseY - m.swapDist });
 
       setTimeout(() => {
@@ -816,7 +817,6 @@ if (isMobile) {
         Body.setVelocity(body, { x: (Math.random() - 0.5) * 1.5, y: 0 });
         World.add(world, body);
         debrisPairs.push({ el: debris, body, born: performance.now() });
-        debris.style.opacity = '0.9';
       }, delay * 1000);
 
       // New letter drops in
