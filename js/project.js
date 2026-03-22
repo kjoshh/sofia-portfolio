@@ -96,9 +96,30 @@ function getLayout0NavY() {
   return -(window.innerHeight * 0.57) + clusterHalfH + gap + 45;
 }
 
+// Compute mob-proj-tabs Y offset for layout-0: position tabs just below the centered cluster
+function getMobTabsLayout0Y() {
+  // Cluster center is at 38% from top. Film roll width is responsive via clamp.
+  const vw = window.innerWidth;
+  const rollWidth = Math.min(180, Math.max(140, vw * 0.22));
+  const clusterBottom = window.innerHeight * 0.38 + rollWidth / 2;
+  // Tabs natural position: bottom: 24px → top = innerHeight - 24 - tabsHeight
+  const mobProjTabs = document.getElementById("mobProjTabs");
+  const tabsH = mobProjTabs ? mobProjTabs.offsetHeight : 70;
+  const tabsNaturalTop = window.innerHeight - 16 - tabsH;
+  // Negative Y to pull tabs up from their fixed-bottom position
+  const gap = 10;
+  return -(tabsNaturalTop - clusterBottom - gap);
+}
+
 if (!isMobile()) {
   gsap.set(proNav, { xPercent: -50, y: getLayout0NavY(), yPercent: 50 });
   proNav.classList.add("transparent");
+} else {
+  const mobProjTabs = document.getElementById("mobProjTabs");
+  if (mobProjTabs) {
+    mobProjTabs.classList.add("layout-0-tabs");
+    gsap.set(mobProjTabs, { y: getMobTabsLayout0Y() });
+  }
 }
 let activeLayout = "layout-0-gall3ry";
 
@@ -158,10 +179,10 @@ window.addEventListener("resize", () => {
         opacity: 1,
         filter: "blur(0px)",
         y: getLayout0NavY(),
-        duration: 0.9,
+        duration: 0.6,
         ease: "clipReveal",
       },
-      "-=0.7"
+      "-=0.6"
     );
 
     // Cleanup: mark body so CSS overrides initial hidden states, then clear GSAP inline styles
@@ -174,37 +195,49 @@ window.addEventListener("resize", () => {
     });
 
   } else {
-    /* ── Mobile timeline ── */
+    /* ── Mobile timeline (layout-0 landing) ── */
     const mobSheet = document.getElementById("mobSheet");
     const mobProjTabs = document.getElementById("mobProjTabs");
-    const tl = gsap.timeline({ delay: 0.15 });
+    const tl = gsap.timeline({ delay: 0.2 });
 
-    // Images slide up with stagger
+    // Step 1: Film roll fade-in + gentle zoom
+    gsap.set(img100, { scale: 1.15, opacity: 0 });
+    tl.to(img100, {
+      opacity: 1,
+      scale: 1,
+      duration: 1,
+      ease: "clipReveal",
+    }, 0);
+
+    // Step 2: Gallery images stagger in from center
     tl.fromTo(imgholders,
-      { opacity: 0, y: 60 },
+      { opacity: 0, scale: 0.5 },
       {
         opacity: 1,
-        y: 0,
-        duration: 0.7,
-        stagger: { each: 0.05, from: "start" },
-        ease: "power3.out",
+        scale: 1,
+        duration: 0.8,
+        stagger: { each: 0.05, from: "center" },
+        ease: "reveal",
       },
-      0
+      0.3
     );
 
-    // Mob-sheet and mob-proj-tabs fade in
+    // Step 3: Mob-sheet slides down
     if (mobSheet) {
       tl.fromTo(mobSheet,
         { opacity: 0, y: -15 },
         { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
-        0.3
+        0.5
       );
     }
+
+    // Step 4: Mob-proj-tabs fade up into cluster position
     if (mobProjTabs) {
+      const tabsY = getMobTabsLayout0Y();
       tl.fromTo(mobProjTabs,
-        { opacity: 0, y: 15 },
-        { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
-        0.3
+        { opacity: 0, y: tabsY + 15 },
+        { opacity: 1, y: tabsY, duration: 0.5, ease: "power3.out" },
+        0.6
       );
     }
 
@@ -212,8 +245,9 @@ window.addEventListener("resize", () => {
     tl.call(() => {
       document.body.classList.add("entrance-revealed");
       gsap.set(imgholders, { clearProps: "all" });
+      gsap.set(img100, { clearProps: "scale,opacity" });
       if (mobSheet) gsap.set(mobSheet, { clearProps: "opacity,y" });
-      if (mobProjTabs) gsap.set(mobProjTabs, { clearProps: "opacity,y" });
+      // Keep tabs Y offset — don't clear it
     });
   }
 
@@ -225,6 +259,12 @@ window.addEventListener("resize", () => {
       gsap.set(imgholders, { clearProps: "all" });
       if (!isMobile()) {
         gsap.set(proNav, { opacity: 1, xPercent: -50, y: getLayout0NavY(), yPercent: 50 });
+      } else {
+        const mobProjTabs = document.getElementById("mobProjTabs");
+        if (mobProjTabs && activeLayout === "layout-0-gall3ry") {
+          mobProjTabs.classList.add("layout-0-tabs");
+          gsap.set(mobProjTabs, { y: getMobTabsLayout0Y() });
+        }
       }
     }
   });
@@ -291,6 +331,25 @@ function switchLayoutHandler(newLayout) {
 
   // On mobile/tablet, entering Info tab: skip Flip so inline styles don't override CSS display:none
   if (isMobile() && newLayout === "layout-3-gall3ry") {
+    if (previousLayout === "layout-0-gall3ry") {
+      gsap.set(img100, { opacity: 0 });
+      const mobProjTabs = document.getElementById("mobProjTabs");
+      if (mobProjTabs) {
+        mobProjTabs.classList.remove("layout-0-tabs");
+        gsap.fromTo(mobProjTabs,
+          { background: "transparent", borderColor: "transparent", padding: "0px 0px 0px" },
+          {
+            background: "rgba(15, 13, 11, 0.96)",
+            borderColor: "rgba(233, 229, 221, 0.07)",
+            padding: "8px 8px 6px",
+            y: 0,
+            duration: 1.2,
+            ease: "power3.inOut",
+            clearProps: "background,borderColor,padding",
+          }
+        );
+      }
+    }
     gsap.to(imgholders, {
       opacity: 0, duration: 0.3, ease: "power2.in",
       onComplete: () => {
@@ -317,9 +376,23 @@ function switchLayoutHandler(newLayout) {
     gsap.set(img100, { opacity: 0 });
   }
 
+  // Lock container height on mobile before class swap so :has(.layout-0) → height:auto
+  // transition doesn't cause Flip to measure wrong target positions
+  const container = document.querySelector(".gall3ry-container");
+  const isMob = isMobile();
+  if (isMob && previousLayout === "layout-0-gall3ry") {
+    container.style.height = container.offsetHeight + "px";
+    container.style.overflow = "hidden";
+  }
+
   const state = Flip.getState(imgholders);
   gall3ry.classList.remove(previousLayout);
   gall3ry.classList.add(newLayout);
+
+  // Recalculate cell height on mobile so grid targets are accurate before Flip measures
+  if (isMob && newLayout === "layout-1-gall3ry") {
+    updateOverviewCellHeight();
+  }
 
   let staggerOption = 0.025;
   if (previousLayout === "layout-1-gall3ry" && newLayout === "layout-2-gall3ry") {
@@ -338,8 +411,36 @@ function switchLayoutHandler(newLayout) {
     ease: flipEase,
     stagger: staggerOption,
     absolute: true,
-    onComplete: () => { lenis.resize(); }
+    onComplete: () => {
+      // Unlock container height after Flip settles
+      if (isMob && previousLayout === "layout-0-gall3ry") {
+        container.style.height = "";
+        container.style.overflow = "";
+      }
+      lenis.resize();
+    }
   });
+
+  // Animate mob-proj-tabs down to fixed position + pill in when leaving layout-0
+  if (previousLayout === "layout-0-gall3ry" && isMobile()) {
+    const mobProjTabs = document.getElementById("mobProjTabs");
+    if (mobProjTabs) {
+      // Remove bare class so pill styles apply, then animate bg/border from transparent
+      mobProjTabs.classList.remove("layout-0-tabs");
+      gsap.fromTo(mobProjTabs,
+        { background: "transparent", borderColor: "transparent", padding: "0px 0px 0px" },
+        {
+          background: "rgba(15, 13, 11, 0.96)",
+          borderColor: "rgba(233, 229, 221, 0.07)",
+          padding: "8px 8px 6px",
+          y: 0,
+          duration: 1.2,
+          ease: "power3.inOut",
+          clearProps: "background,borderColor,padding",
+        }
+      );
+    }
+  }
 
   if (previousLayout === "layout-0-gall3ry") {
     if (!isMobile()) {
@@ -543,13 +644,27 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") lbNext();
 });
 
+/* ── Lightbox swipe ── */
+let lbTouchStartX = 0;
+let lbTouchStartY = 0;
+lbOverlay.addEventListener("touchstart", (e) => {
+  lbTouchStartX = e.changedTouches[0].clientX;
+  lbTouchStartY = e.changedTouches[0].clientY;
+}, { passive: true });
+lbOverlay.addEventListener("touchend", (e) => {
+  if (!lbOverlay.classList.contains("open")) return;
+  const dx = e.changedTouches[0].clientX - lbTouchStartX;
+  const dy = e.changedTouches[0].clientY - lbTouchStartY;
+  if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+  if (dx < 0) lbNext();
+  else lbPrev();
+});
 
-/* ── Mobile: default to layout-2, wire mob-proj-tabs ── */
+
+/* ── Mobile: keep layout-0 as initial landing, wire mob-proj-tabs ── */
 if (isMobile()) {
-  gall3ry.classList.remove("layout-0-gall3ry");
-  gall3ry.classList.add("layout-2-gall3ry");
-  activeLayout = "layout-2-gall3ry";
-  gsap.set(img100, { opacity: 0 });
+  // Clear default active tab — no tab is active in layout-0
+  document.querySelectorAll(".mob-proj-tab").forEach(b => b.classList.remove("active"));
 }
 
 document.querySelectorAll(".mob-proj-tab").forEach(btn => {
