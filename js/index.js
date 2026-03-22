@@ -71,18 +71,23 @@ function hoverIn() {
   swapTo(currentName === 'sofia' ? 'sybil' : 'sofia');
 
   // Soft breathe — scale whole scene
-  gsap.to(sceneEl, { scale: 1.02, duration: 0.6, ease: 'power2.out', overwrite: true });
+  gsap.to(sceneEl, { scale: 1.014, duration: 0.7, ease: 'power2.out', overwrite: true });
 }
 
 function hoverOut() {
   if (!revealComplete) return;
-  gsap.to(sceneEl, { scale: 1, duration: 0.8, ease: 'power2.inOut', overwrite: true });
+  gsap.to(sceneEl, { scale: 1, duration: 0.7, ease: 'power2.inOut', overwrite: true });
 }
 
 if (!isMobile) {
   frameWrap.addEventListener('mouseenter', hoverIn);
   frameWrap.addEventListener('mouseleave', hoverOut);
 }
+
+frameWrap.addEventListener('click', () => {
+  if (!revealComplete) return;
+  hoverIn();
+});
 
 /* ── Slot-based letter swap with physics ── */
 const sofiaChars = 'sofia cartuccia'.split('');
@@ -91,23 +96,22 @@ const sybilChars = 'sybil sometimes'.split('');
 function getLetterMetrics() {
   const fw = frameWrap.getBoundingClientRect().width;
   if (isMobile) {
-    // Fixed sizing for full-screen mobile — scale gently with viewport
-    const vw = window.innerWidth;
-    const scale = vw / 375; // reference: iPhone width
+    // Frame-relative sizing for portrait mobile frame
+    const fw = frameWrap.getBoundingClientRect().width;
     return {
-      letterH: 30 * scale,
-      letterW: 36 * scale,
-      spaceW:  26 * scale,
-      swapDist: 24 * scale,
-      offsetX: 16 * scale,
-      offsetY: 16 * scale,
+      letterH: fw * 0.08,
+      letterW: fw * 0.09,
+      spaceW:  fw * 0.1,
+      swapDist: fw * 0.08,
+      offsetX: fw * 0.035,
+      offsetY: fw * 0.035,
     };
   }
   // Pure frame-ratio: at 650px frame width these produce the reference sizes
   return {
     letterH: fw * 0.03225,   // 46 / 650
     letterW: fw * 0.042,   // 43 / 650
-    spaceW:  fw * 0.0525,   // 48 / 650
+    spaceW:  fw * 0.0525,   // 47 / 650
     swapDist: fw * 0.05,  // 55 / 650
     offsetX: fw * 0.02,     // 26 / 650
     offsetY: fw * 0.0225,   // 18 / 650
@@ -148,9 +152,9 @@ for (let i = 0; i < sofiaChars.length; i++) {
 function calcPositions() {
   const m = getLetterMetrics();
   const rect = frameWrap.getBoundingClientRect();
-  // On mobile (full-screen bg), place letters in the lower third
-  const anchorY = isMobile ? window.innerHeight * 0.72 : rect.top + 10;
-  const anchorX = isMobile ? window.innerWidth / 2 : rect.left + rect.width / 2;
+  // On mobile, place letters below the portrait frame
+  const anchorY = isMobile ? rect.bottom + m.letterH * 1.2 : rect.top + 10;
+  const anchorX = isMobile ? rect.left + rect.width / 2 : rect.left + rect.width / 2;
   const totalW = 14 * m.letterW + m.spaceW;
   const startX = anchorX - totalW / 2;
 
@@ -269,6 +273,7 @@ let settledCount = 0;
 function startLetterRain() {
   if (revealStarted) return;
   revealStarted = true;
+  frameWrap.style.cursor = 'wait';
   const m = getLetterMetrics();
   const fr = frameWrap.getBoundingClientRect();
 
@@ -340,6 +345,7 @@ function settleLetter(pair) {
         settledCount++;
         if (settledCount >= slots.length) {
           revealComplete = true;
+          frameWrap.style.cursor = '';
         }
       }
     }
@@ -404,7 +410,7 @@ Events.on(engine, 'afterUpdate', () => {
     const topEdge = fr.top + pad;
     const now = performance.now();
 
-    let shouldFlush = swapCount >= 30;
+    let shouldFlush = swapCount >= 40;
 
     if (!shouldFlush) {
       for (const pair of debrisPairs) {
@@ -551,6 +557,7 @@ Events.on(engine, 'afterUpdate', () => {
                     if (completed >= sofiaFallPairs.length) {
                       sofiaFallPairs.length = 0;
                       revealComplete = true;
+                      frameWrap.style.cursor = '';
                       flushing = false;
                     }
                   }
@@ -570,7 +577,7 @@ function swapTo(name) {
   if (name === currentName || flushing) return;
   // If this swap would trigger flush, just bump the count and bail —
   // flush will handle the visual transition, no need for swap debris
-  if (swapCount + 1 >= 30) {
+  if (swapCount + 1 >= 40) {
     swapCount++;
     return;
   }
@@ -651,12 +658,27 @@ if (isMobile) {
 
   for (const s of slots) slotByIndex[s.nameIndex] = s;
 
-  // ── Reveal: fade in frame + stagger letters ──
+  // ── Reveal: scale-up frame + stagger letters ──
   gsap.set(sceneEl, { opacity: 1 });
-  gsap.set(frameWrap, { scale: 1, y: 0 });
+  gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
   gsap.set(outerBorder, { opacity: 0 });
 
-  gsap.from(frameWrap, { opacity: 0, duration: 1.5, delay: 0.3, ease: 'power2.out' });
+  const revealTL = gsap.timeline({ delay: 0.3 });
+  revealTL.to(frameWrap, {
+    scale: 1,
+    opacity: 1,
+    y: 0,
+    duration: 1.4,
+    ease: 'power2.out',
+  });
+  revealTL.to(outerBorder, {
+    opacity: 1,
+    duration: 0.5,
+    ease: 'power2.out',
+  }, '-=0.4');
+
+  // Recalc positions after frame settles (needs correct rect)
+  revealTL.call(() => { calcPositions(); }, null, 1.0);
 
   const m0 = getLetterMetrics();
   slots.forEach((slot, idx) => {
@@ -665,10 +687,15 @@ if (isMobile) {
     gsap.to(slot.sofiaEl, {
       opacity: 0.9,
       duration: 0.6,
-      delay: 0.8 + idx * 0.05,
+      delay: 1.4 + idx * 0.05,
       ease: 'back.out(1.7)',
+      onStart: () => {
+        // Re-read position in case calcPositions updated
+        const m = getLetterMetrics();
+        gsap.set(slot.sofiaEl, { x: slot.x - m.offsetX, y: slot.y - m.offsetY });
+      },
       onComplete: () => {
-        if (idx === slots.length - 1) revealComplete = true;
+        if (idx === slots.length - 1) { revealComplete = true; frameWrap.style.cursor = ''; }
       }
     });
   });
@@ -682,9 +709,9 @@ if (isMobile) {
   let dragStartY = null;
   let pushedSlots = new Set(); // tracks which slots got pushed during this drag
 
-  const PUSH_RADIUS = 55;   // how close finger needs to be to push a letter
-  const PUSH_FORCE = 30;   // how far letters fly when pushed
-  let DRAG_TRIGGER = Math.max(80, window.innerWidth * 0.28); // viewport-relative drag threshold
+  const PUSH_RADIUS = 40;   // how close finger needs to be to push a letter
+  const PUSH_FORCE = 25;   // how far letters fly when pushed
+  let DRAG_TRIGGER = Math.max(60, window.innerWidth * 0.2); // viewport-relative drag threshold
 
   // Per-slot push tracking
   for (const s of slots) {
