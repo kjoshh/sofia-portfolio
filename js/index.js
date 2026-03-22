@@ -799,12 +799,11 @@ if (isMobile) {
       gsap.killTweensOf(outEl);
       gsap.killTweensOf(inEl);
       // Snap outgoing to rest position but keep hidden (avoid flash)
-      gsap.set(outEl, { x: slot.x - m.offsetX, y: baseY, rotation: slot.restRot });
+      gsap.set(outEl, { x: slot.x - m.offsetX, y: baseY, rotation: slot.restRot, opacity: 0 });
 
-      // Clone as debris (opacity set later in setTimeout)
+      // Clone as debris — inherits rest position, falls visually
       const debris = outEl.cloneNode(true);
       debris.style.pointerEvents = 'none';
-      debris.style.opacity = '0';
       letterField.appendChild(debris);
 
       gsap.set(outEl, { opacity: 0, y: baseY - m.swapDist });
