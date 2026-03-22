@@ -12,7 +12,7 @@ body {
 
 .page-transition {
   position: fixed;
-  inset: -150px; /* match grain/dust coverage for overscroll */
+  inset: 0;
   z-index: 10001; /* above grain/dust (10000) so transitions cover them */
   background-color: #292823;
   pointer-events: none;
@@ -66,7 +66,7 @@ body.is-transitioning * {
 
 .dusti {
   position: fixed;
-  inset: -150px; /* extra coverage for iOS Safari overscroll bounce */
+  inset: 0;
   pointer-events: none;
   opacity: 0.05;
   z-index: 10000;
@@ -75,7 +75,7 @@ body.is-transitioning * {
 
 .grain {
   position: fixed;
-  inset: -150px; /* extra coverage for iOS Safari overscroll bounce */
+  inset: 0;
   pointer-events: none;
   z-index: 10000;
   overflow: hidden;
@@ -1737,6 +1737,11 @@ text-decoration: none;
 .body {
   background-color: #292823;
   overflow-x: clip;
+  /* Make body the scroll container so content is clipped at viewport edge
+     and can't extend behind iOS Safari chrome (status bar / bottom pill) */
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 
@@ -2182,7 +2187,9 @@ body.entrance-revealed.about-page .about-content-mobile {
 /* Prevent white flash between page loads */
 html {
   background: #292823;
-  overscroll-behavior: none; /* prevent elastic bounce past grain overlay */
+  overflow: hidden;
+  height: 100%;
+  overscroll-behavior: none;
 }
 
 /* ══════════════════════════════════════════

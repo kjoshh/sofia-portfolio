@@ -1,5 +1,5 @@
 /* ── Lenis smooth scroll ── */
-const lenis = new Lenis();
+const lenis = new Lenis({ wrapper: document.body });
 (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(0);
 
 
@@ -120,23 +120,64 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") showNext();
 });
 
+/* ── Lightbox swipe ── */
+let lbTouchStartX = 0;
+let lbTouchStartY = 0;
+overlay.addEventListener("touchstart", (e) => {
+  lbTouchStartX = e.changedTouches[0].clientX;
+  lbTouchStartY = e.changedTouches[0].clientY;
+}, { passive: true });
+overlay.addEventListener("touchend", (e) => {
+  if (!overlay.classList.contains("open")) return;
+  const dx = e.changedTouches[0].clientX - lbTouchStartX;
+  const dy = e.changedTouches[0].clientY - lbTouchStartY;
+  if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+  if (dx < 0) showNext();
+  else showPrev();
+});
+
 
 /* ── Scale + fade reveal with ScrollTrigger.batch ── */
 gsap.registerPlugin(ScrollTrigger);
 gsap.set(items, { scale: 0.92, opacity: 0 });
 
-ScrollTrigger.batch(items, {
-  onEnter: (batch) => {
-    /* Sort left→right so stagger sweeps across columns */
-    batch.sort((a, b) =>
-      a.getBoundingClientRect().left - b.getBoundingClientRect().left
-    );
-    gsap.to(batch, {
+/* Gate reveal on both viewport entry AND image loaded */
+const entered = new Set();
+const loaded = new Set();
+
+function revealItem(item) {
+  if (entered.has(item) && loaded.has(item)) {
+    gsap.to(item, {
       scale: 1,
       opacity: 1,
       duration: 0.9,
       ease: "power2.out",
-      stagger: 0.07,
+    });
+  }
+}
+
+items.forEach(item => {
+  const img = item.querySelector("img");
+  if (!img) return;
+  if (img.complete && img.naturalHeight > 0) {
+    loaded.add(item);
+  } else {
+    img.addEventListener("load", () => {
+      loaded.add(item);
+      revealItem(item);
+    }, { once: true });
+  }
+});
+
+ScrollTrigger.batch(items, {
+  onEnter: (batch) => {
+    batch.sort((a, b) =>
+      a.getBoundingClientRect().left - b.getBoundingClientRect().left
+    );
+    batch.forEach((item, i) => {
+      entered.add(item);
+      /* stagger via delay to keep the sweep effect */
+      gsap.delayedCall(i * 0.07, () => revealItem(item));
     });
   },
   once: true,

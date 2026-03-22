@@ -53,7 +53,7 @@ document.querySelectorAll(".imgholder").forEach(el => {
 
 
 /* ── Lenis smooth scroll ── */
-const lenis = new Lenis();
+const lenis = new Lenis({ wrapper: document.body });
 function raf(time) {
   lenis.raf(time);
   requestAnimationFrame(raf);
