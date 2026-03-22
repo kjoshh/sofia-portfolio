@@ -2594,8 +2594,7 @@ html:has(body.landing-page) {
     inset: 0;
     height: 100dvh;
     width: 100vw;
-    padding-top: 74px;
-    padding-bottom: 20px;
+    padding: 0;
   }
   body.landing-page .frame-wrap {
     position: relative;
@@ -2603,7 +2602,7 @@ html:has(body.landing-page) {
     max-width: 320px;
     aspect-ratio: 2 / 3;
     max-height: 62dvh;
-    margin-top: 10px;
+    margin-top: -30px;
     cursor: default;
     overflow: hidden;
     z-index: 2;
