@@ -68,7 +68,7 @@ body.is-transitioning * {
 
 .dusti {
   position: fixed;
-  inset: -50px; /* extend beyond viewport for mobile Safari dynamic bars */
+  inset: 0;
   pointer-events: none;
   opacity: 0.05;
   z-index: 10000;
@@ -77,7 +77,7 @@ body.is-transitioning * {
 
 .grain {
   position: fixed;
-  inset: -50px; /* extend beyond viewport for mobile Safari dynamic bars */
+  inset: 0;
   pointer-events: none;
   z-index: 10000;
   overflow: hidden;
@@ -238,7 +238,6 @@ body.is-transitioning * {
 @media (max-width: 767px) {
   .archive-grid {
     columns: 2;
-    overflow: hidden;
   }
 }
 

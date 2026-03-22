@@ -3,14 +3,17 @@
 <head>
   <meta charset="utf-8">
   <title>About — Sofia Cartuccia</title>
-  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport">
+  <meta name="theme-color" content="#292823">
+  <meta name="view-transition" content="same-origin">
   <link href="css/normalize.css" rel="stylesheet" type="text/css">
   <link href="css/webflow.css" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
   <link href="images/webclip.png" rel="apple-touch-icon">
   <link href="css/custom.css" rel="stylesheet" type="text/css">
-
+  <style>html.page-enter body>*:not(.grain):not(.dusti):not(.bg-img):not(.cursor){opacity:0!important}</style>
+  <script src="js/transition.js"></script>
 </head>
 <body class="body about-page">
 
@@ -133,23 +136,23 @@
 
     <!-- Footer -->
     <div class="cornern">
-      <div class="corner">Italy, <span id="italy-time"></span></div>
-      <div class="corner">sofia.cartuccia89@gmail.com</div>
-      <div class="corner">+39 3356093992</div>
+      <div class="corner corner-time"><span class="corner-time-inner visible">Italy, <span id="italy-time"></span></span></div>
+      <div class="corner copyable" data-copy="sofia.cartuccia89@gmail.com">sofia.cartuccia89@gmail.com</div>
+      <div class="corner copyable" data-copy="+39 3356093992">+39 3356093992</div>
       <a class="corner" href="https://www.instagram.com/sybil_sometimes" target="_blank" rel="noopener">@sybil_sometimes</a>
 
       <!-- Mobile stacked rows -->
       <div class="contact-rows">
         <div class="contact-row">
-          <span class="contact-row-num">01</span>
+          <span class="contact-row-num">email</span>
           <a class="contact-row-value" href="mailto:sofia.cartuccia89@gmail.com">sofia.cartuccia89@gmail.com</a>
         </div>
         <div class="contact-row">
-          <span class="contact-row-num">02</span>
+          <span class="contact-row-num">phone</span>
           <a class="contact-row-value" href="tel:+393356093992">+39 335 609 3992</a>
         </div>
         <div class="contact-row contact-row--last">
-          <span class="contact-row-num">03</span>
+          <span class="contact-row-num">instagram</span>
           <a class="contact-row-value contact-row-value--italic" href="https://www.instagram.com/sybil_sometimes" target="_blank" rel="noopener">@sybil_sometimes</a>
         </div>
         <div class="contact-footnote">

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sybil Sometimes — Sofia Cartuccia</title>
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta name="theme-color" content="#292823">
+  <link href="css/normalize.css" rel="stylesheet" type="text/css">
+  <link href="css/webflow.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="css/custom.css" rel="stylesheet" type="text/css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'Alegreya', Georgia, serif;
+      background: #1e1e1b;
+    }
+
+    /* ── Scene ── */
+    .scene {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Framed photo ── */
+    .frame-wrap {
+      position: relative;
+      width: 45vw;
+      aspect-ratio: 3 / 2;
+      max-height: 75vh;
+      z-index: 2;
+      overflow: hidden;
+    }
+    /* Background image behind photo on hover */
+    .frame-bg-hover {
+      position: absolute;
+      inset: 0% 0%;
+
+width:96%;
+margin-left: 4%;
+object-fit: contain;
+      z-index: 1;
+      background: url("brand_assets/backgroundbd.png") center / contain no-repeat;
+      clip-path: inset(0 100% 0 0);
+    }
+
+    /* Sofia photo: inset inside the organic frame */
+    .frame-photo {
+      position: absolute;
+      inset: 5% 3%;
+      z-index: 0;
+      background: #1e1e1b url("images/0017_17A.jpg") center / cover no-repeat;
+    }
+    /* Sybil photo: more inset than Sofia, so colorful edges peek through on hover */
+    .frame-photo-sybil {
+      position: absolute;
+      inset: 25% 25%;
+      z-index: 1;
+      background: #1e1e1b url("images/Sybilbg.jpg") center / cover no-repeat;
+      opacity: 0;
+      margin-right:2%;
+      margin-bottom: 5%;
+    }
+    /* newfriome grunge frame */
+    .frame-border-hover {
+      position: absolute;
+      inset: 21% 23%;
+      margin-bottom: 5%;
+
+      margin-right: 2%;
+      z-index: 2;
+      pointer-events: none;
+      clip-path: polygon(50% 50%, 0% 100%, 0% 100%);
+    }
+    .frame-border-hover img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      mix-blend-mode: multiply;
+    }
+    /* Outer organic frame border */
+    .frame-border {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .frame-border img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      mix-blend-mode: multiply;
+    }
+
+    /* ── Grain overlay ── */
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+    .grain::after {
+      content: "";
+      position: absolute;
+      width: 300%;
+      height: 300%;
+      inset: -150% 0 0 -150%;
+      max-width: none;
+      background-image: url("images/Noise.png");
+      background-size: 300px 300px;
+      background-repeat: repeat;
+      opacity: 0.3;
+      animation: grainAnim 2.5s steps(1) infinite;
+    }
+    @keyframes grainAnim {
+      0%, 100% { background-position: 0 0; }
+      10% { background-position: -5% -10%; }
+      20% { background-position: -15% 5%; }
+      30% { background-position: 7% -25%; }
+      40% { background-position: 20% 25%; }
+      50% { background-position: -25% 10%; }
+      60% { background-position: 15% 5%; }
+      70% { background-position: 0% 15%; }
+      80% { background-position: 25% 35%; }
+      90% { background-position: -10% 10%; }
+    }
+
+    /* ── Dust ── */
+    .dust {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      background-image: url("images/BGDust.png");
+      opacity: 0.15;
+    }
+
+    /* ── Vignette ── */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 9997;
+      pointer-events: none;
+      background: radial-gradient(
+        ellipse at center,
+        transparent 50%,
+        rgba(10, 8, 6, 0.5) 100%
+      );
+    }
+
+    /* ── Letter field ── */
+    .letter-field {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      overflow: visible;
+    }
+    .letter-el {
+      position: absolute;
+      width: auto;
+      height: 25px;
+      will-change: transform, opacity;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: auto;
+    }
+
+    /* ── Dust particles canvas ── */
+    .dust-particles {
+      position: fixed;
+      inset: 0;
+      z-index: 9996;
+      pointer-events: none;
+    }
+
+    /* ── Fade-in ── */
+    .scene {
+      opacity: 0;
+      animation: fadeScene 2s ease 0.3s forwards;
+    }
+    @keyframes fadeScene { to { opacity: 1; } }
+  </style>
+</head>
+<body>
+
+
+
+  <div data-collapse="medium" class="navbar main-nav">
+    <div class="wrapin">
+      <div class="nav-bg"></div>
+      <nav role="navigation" class="nav-menu">
+        <a href="index.html" class="nav-link logo-link">
+          <span class="nav-logo-wrap">
+            <img src="brand_assets/SofiaFullname.png" alt="Sofia Cartuccia" class="nav-logo-img nav-logo-top">
+          </span>
+        </a>
+        <img src="brand_assets/starbright.png" class="nav-star-sep" alt="">
+        <div class="nav-dropdown-wrap">
+          <a href="#" class="nav-link">Projects</a>
+        </div>
+        <a href="archive.html" class="nav-link">Archive</a>
+        <a href="about.html" class="nav-link">About</a>
+      </nav>
+      <div class="nav-dropdown" id="projects-dropdown">
+        <div class="desk-nav-inner">
+          <p class="desk-nav-label">Projects</p>
+          <div class="desk-nav-grid">
+            <a href="hard-coded.html" class="desk-nav-cell">
+              <img src="images/Hard-Coded-1.jpg" class="desk-nav-cell-img" alt="Hard-Coded">
+              <span class="desk-nav-cell-label">Hard-Coded</span>
+            </a>
+            <a href="forgetting-dreams.html" class="desk-nav-cell">
+              <img src="images/Forgettingdreams-1-p-500.jpg" class="desk-nav-cell-img" alt="Forgetting Dreams">
+              <span class="desk-nav-cell-label">Forgetting Dreams</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scene" id="scene">
+    <div class="frame-wrap" id="frameWrap">
+      <div class="frame-bg-hover" id="bgHover"></div>
+      <div class="frame-photo" id="bg"></div>
+      <div class="frame-photo-sybil" id="bgSybil"></div>
+      <div class="frame-border">
+        <img src="images/frame.png" alt="">
+      </div>
+      <div class="frame-border-hover" id="frameBorderHover">
+        <img src="brand_assets/newfriome.png" alt="">
+      </div>
+    </div>
+  </div>
+
+  <div class="letter-field" id="letterField"></div>
+
+  <canvas class="dust-particles" id="dustCanvas"></canvas>
+  <div class="vignette"></div>
+  <div class="dust"></div>
+  <div class="grain"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
+  <script>
+    /* ── Refs ── */
+
+    const letterField = document.getElementById('letterField');
+    const frameWrap = document.getElementById('frameWrap');
+
+    /* ── State ── */
+    let currentName = 'sofia';
+
+    /* ── Hover triggers ── */
+    const bgHoverEl = document.getElementById('bgHover');
+    const frameBorderEl = document.getElementById('frameBorderHover');
+    const outerBorder = frameWrap.querySelector('.frame-border');
+
+    /* Clock-sweep clip-path: sweeps clockwise from bottom-left corner */
+    function clockWipe(progress) {
+      const sweep = progress * 360;
+      const pts = ['50% 50%', '0% 100%'];
+      const corners = [
+        { rel: 90,  p: '0% 0%' },
+        { rel: 180, p: '100% 0%' },
+        { rel: 270, p: '100% 100%' },
+      ];
+      for (const c of corners) {
+        if (sweep > c.rel) pts.push(c.p);
+      }
+      if (progress >= 1) {
+        pts.push('0% 100%');
+      } else {
+        const absAngle = (225 + sweep) % 360;
+        const rad = (absAngle - 90) * Math.PI / 180;
+        const dx = Math.cos(rad);
+        const dy = Math.sin(rad);
+        const adx = Math.abs(dx), ady = Math.abs(dy);
+        let s;
+        if (adx < 1e-6) s = 50 / ady;
+        else if (ady < 1e-6) s = 50 / adx;
+        else s = Math.min(50 / adx, 50 / ady);
+        pts.push(`${(50 + dx * s).toFixed(1)}% ${(50 + dy * s).toFixed(1)}%`);
+      }
+      return `polygon(${pts.join(', ')})`;
+    }
+
+    /* ── Hover ── */
+    let firstHoverDone = false;
+    const bgSybilEl = document.getElementById('bgSybil');
+    let sweepTween = null;
+    let sweepObj = { progress: 0 };
+
+    function hoverIn() {
+      if (!firstHoverDone) {
+        firstHoverDone = true;
+
+        // Bg wipe in
+        gsap.to(bgHoverEl, { clipPath: 'inset(0 0% 0 0)', duration: 0.75, ease: 'power3.inOut', overwrite: true });
+
+        // Sybil photo fade in
+        gsap.to(bgSybilEl, { opacity: 1, duration: 0.4, delay: 0.35, ease: 'power4.in', x:20, overwrite: true });
+
+        // Border clock-sweep in
+        sweepObj.progress = 0;
+        sweepTween = gsap.to(sweepObj, {
+          progress: 1,
+          duration: 0.75,
+          delay: 0.35,
+          ease: 'power2.out',
+          onUpdate: () => { frameBorderEl.style.clipPath = clockWipe(sweepObj.progress); }
+        });
+        gsap.to(frameBorderEl, { x: 20, duration: 0.4, delay: 0.35, ease: 'power4.in', overwrite: true });
+      }
+
+      // Letters swap every hover
+      swapTo(currentName === 'sofia' ? 'sybil' : 'sofia');
+    }
+
+    frameWrap.addEventListener('mouseenter', hoverIn);
+
+    /* ── Slot-based letter swap with physics ── */
+    const sofiaChars = 'sofia cartuccia'.split('');
+    const sybilChars = 'sybil sometimes'.split('');
+
+    const LETTER_W = 35;
+    const SPACE_W = 50;
+    const SWAP_DIST = 45;
+
+    const slots = [];
+
+    for (let i = 0; i < sofiaChars.length; i++) {
+      if (sofiaChars[i] === ' ') continue;
+
+      const sc = sofiaChars[i];
+      const yc = sybilChars[i];
+
+      const sofiaEl = document.createElement('img');
+      sofiaEl.className = 'letter-el';
+      sofiaEl.src = `brand_assets/Letters/${sc}.png`;
+      sofiaEl.alt = sc;
+      letterField.appendChild(sofiaEl);
+
+      const sybilEl = document.createElement('img');
+      sybilEl.className = 'letter-el';
+      sybilEl.src = `brand_assets/Letters/${yc}.png`;
+      sybilEl.alt = yc;
+      letterField.appendChild(sybilEl);
+
+      slots.push({
+        nameIndex: i,
+        sofiaEl,
+        sybilEl,
+        restRot: (Math.random() - 0.5) * 3,
+        x: 0,
+        y: 0,
+      });
+    }
+
+    /* ── Position calculations ── */
+    function calcPositions() {
+      const rect = frameWrap.getBoundingClientRect();
+      const anchorY = rect.top + 10;
+      const anchorX = rect.left + rect.width / 2;
+      const totalW = 14 * LETTER_W + SPACE_W;
+      const startX = anchorX - totalW / 2;
+
+      for (const slot of slots) {
+        const i = slot.nameIndex;
+        if (i < 5) {
+          slot.x = startX + i * LETTER_W + LETTER_W / 2;
+        } else {
+          slot.x = startX + 5 * LETTER_W + SPACE_W + (i - 6) * LETTER_W + LETTER_W / 2;
+        }
+        slot.y = anchorY;
+      }
+    }
+
+    /* ── Initial placement (Sofia visible) ── */
+    function initPositions() {
+      calcPositions();
+      for (const slot of slots) {
+        gsap.set(slot.sofiaEl, {
+          x: slot.x - 21,
+          y: slot.y - 12,
+          rotation: slot.restRot,
+          opacity: 0.9
+        });
+        gsap.set(slot.sybilEl, {
+          x: slot.x - 21,
+          y: slot.y - 12 - SWAP_DIST,
+          rotation: slot.restRot,
+          opacity: 0
+        });
+      }
+    }
+
+    /* ── Matter.js physics world ── */
+    const { Engine, World, Bodies, Body, Runner, Events } = Matter;
+    const engine = Engine.create({
+      gravity: { x: 0, y: 1.5 },
+      enableSleeping: true,
+      positionIterations: 10,
+      velocityIterations: 8,
+    });
+    const world = engine.world;
+    const runner = Runner.create();
+    Runner.run(runner, engine);
+
+    const debrisPairs = [];
+
+    function buildWalls() {
+      const oldStatic = world.bodies.filter(b => b.isStatic && b.label === 'wall');
+      World.remove(world, oldStatic);
+
+      const fr = frameWrap.getBoundingClientRect();
+      const pad = fr.height * 0.22;
+      const thick = 80;
+      const inset = fr.width * 0.007;
+      // Floor
+      World.add(world, Bodies.rectangle(
+        fr.left + fr.width / 2, fr.bottom - pad - inset + thick / 2, fr.width * 1.4, thick,
+        { isStatic: true, label: 'wall', restitution: 0.3, friction: 0.6 }
+      ));
+      // Left wall
+      World.add(world, Bodies.rectangle(
+        fr.left + pad + inset - thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
+        { isStatic: true, label: 'wall' }
+      ));
+      // Right wall
+      World.add(world, Bodies.rectangle(
+        fr.right - pad - inset + thick / 2 + 12, fr.top + fr.height / 2, thick, fr.height * 2,
+        { isStatic: true, label: 'wall' }
+      ));
+    }
+    buildWalls();
+    window.addEventListener('resize', buildWalls);
+
+    Events.on(engine, 'afterUpdate', () => {
+      for (const pair of debrisPairs) {
+        const pos = pair.body.position;
+        const ang = pair.body.angle * (180 / Math.PI);
+        pair.el.style.transform = `translate(${pos.x - 17}px, ${pos.y - 12}px) rotate(${ang}deg)`;
+      }
+    });
+
+    /* ── Swap: new letter drops from top, old one becomes physics debris ── */
+    function swapTo(name) {
+      if (name === currentName) return;
+      currentName = name;
+      calcPositions();
+
+      const swapSlots = slots;
+
+      swapSlots.forEach((slot, idx) => {
+        const outEl = name === 'sybil' ? slot.sofiaEl : slot.sybilEl;
+        const inEl = name === 'sybil' ? slot.sybilEl : slot.sofiaEl;
+        const baseY = slot.y - 12;
+        const delay = idx * 0.03 + Math.random() * 0.04;
+
+        // Kill any in-flight tweens and snap to resting position before cloning
+        gsap.killTweensOf(outEl);
+        gsap.killTweensOf(inEl);
+        gsap.set(outEl, { x: slot.x - 21, y: baseY, rotation: slot.restRot, opacity: 0.9 });
+
+        // Clone the outgoing letter as debris from its correct position
+        const debris = outEl.cloneNode(true);
+        debris.style.pointerEvents = 'none';
+        letterField.appendChild(debris);
+
+        gsap.set(outEl, { opacity: 0, y: baseY - SWAP_DIST });
+
+        setTimeout(() => {
+          const body = Bodies.rectangle(slot.x, slot.y, 30, 20, {
+            restitution: 0.35,
+            friction: 0.5,
+            frictionAir: 0.01,
+            angle: slot.restRot * Math.PI / 180,
+            density: 0.002,
+            sleepThreshold: 30,
+          });
+          Body.setVelocity(body, {
+            x: (Math.random() - 0.5) * 2,
+            y: 0
+          });
+          World.add(world, body);
+          debrisPairs.push({ el: debris, body });
+          debris.style.opacity = '0.9';
+        }, delay * 1000);
+
+        gsap.fromTo(inEl,
+          { x: slot.x - 21, y: baseY - SWAP_DIST, rotation: slot.restRot, opacity: 0 },
+          { y: baseY, opacity: 0.9, duration: 0.4, delay: delay + 0.06, ease: 'power2.out', overwrite: true }
+        );
+      });
+    }
+
+    initPositions();
+
+    /* ── Floating dust particles ── */
+    (function () {
+      const canvas = document.getElementById('dustCanvas');
+      const ctx = canvas.getContext('2d');
+      let W, H;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const NUM = 65;
+      const particles = [];
+
+      for (let i = 0; i < NUM; i++) {
+        const warmth = Math.random();
+        particles.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: 0.4 + Math.random() * 1.25,           // radius 0.4–1.6px
+          vx: (Math.random() - 0.5) * 0.15,        // very slow horizontal drift
+          vy: -0.05 - Math.random() * 0.12,         // slow upward float (like heated dust)
+          alpha: 0.08 + Math.random() * 0.18,       // subtle opacity
+          // warm tones: mix between pale cream and warm amber
+          cr: 200 + Math.floor(warmth * 55),         // 200–255
+          cg: 180 + Math.floor(warmth * 40),         // 180–220
+          cb: 150 + Math.floor(warmth * 30),          // 150–180
+          drift: Math.random() * Math.PI * 2,        // phase for sinusoidal sway
+          driftSpeed: 0.003 + Math.random() * 0.006,
+          driftAmp: 0.2 + Math.random() * 0.4,
+          rot: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.008,
+          // irregular shape: 5-7 points with random radii
+          shape: (() => {
+            const n = 5 + Math.floor(Math.random() * 3);
+            return Array.from({ length: n }, (_, j) => ({
+              angle: (j / n) * Math.PI * 2,
+              wobble: 0.55 + Math.random() * 0.9,
+            }));
+          })(),
+        });
+      }
+
+      function tick() {
+        ctx.clearRect(0, 0, W, H);
+
+        for (const p of particles) {
+          p.drift += p.driftSpeed;
+          p.x += p.vx + Math.sin(p.drift) * p.driftAmp;
+          p.y += p.vy;
+
+          // wrap around edges
+          if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
+          if (p.x < -5) p.x = W + 5;
+          if (p.x > W + 5) p.x = -5;
+
+          p.rot += p.rotSpeed;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.beginPath();
+          const pts = p.shape;
+          const n = pts.length;
+          // smooth closed blob via midpoints between shape vertices
+          const px0 = Math.cos(pts[0].angle) * p.r * pts[0].wobble;
+          const py0 = Math.sin(pts[0].angle) * p.r * pts[0].wobble;
+          const px1 = Math.cos(pts[1 % n].angle) * p.r * pts[1 % n].wobble;
+          const py1 = Math.sin(pts[1 % n].angle) * p.r * pts[1 % n].wobble;
+          ctx.moveTo((px0 + px1) / 2, (py0 + py1) / 2);
+          for (let k = 1; k <= n; k++) {
+            const cur = pts[k % n];
+            const nxt = pts[(k + 1) % n];
+            const cx = Math.cos(cur.angle) * p.r * cur.wobble;
+            const cy = Math.sin(cur.angle) * p.r * cur.wobble;
+            const nx = Math.cos(nxt.angle) * p.r * nxt.wobble;
+            const ny = Math.sin(nxt.angle) * p.r * nxt.wobble;
+            ctx.quadraticCurveTo(cx, cy, (cx + nx) / 2, (cy + ny) / 2);
+          }
+          ctx.closePath();
+          ctx.fillStyle = `rgba(${p.cr},${p.cg},${p.cb},${p.alpha})`;
+          ctx.fill();
+          ctx.restore();
+        }
+
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    })();
+
+    /* ── Resize ── */
+    window.addEventListener('resize', () => {
+      calcPositions();
+      for (const slot of slots) {
+        const activeEl = currentName === 'sofia' ? slot.sofiaEl : slot.sybilEl;
+        gsap.set(activeEl, { x: slot.x - 21, y: slot.y - 12 });
+        const inactiveEl = currentName === 'sofia' ? slot.sybilEl : slot.sofiaEl;
+        gsap.set(inactiveEl, { x: slot.x - 21, y: slot.y - 12 - SWAP_DIST, opacity: 0 });
+      }
+    });
+  </script>
+
+  <script src="js/nav.js"></script>
+
+</body>
+</html>
