@@ -2623,6 +2623,17 @@ html:has(body.landing-page) {
   body.landing-page .frame-border {
     display: block;
   }
+  body.landing-page .frame-border img {
+    /* Rotate landscape border image to portrait orientation.
+       CSS width→visual height, CSS height→visual width after 90° rotation.
+       150% width = container height, 66.7% height = container width (for 2:3 frame). */
+    width: 150%;
+    height: 66.7%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
   body.landing-page .frame-border-hover,
   body.landing-page .frame-bg-hover {
     display: none;
