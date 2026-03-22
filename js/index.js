@@ -1014,11 +1014,14 @@ if (isMobile) {
     }
   });
 
-  // ── Tap to swap ──
-  frameWrap.addEventListener('click', () => {
+  // ── Tap/swipe/scroll anywhere to swap (except nav) ──
+  function handleTap(e) {
     if (!revealComplete) return;
+    if (e.target.closest('.mob-sheet')) return;
     swapTo(currentName === 'sofia' ? 'sybil' : 'sofia');
-  });
+  }
+  document.addEventListener('touchend', handleTap);
+  document.addEventListener('click', handleTap);
 
   // ── Mobile resize ──
   window.addEventListener('resize', () => {
