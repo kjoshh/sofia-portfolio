@@ -2605,11 +2605,10 @@ html:has(body.landing-page) {
   }
   body.landing-page .frame-wrap {
     position: relative;
-    width: 72vw;
-    max-width: 320px;
-    aspect-ratio: 2 / 3;
-    max-height: 62dvh;
-    margin-top: -30px;
+    width: calc(100% - 40px);
+    height: calc(100dvh - 100px - 20px);
+    margin-top: 125px;
+    margin-bottom: 20px;
     cursor: default;
     overflow: hidden;
     z-index: 2;
@@ -2630,15 +2629,12 @@ html:has(body.landing-page) {
     display: block;
   }
   body.landing-page .frame-border img {
-    /* Start at 100%×100% (stretched to portrait), then un-stretch + rotate to
-       display the landscape border at natural proportions in portrait orientation.
-       scaleY undoes the vertical stretch, scaleX restores width, rotate flips to portrait. */
-    width: 100%;
-    height: 100%;
     position: absolute;
     inset: 0;
-    transform-origin: center center;
-    transform: rotate(90deg) scaleX(1.5) scaleY(0.667);
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    opacity: 0.9;
   }
   body.landing-page .frame-border-hover,
   body.landing-page .frame-bg-hover {
