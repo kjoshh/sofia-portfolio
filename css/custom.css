@@ -2184,6 +2184,7 @@ body.entrance-revealed.about-page .about-content-mobile {
 /* Prevent white flash between page loads */
 html {
   background: #292823;
+  overscroll-behavior: none; /* prevent elastic bounce past grain overlay */
 }
 
 /* ══════════════════════════════════════════
