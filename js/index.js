@@ -806,8 +806,10 @@ if (isMobile) {
       debris.style.pointerEvents = 'none';
       letterField.appendChild(debris);
 
-      // Hide original and park above for next swap-in
-      gsap.set(outEl, { opacity: 0, y: baseY - m.swapDist });
+      // Defer hide to next frame — gives debris clone time to render on mobile GPU
+      requestAnimationFrame(() => {
+        gsap.set(outEl, { opacity: 0, y: baseY - m.swapDist });
+      });
 
       setTimeout(() => {
         const body = Bodies.rectangle(slot.x, slot.y, m.letterW * 0.7, m.letterH * 0.65, {
