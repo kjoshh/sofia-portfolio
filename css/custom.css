@@ -2205,6 +2205,7 @@ body.landing-page {
 html:has(body.landing-page) {
   height: 100%;
   overflow: hidden;
+  background: #1e1e1b;
 }
 
 /* ── Scene ── */
