@@ -3,6 +3,9 @@
 const letterField = document.getElementById('letterField');
 const frameWrap = document.getElementById('frameWrap');
 
+/* ── Mobile detection ── */
+const isMobile = window.matchMedia('(max-width: 991px)').matches;
+
 /* ── State ── */
 let currentName = 'sofia';
 let revealComplete = false;
@@ -12,6 +15,7 @@ let revealStarted = false;
 const bgHoverEl = document.getElementById('bgHover');
 const frameBorderEl = document.getElementById('frameBorderHover');
 const outerBorder = frameWrap.querySelector('.frame-border');
+const framePhotoEl = document.getElementById('bg');
 
 /* Clock-sweep clip-path: sweeps clockwise from top-left corner */
 function clockWipe(progress) {
@@ -73,9 +77,20 @@ function hoverIn() {
 
   // Letters swap every hover
   swapTo(currentName === 'sofia' ? 'sybil' : 'sofia');
+
+  // Soft breathe — scale whole scene
+  gsap.to(sceneEl, { scale: 1.02, duration: 0.6, ease: 'power2.out', overwrite: true });
 }
 
-frameWrap.addEventListener('mouseenter', hoverIn);
+function hoverOut() {
+  if (!revealComplete) return;
+  gsap.to(sceneEl, { scale: 1, duration: 0.8, ease: 'power2.inOut', overwrite: true });
+}
+
+if (!isMobile) {
+  frameWrap.addEventListener('mouseenter', hoverIn);
+  frameWrap.addEventListener('mouseleave', hoverOut);
+}
 
 /* ── Slot-based letter swap with physics ── */
 const sofiaChars = 'sofia cartuccia'.split('');
@@ -83,6 +98,19 @@ const sybilChars = 'sybil sometimes'.split('');
 
 function getLetterMetrics() {
   const fw = frameWrap.getBoundingClientRect().width;
+  if (isMobile) {
+    // Fixed sizing for full-screen mobile — scale gently with viewport
+    const vw = window.innerWidth;
+    const scale = vw / 375; // reference: iPhone width
+    return {
+      letterH: 30 * scale,
+      letterW: 36 * scale,
+      spaceW:  26 * scale,
+      swapDist: 24 * scale,
+      offsetX: 16 * scale,
+      offsetY: 16 * scale,
+    };
+  }
   // Pure frame-ratio: at 650px frame width these produce the reference sizes
   return {
     letterH: fw * 0.03225,   // 46 / 650
@@ -128,19 +156,36 @@ for (let i = 0; i < sofiaChars.length; i++) {
 function calcPositions() {
   const m = getLetterMetrics();
   const rect = frameWrap.getBoundingClientRect();
-  const anchorY = rect.top + 10;
-  const anchorX = rect.left + rect.width / 2;
+  // On mobile (full-screen bg), place letters in the lower third
+  const anchorY = isMobile ? window.innerHeight * 0.72 : rect.top + 10;
+  const anchorX = isMobile ? window.innerWidth / 2 : rect.left + rect.width / 2;
   const totalW = 14 * m.letterW + m.spaceW;
   const startX = anchorX - totalW / 2;
 
   for (const slot of slots) {
     const i = slot.nameIndex;
-    if (i < 5) {
-      slot.x = startX + i * m.letterW + m.letterW / 2;
+    if (isMobile) {
+      // Two lines: word 1 (indices 0-4) and word 2 (indices 6+)
+      if (i < 5) {
+        const word1W = 5 * m.letterW;
+        const word1Start = anchorX - word1W / 2;
+        slot.x = word1Start + i * m.letterW + m.letterW / 2;
+        slot.y = anchorY;
+      } else {
+        const word2Len = 9; // "cartuccia" / "sometimes"
+        const word2W = word2Len * m.letterW;
+        const word2Start = anchorX - word2W / 2;
+        slot.x = word2Start + (i - 6) * m.letterW + m.letterW / 2;
+        slot.y = anchorY + m.letterH * 1.6;
+      }
     } else {
-      slot.x = startX + 5 * m.letterW + m.spaceW + (i - 6) * m.letterW + m.letterW / 2;
+      if (i < 5) {
+        slot.x = startX + i * m.letterW + m.letterW / 2;
+      } else {
+        slot.x = startX + 5 * m.letterW + m.spaceW + (i - 6) * m.letterW + m.letterW / 2;
+      }
+      slot.y = anchorY;
     }
-    slot.y = anchorY;
   }
 }
 
@@ -177,7 +222,8 @@ function initPositions() {
   }
 }
 
-/* ── Matter.js physics world ── */
+/* ── Matter.js physics world (desktop only) ── */
+if (!isMobile) {
 const { Engine, World, Bodies, Body, Runner, Events } = Matter;
 const engine = Engine.create({
   gravity: { x: 0, y: 1.5 },
@@ -501,9 +547,9 @@ Events.on(engine, 'afterUpdate', () => {
               });
             }
 
-            // Rise from floor to name position
+            // Rise from floor to name position (staggered like letter rain)
             let completed = 0;
-            for (const pair of sofiaFallPairs) {
+            sofiaFallPairs.forEach((pair, idx) => {
               gsap.fromTo(pair.el,
                 { x: pair.capturedX, y: pair.capturedY, rotation: pair.capturedRot },
                 {
@@ -512,7 +558,7 @@ Events.on(engine, 'afterUpdate', () => {
                   rotation: pair.slot.restRot,
                   duration: 0.7,
                   ease: 'power2.out',
-                  delay: Math.random() * 0.15,
+                  delay: idx * 0.045 + Math.random() * 0.03,
                   onComplete: () => {
                     completed++;
                     if (completed >= sofiaFallPairs.length) {
@@ -523,7 +569,7 @@ Events.on(engine, 'afterUpdate', () => {
                   }
                 }
               );
-            }
+            });
           }, 400);
         };
         // Start checking after a minimum fall time
@@ -593,35 +639,433 @@ function swapTo(name) {
   });
 }
 
+} // end if (!isMobile) — desktop physics
+
 initPositions();
 
-/* ── Cinematic reveal: small from bottom, scale up to center ── */
+/* ── Cinematic reveal ── */
 const sceneEl = document.getElementById('scene');
 
-// Start state: frame small near the bottom of the scene
-gsap.set(sceneEl, { opacity: 1 });
-gsap.set(frameWrap, { scale: 0.18, y: '38vh', transformOrigin: '50% 100%' });
-gsap.set(outerBorder, { opacity: 0 });
+if (isMobile) {
+  /* ═══════════════════════════════════════
+     MOBILE: Drag-to-toggle scatter swap
+     ═══════════════════════════════════════ */
 
-const revealTL = gsap.timeline({ delay: 0.3 });
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
 
-// Scale up from small-at-bottom to full size at center
-revealTL.to(frameWrap, {
-  scale: 1,
-  y: 0,
-  duration: 2.2,
-  ease: 'power2.out',
-});
+  // Precomputed letter reuse: sofia nameIndex → sybil nameIndex (and reverse)
+  // S(0→0), O(1→7), I(3→3), T(9→10), I(13→11)
+  const letterMatches = { 0: 0, 1: 7, 3: 3, 9: 10, 13: 11 };
+  const letterMatchesReverse = { 0: 0, 7: 1, 3: 3, 10: 9, 11: 13 };
 
-// Fade in the frame border as it arrives
-revealTL.to(outerBorder, {
-  opacity: 1,
-  duration: 0.8,
-  ease: 'power2.out',
-}, '-=0.8');
+  // Slot lookup by nameIndex
+  const slotByIndex = {};
 
-// Letter rain starts near the end of the scale-up
-revealTL.call(() => { startLetterRain(); }, null, 1.6);
+  for (const s of slots) slotByIndex[s.nameIndex] = s;
+
+  // ── Reveal: fade in frame + stagger letters ──
+  gsap.set(sceneEl, { opacity: 1 });
+  gsap.set(frameWrap, { scale: 1, y: 0 });
+  gsap.set(outerBorder, { opacity: 0 });
+
+  gsap.from(frameWrap, { opacity: 0, duration: 1.5, delay: 0.3, ease: 'power2.out' });
+
+  const m0 = getLetterMetrics();
+  slots.forEach((slot, idx) => {
+    gsap.set(slot.sofiaEl, { x: slot.x - m0.offsetX, y: slot.y - m0.offsetY, opacity: 0 });
+    gsap.set(slot.sybilEl, { x: slot.x - m0.offsetX, y: slot.y - m0.offsetY, opacity: 0 });
+    gsap.to(slot.sofiaEl, {
+      opacity: 0.9,
+      duration: 0.6,
+      delay: 0.8 + idx * 0.05,
+      ease: 'back.out(1.7)',
+      onComplete: () => {
+        if (idx === slots.length - 1) revealComplete = true;
+      }
+    });
+  });
+
+  // ── Toggle state ──
+  let showingSybil = false;
+  let swapping = false;
+  let dragging = false;
+  let dragX = 0, dragY = 0;
+  let dragStartX = null;
+  let dragStartY = null;
+  let pushedSlots = new Set(); // tracks which slots got pushed during this drag
+
+  const PUSH_RADIUS = 55;   // how close finger needs to be to push a letter
+  const PUSH_FORCE = 30;   // how far letters fly when pushed
+  let DRAG_TRIGGER = Math.max(80, window.innerWidth * 0.28); // viewport-relative drag threshold
+
+  // Per-slot push tracking
+  for (const s of slots) {
+    s.pushed = false;
+    s.pushX = 0;
+    s.pushY = 0;
+    s.pushRot = 0;
+  }
+
+  // ── Push letters away from drag point ──
+  function pushLettersFrom(px, py) {
+    const m = getLetterMetrics();
+    for (const slot of slots) {
+      if (slot.pushed) continue;
+      const activeEl = showingSybil ? slot.sybilEl : slot.sofiaEl;
+      const dist = Math.hypot(px - slot.x, py - slot.y);
+
+      if (dist < PUSH_RADIUS) {
+        // Start measuring drag distance from first letter contact
+        if (pushedSlots.size === 0) {
+          dragStartX = px;
+          dragStartY = py;
+        }
+        slot.pushed = true;
+        pushedSlots.add(slot);
+
+        // Push direction: away from finger, clean and directional
+        const angle = Math.atan2(slot.y - py, slot.x - px);
+        const force = PUSH_FORCE * (1 - dist / PUSH_RADIUS) + PUSH_FORCE * 0.5;
+        slot.pushX = slot.x + Math.cos(angle) * force + (Math.random() - 0.5) * 15;
+        slot.pushY = slot.y + Math.sin(angle) * force + (Math.random() - 0.5) * 15;
+        slot.pushRot = (Math.random() - 0.5) * 12;
+
+        gsap.to(activeEl, {
+          x: slot.pushX - m.offsetX,
+          y: slot.pushY - m.offsetY,
+          rotation: slot.pushRot,
+          scale: 0.85,
+          opacity: 0.6,
+          duration: 0.35,
+          ease: 'power2.out',
+          overwrite: true,
+        });
+
+      }
+    }
+
+    // Trigger swap once finger has moved 50px from where it started
+    if (dragStartX !== null && dragStartY !== null &&
+        Math.hypot(px - dragStartX, py - dragStartY) >= 50 && !swapping) {
+      dragging = false;
+      reassembleAsNewName();
+      resetPushState();
+    }
+  }
+
+  // ── Reassemble into new name (called on drag end) ──
+  function reassembleAsNewName() {
+    swapping = true;
+    const m = getLetterMetrics();
+    const toSybil = !showingSybil;
+    const matches = toSybil ? letterMatches : letterMatchesReverse;
+    const claimedTargets = new Set(Object.values(matches));
+    let completed = 0;
+    const total = slots.length;
+
+    function checkDone() {
+      completed++;
+      if (completed >= total) {
+        swapping = false;
+        // Reset all hidden elements to their home positions for next swap
+        const m2 = getLetterMetrics();
+        for (const s of slots) {
+          const hiddenEl = toSybil ? s.sofiaEl : s.sybilEl;
+          gsap.set(hiddenEl, {
+            x: s.x - m2.offsetX,
+            y: s.y - m2.offsetY,
+            rotation: s.restRot,
+            scale: 1,
+            opacity: 0,
+          });
+        }
+      }
+    }
+
+    slots.forEach((slot, idx) => {
+      const outEl = toSybil ? slot.sofiaEl : slot.sybilEl;
+      const inEl = toSybil ? slot.sybilEl : slot.sofiaEl;
+      const srcIdx = slot.nameIndex;
+      const matchTarget = matches[srcIdx];
+
+      const scatterX = slot.pushed ? slot.pushX : slot.x + (Math.random() - 0.5) * vw * 0.5;
+      const scatterY = slot.pushed ? slot.pushY : slot.y + (Math.random() - 0.5) * vh * 0.3;
+      const scatterRot = slot.pushed ? slot.pushRot : (Math.random() - 0.5) * 120;
+
+      if (matchTarget !== undefined) {
+        // MATCHED: same letter in both names — fly to new position
+        const targetSlot = slotByIndex[matchTarget];
+        const targetInEl = toSybil ? targetSlot.sybilEl : targetSlot.sofiaEl;
+
+        // 1) Fly outEl to target slot's home position
+        gsap.to(outEl, {
+          x: targetSlot.x - m.offsetX,
+          y: targetSlot.y - m.offsetY,
+          rotation: targetSlot.restRot,
+          scale: 1,
+          opacity: 0.9,
+          duration: 0.5,
+          delay: 0.1 + idx * 0.03,
+          ease: 'back.out(1.4)',
+          overwrite: true,
+          onComplete: () => {
+            // Invisible swap: hide old, show TARGET slot's inEl
+            gsap.set(outEl, { opacity: 0 });
+            gsap.set(targetInEl, {
+              x: targetSlot.x - m.offsetX,
+              y: targetSlot.y - m.offsetY,
+              rotation: targetSlot.restRot,
+              scale: 1,
+              opacity: 0.9,
+            });
+            checkDone();
+          }
+        });
+
+        // 2) Source slot's own inEl needs unmatched treatment
+        //    (unless source == target, like S(0→0) and I(3→3))
+        if (matchTarget !== srcIdx) {
+          gsap.set(inEl, {
+            x: scatterX - m.offsetX,
+            y: scatterY - m.offsetY,
+            rotation: scatterRot,
+            scale: 0.5,
+            opacity: 0,
+          });
+          const returnDelay = 0.25 + idx * 0.03 + Math.random() * 0.08;
+          gsap.to(inEl, {
+            x: slot.x - m.offsetX,
+            y: slot.y - m.offsetY,
+            rotation: slot.restRot,
+            scale: 1,
+            opacity: 0.9,
+            duration: 0.5,
+            delay: returnDelay,
+            ease: 'back.out(1.4)',
+            overwrite: true,
+          });
+        }
+
+      } else if (claimedTargets.has(srcIdx)) {
+        // This slot's target position is claimed by a matched letter flying in
+        // Drift outgoing letter away and fade
+        gsap.to(outEl, {
+          x: scatterX - m.offsetX + (Math.random() - 0.5) * 40,
+          y: scatterY - m.offsetY - 30,
+          opacity: 0,
+          scale: 0.3,
+          duration: 0.4,
+          ease: 'power2.out',
+          overwrite: true,
+          onComplete: checkDone,
+        });
+        // inEl at this slot will be positioned by the matched letter's onComplete
+
+      } else {
+        // UNMATCHED: crossfade at scattered position, then fly home
+        gsap.to(outEl, {
+          x: scatterX - m.offsetX + (Math.random() - 0.5) * 40,
+          y: scatterY - m.offsetY - 30,
+          opacity: 0,
+          scale: 0.3,
+          duration: 0.4,
+          ease: 'power2.out',
+          overwrite: true,
+        });
+
+        gsap.set(inEl, {
+          x: scatterX - m.offsetX,
+          y: scatterY - m.offsetY,
+          rotation: scatterRot,
+          scale: 0.5,
+          opacity: 0,
+        });
+
+        const returnDelay = 0.25 + idx * 0.03 + Math.random() * 0.08;
+        gsap.to(inEl, {
+          x: slot.x - m.offsetX,
+          y: slot.y - m.offsetY,
+          rotation: slot.restRot,
+          scale: 1,
+          opacity: 0.9,
+          duration: 0.5,
+          delay: returnDelay,
+          ease: 'back.out(1.4)',
+          overwrite: true,
+          onComplete: checkDone,
+        });
+      }
+    });
+
+    // Crossfade background
+    gsap.to(bgSybilEl, {
+      opacity: toSybil ? 1 : 0,
+      duration: 0.8,
+      delay: 0.1,
+      ease: 'power2.inOut',
+      overwrite: true,
+    });
+
+    showingSybil = toSybil;
+  }
+
+  // ── Snap un-pushed letters back to rest (called when drag doesn't trigger swap) ──
+  function snapBack() {
+    const m = getLetterMetrics();
+    for (const slot of slots) {
+      if (!slot.pushed) continue;
+      const activeEl = showingSybil ? slot.sybilEl : slot.sofiaEl;
+      gsap.to(activeEl, {
+        x: slot.x - m.offsetX,
+        y: slot.y - m.offsetY,
+        rotation: slot.restRot,
+        scale: 1,
+        opacity: 0.9,
+        duration: 0.4,
+        ease: 'back.out(1.7)',
+        overwrite: true,
+      });
+    }
+  }
+
+  // ── Reset push state ──
+  function resetPushState() {
+    for (const s of slots) {
+      s.pushed = false;
+      s.pushX = 0;
+      s.pushY = 0;
+      s.pushRot = 0;
+    }
+    pushedSlots.clear();
+  }
+
+  // ── End drag: snap back if swap didn't auto-trigger ──
+  function endDrag() {
+    if (!dragging && !pushedSlots.size) return;
+    dragging = false;
+
+    if (pushedSlots.size > 0 && !swapping) {
+      // Not enough pushed to auto-trigger — snap back
+      snapBack();
+    } else if (!swapping) {
+      snapBack();
+    }
+    resetPushState();
+    dragStartX = null;
+    dragStartY = null;
+  }
+
+  // ── Touch handlers ──
+  letterField.addEventListener('touchstart', (e) => {
+    if (swapping) return;
+    e.preventDefault();
+    dragging = true;
+    const t = e.touches[0];
+    dragX = t.clientX;
+    dragY = t.clientY;
+    dragStartX = null;
+    dragStartY = null;
+    resetPushState();
+  }, { passive: false });
+
+  letterField.addEventListener('touchmove', (e) => {
+    if (!dragging || swapping) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    dragX = t.clientX;
+    dragY = t.clientY;
+    pushLettersFrom(dragX, dragY);
+  }, { passive: false });
+
+  letterField.addEventListener('touchend', () => {
+    endDrag();
+  });
+
+  // ── Mouse handlers (for desktop emulation) ──
+  let mouseDown = false;
+
+  letterField.addEventListener('mousedown', (e) => {
+    if (swapping) return;
+    mouseDown = true;
+    dragging = true;
+    dragX = e.clientX;
+    dragY = e.clientY;
+    dragStartX = null;
+    dragStartY = null;
+    resetPushState();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!mouseDown || !dragging || swapping) return;
+    dragX = e.clientX;
+    dragY = e.clientY;
+    pushLettersFrom(dragX, dragY);
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!mouseDown) return;
+    mouseDown = false;
+    endDrag();
+  });
+
+  // ── Mobile resize ──
+  window.addEventListener('resize', () => {
+    if (swapping) return;
+    DRAG_TRIGGER = Math.max(80, window.innerWidth * 0.28);
+    calcPositions();
+    const m = getLetterMetrics();
+    for (const slot of slots) {
+      const activeEl = showingSybil ? slot.sybilEl : slot.sofiaEl;
+      const inactiveEl = showingSybil ? slot.sofiaEl : slot.sybilEl;
+      gsap.set(activeEl, { x: slot.x - m.offsetX, y: slot.y - m.offsetY });
+      gsap.set(inactiveEl, { opacity: 0 });
+    }
+  });
+
+} else {
+  /* ═══════════════════════════════════════
+     DESKTOP: Original cinematic reveal
+     ═══════════════════════════════════════ */
+
+  // Start state: frame small near the bottom of the scene
+  gsap.set(sceneEl, { opacity: 1 });
+  gsap.set(frameWrap, { scale: 0.18, y: '38vh', transformOrigin: '50% 100%' });
+  gsap.set(outerBorder, { opacity: 0 });
+
+  const revealTL = gsap.timeline({ delay: 0.3 });
+
+  // Scale up from small-at-bottom to full size at center
+  revealTL.to(frameWrap, {
+    scale: 1,
+    y: 0,
+    duration: 2.2,
+    ease: 'power2.out',
+  });
+
+  // Fade in the frame border as it arrives
+  revealTL.to(outerBorder, {
+    opacity: 1,
+    duration: 0.8,
+    ease: 'power2.out',
+  }, '-=0.8');
+
+  // Letter rain starts near the end of the scale-up
+  revealTL.call(() => { startLetterRain(); }, null, 1.6);
+
+  /* ── Desktop resize ── */
+  window.addEventListener('resize', () => {
+    if (!revealComplete) return;
+    calcPositions();
+    const m = getLetterMetrics();
+    for (const slot of slots) {
+      const activeEl = currentName === 'sofia' ? slot.sofiaEl : slot.sybilEl;
+      gsap.set(activeEl, { x: slot.x - m.offsetX, y: slot.y - m.offsetY });
+      const inactiveEl = currentName === 'sofia' ? slot.sybilEl : slot.sofiaEl;
+      gsap.set(inactiveEl, { x: slot.x - m.offsetX, y: slot.y - m.offsetY - m.swapDist, opacity: 0 });
+    }
+  });
+}
 
 /* ── Floating dust particles ── */
 (function () {
@@ -636,7 +1080,7 @@ revealTL.call(() => { startLetterRain(); }, null, 1.6);
   resize();
   window.addEventListener('resize', resize);
 
-  const NUM = 65;
+  const NUM = isMobile ? 30 : 65;
   const particles = [];
 
   for (let i = 0; i < NUM; i++) {
@@ -644,20 +1088,18 @@ revealTL.call(() => { startLetterRain(); }, null, 1.6);
     particles.push({
       x: Math.random() * W,
       y: Math.random() * H,
-      r: 0.4 + Math.random() * 1.25,           // radius 0.4-1.6px
-      vx: (Math.random() - 0.5) * 0.15,        // very slow horizontal drift
-      vy: -0.05 - Math.random() * 0.12,         // slow upward float (like heated dust)
-      alpha: 0.08 + Math.random() * 0.18,       // subtle opacity
-      // warm tones: mix between pale cream and warm amber
-      cr: 200 + Math.floor(warmth * 55),         // 200-255
-      cg: 180 + Math.floor(warmth * 40),         // 180-220
-      cb: 150 + Math.floor(warmth * 30),          // 150-180
-      drift: Math.random() * Math.PI * 2,        // phase for sinusoidal sway
+      r: 0.4 + Math.random() * 1.25,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: -0.05 - Math.random() * 0.12,
+      alpha: 0.08 + Math.random() * 0.18,
+      cr: 200 + Math.floor(warmth * 55),
+      cg: 180 + Math.floor(warmth * 40),
+      cb: 150 + Math.floor(warmth * 30),
+      drift: Math.random() * Math.PI * 2,
       driftSpeed: 0.003 + Math.random() * 0.006,
       driftAmp: 0.2 + Math.random() * 0.4,
       rot: Math.random() * Math.PI * 2,
       rotSpeed: (Math.random() - 0.5) * 0.008,
-      // irregular shape: 5-7 points with random radii
       shape: (() => {
         const n = 5 + Math.floor(Math.random() * 3);
         return Array.from({ length: n }, (_, j) => ({
@@ -676,7 +1118,6 @@ revealTL.call(() => { startLetterRain(); }, null, 1.6);
       p.x += p.vx + Math.sin(p.drift) * p.driftAmp;
       p.y += p.vy;
 
-      // wrap around edges
       if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
       if (p.x < -5) p.x = W + 5;
       if (p.x > W + 5) p.x = -5;
@@ -688,7 +1129,6 @@ revealTL.call(() => { startLetterRain(); }, null, 1.6);
       ctx.beginPath();
       const pts = p.shape;
       const n = pts.length;
-      // smooth closed blob via midpoints between shape vertices
       const px0 = Math.cos(pts[0].angle) * p.r * pts[0].wobble;
       const py0 = Math.sin(pts[0].angle) * p.r * pts[0].wobble;
       const px1 = Math.cos(pts[1 % n].angle) * p.r * pts[1 % n].wobble;
@@ -713,16 +1153,3 @@ revealTL.call(() => { startLetterRain(); }, null, 1.6);
   }
   requestAnimationFrame(tick);
 })();
-
-/* ── Resize ── */
-window.addEventListener('resize', () => {
-  if (!revealComplete) return; // during reveal, physics adapts via walls
-  calcPositions();
-  const m = getLetterMetrics();
-  for (const slot of slots) {
-    const activeEl = currentName === 'sofia' ? slot.sofiaEl : slot.sybilEl;
-    gsap.set(activeEl, { x: slot.x - m.offsetX, y: slot.y - m.offsetY });
-    const inactiveEl = currentName === 'sofia' ? slot.sybilEl : slot.sofiaEl;
-    gsap.set(inactiveEl, { x: slot.x - m.offsetX, y: slot.y - m.offsetY - m.swapDist, opacity: 0 });
-  }
-});
