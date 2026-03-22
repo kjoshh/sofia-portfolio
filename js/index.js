@@ -1015,9 +1015,13 @@ if (isMobile) {
   });
 
   // ── Tap/swipe/scroll anywhere to swap (except nav) ──
+  let lastTapTime = 0;
   function handleTap(e) {
     if (!revealComplete) return;
     if (e.target.closest('.mob-sheet')) return;
+    const now = Date.now();
+    if (e.type === 'click' && now - lastTapTime < 500) return;
+    if (e.type === 'touchend') lastTapTime = now;
     swapTo(currentName === 'sofia' ? 'sybil' : 'sofia');
   }
   document.addEventListener('touchend', handleTap);
