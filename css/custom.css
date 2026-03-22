@@ -349,8 +349,8 @@ body.is-transitioning * {
   position: absolute;
   top: 43%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(-90deg);
-  width: 235px;
+  transform: translate(-50%, -50%) rotate(0deg);
+  width: 160px;
   margin-top: -8px;
 }
 
@@ -696,15 +696,16 @@ body.about-page {
   letter-spacing: 0.15em;
   color: #e7e7e7;
   margin-bottom: 0;
+  cursor: pointer;
   font-family: Post;
   cursor: pointer;
   opacity: 1;
-  transition: opacity 0.2s ease;
+  transition: transform 0.3s ease;
   user-select: none;
 }
 
 .about-section-title:hover {
-  opacity: 1;
+  transform: translateX(6px);
 }
 
 .about-section-title.open {
@@ -721,6 +722,19 @@ body.about-page {
   opacity: 0;
   transform: translateY(8px);
   margin: 0 0 4px;
+  padding-left: 1.4em;
+  position: relative;
+}
+
+.about-section-body p::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.4em;
+  width: 0.8em;
+  height: 0.8em;
+  background: url('../brand_assets/starbright.png') center/contain no-repeat;
+  opacity: 0.7;
 }
 
 .bottom-vignette {
@@ -764,16 +778,37 @@ text-decoration: none;
   cursor: pointer;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 0, 0, 0.6), 0 0 80px rgba(0, 0, 0, 0.4);
 }
-
+.corner:hover{
+  opacity: 0.7;
+}
 .corner+.corner::before {
-  content: '|';
-  opacity: 0.35;
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
   margin: 0 25px;
+  background: url('../brand_assets/starbright.png') center/contain no-repeat;
+  opacity: 0.7;
+  vertical-align: middle;
 }
 
 #italy-time {
   opacity: 1;
 }
+.corner-time {
+  display: inline-block;
+  min-width: 12.5ch;
+  text-align: left;
+  overflow: hidden;
+  vertical-align: bottom;
+  position: relative;
+  pointer-events: none;
+}
+.corner-time-inner {
+  display: block;
+  opacity: 1;
+}
+
 
 /* Hide mobile toggle on desktop */
 .mobile-menu-toggle {
@@ -940,37 +975,6 @@ text-decoration: none;
   /* Disable overflow clip so logo text doesn't cut off */
   .char-wrapper {
     overflow: visible;
-  }
-
-  /* ── Vignette: darken bottom so the pill nav reads cleanly ── */
-  body.body::after {
-    content: '';
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 220px;
-    background: linear-gradient(to top,
-        rgba(15, 14, 12, 0.72) 0%,
-        rgba(15, 14, 12, 0.35) 55%,
-        transparent 100%);
-    pointer-events: none;
-    z-index: 10;
-  }
-
-  /* Also darken top slightly for readability */
-  body.body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 120px;
-    background: linear-gradient(to bottom,
-        rgba(15, 14, 12, 0.45) 0%,
-        transparent 100%);
-    pointer-events: none;
-    z-index: 10;
   }
 
   /* ── Mobile bottom sheet nav ── */
@@ -1209,7 +1213,7 @@ text-decoration: none;
   /* Archive / About links */
   .mob-sheet-link {
     font-family: Alegreya, serif;
-    font-size: 15px;
+    font-size: 16px;
     letter-spacing: 0.04em;
     color: rgba(233, 229, 221, 0.55);
     text-decoration: none;
@@ -1326,6 +1330,7 @@ text-decoration: none;
     padding: 48px 24px 0;
     font-size: 17px;
     line-height: 1.75;
+    margin-bottom: 20px;
   }
 
   .about-bio {
@@ -1970,7 +1975,7 @@ text-decoration: none;
     display: flex;
     flex-wrap: wrap;
     position: fixed;
-    bottom: 24px;
+    bottom: 4px;
     left: 50%;
     transform: translateX(-50%);
     gap: 0;
@@ -2017,11 +2022,11 @@ text-decoration: none;
     font-size: 11.5px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(233, 229, 221, 0.28);
+    color: rgba(233, 229, 221, 0.5);
     pointer-events: none;
     padding-bottom: 6px;
-    border-bottom: 1px solid rgba(233, 229, 221, 0.07);
     margin-bottom: 2px;
+    transition: all 200ms ease;
   }
 
   .mob-proj-tabs-row {
@@ -2208,6 +2213,7 @@ html:has(body.landing-page) {
   max-height: 75vh;
   z-index: 2;
   overflow: hidden;
+  cursor: pointer;
 }
 .frame-bg-hover {
   position: absolute;
@@ -2221,13 +2227,14 @@ html:has(body.landing-page) {
 }
 .frame-photo {
   position: absolute;
-  inset: 5% 3%;
+  inset: 4% 3%;
   z-index: 0;
+
   background: #1e1e1b url("../images/0017_17A.jpg") center / cover no-repeat;
 }
 .frame-photo-sybil {
   position: absolute;
-  inset: 25% 25%;
+  inset: 24% 24%;
   z-index: 1;
   background: #1e1e1b url("../images/Sybilbg.jpg") center / cover no-repeat;
   opacity: 0;
@@ -2236,12 +2243,12 @@ html:has(body.landing-page) {
 }
 .frame-border-hover {
   position: absolute;
-  inset: 21% 23%;
+  inset: 19% 21%;
   margin-bottom: 5%;
   margin-right: 2%;
   z-index: 2;
   pointer-events: none;
-  clip-path: polygon(50% 50%, 0% 100%, 0% 100%);
+  opacity: 0;
 }
 .frame-border-hover img {
   width: 100%;
@@ -2366,4 +2373,256 @@ html:has(body.landing-page) {
   inset: 0;
   z-index: 9996;
   pointer-events: none;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   RECOVERED RESPONSIVE STYLES — from Cursor backup (tEAI.css)
+   Review and remove this comment block when confirmed working.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Lightbox mobile ── */
+@media (max-width: 767px) {
+  .lb-img {
+    max-width: 96vw;
+    max-height: 80vh;
+  }
+  .lb-overlay.open .lb-btn {
+    opacity: 1;
+  }
+  .lb-prev {
+    left: 4px;
+    top: auto;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    transform: none;
+  }
+  .lb-next {
+    right: 4px;
+    top: auto;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    transform: none;
+  }
+  .lb-btn {
+    padding: 16px;
+  }
+  .lb-btn img {
+    width: 18px;
+    height: 18px;
+    opacity: 0.45;
+  }
+  .lb-close {
+    top: 12px;
+    right: 12px;
+  }
+  .lb-close img {
+    width: 20px;
+    height: 20px;
+  }
+  .lb-counter {
+    bottom: calc(36px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+}
+
+/* ── About page: responsive clamp() typography (desktop) ── */
+.greet-line1 {
+  font-size: clamp(20px, 1.7vw, 30px);
+}
+.greet-line2 {
+  font-size: clamp(15px, 1.25vw, 18px);
+}
+@media (min-width: 992px) {
+  .about-right {
+    width: clamp(260px, 28%, 420px);
+    font-size: clamp(15px, 1.25vw, 18px);
+    padding: clamp(16px, 2vw, 24px) clamp(18px, 2vw, 28px);
+  }
+}
+.cornern {
+  font-size: clamp(14px, 1.25vw, 18px);
+  padding: clamp(12px, 1.5vw, 19px) 2vw;
+}
+
+/* Intermediate desktop: tighten layout between 992–1200px */
+@media (max-width: 1200px) and (min-width: 992px) {
+  .about-greeting { left: 8%; }
+  .about-right { right: 5%; width: 32%; }
+}
+
+/* Large desktop: push bio left, centered between person & edge */
+@media (min-width: 1650px) {
+  .about-right { right: 15%; }
+}
+
+/* Short viewports: align bio panel with greeting */
+@media (max-height: 600px) and (min-width: 992px) {
+  .about-right { top: 23%; max-height: calc(100vh - 23% - 40px); }
+  .about-greeting { top: 18%; }
+}
+
+/* ── About page mobile overrides (within 991px) ── */
+@media (max-width: 991px) {
+
+  .about-hero-mobile .bottom-vignette {
+    height: 45vh;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
+  }
+
+  .about-greeting {
+    bottom: clamp(100px, 15vh, 140px);
+    left: clamp(24px, 5vw, 48px);
+    text-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px;
+  }
+
+  .greet-line1 {
+    font-size: clamp(30px, 5vw, 44px);
+  }
+
+  .greet-line2 {
+    font-size: clamp(17px, 2.2vw, 20px);
+  }
+
+  .about-right {
+    text-shadow: none;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+  }
+
+  .about-right::before,
+  .about-greeting::before {
+    display: none;
+  }
+
+  .cornern {
+    padding: 0 24px calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .contact-row-num {
+    width: 70px;
+  }
+
+  .contact-footnote {
+    display: none;
+  }
+
+  body.entrance-revealed.about-page .contact-row,
+  body.entrance-revealed.about-page .contact-footnote {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Mobile project tabs: font + border tweaks */
+  .mob-proj-tab {
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .mob-proj-title {
+    font-size: 15px;
+    padding-bottom: 5px;
+  }
+
+  /* Layout-0 bare tabs — no pill, just floating text */
+  .mob-proj-tabs.layout-0-tabs {
+    background: transparent;
+    border-color: transparent;
+    padding: 0;
+  }
+
+  .mob-proj-tabs.layout-0-tabs::before,
+  .mob-proj-tabs.layout-0-tabs::after {
+    opacity: 0;
+  }
+
+  .mob-proj-tabs.layout-0-tabs .mob-proj-title {
+    border-bottom-color: transparent;
+    margin-bottom: 6px;
+    font-size: 18.5px;
+  }
+
+  .mob-proj-tabs.layout-0-tabs .mob-proj-tabs-row {
+    gap: 8px;
+  }
+
+  .mob-proj-tabs.layout-0-tabs .mob-proj-tab {
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    padding: 6px 14px;
+    color: rgba(233, 229, 221, 0.7);
+    border: 1px solid rgba(233, 229, 221, 0.1);
+    border-radius: 13px;
+  }
+
+  /* ── Mobile layout-0 (project landing) ── */
+  .gall3ry.layout-0-gall3ry {
+    overflow: hidden;
+  }
+
+  .gall3ry-container:has(.layout-0-gall3ry) {
+    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .gall3ry.layout-0-gall3ry .imgholder {
+    top: 38%;
+    width: clamp(79.2px, 12vw, 105.6px);
+    margin-top: calc(-0.5 * clamp(79.2px, 12vw, 105.6px) * 4 / 3);
+    margin-left: calc(-0.5 * clamp(79.2px, 12vw, 105.6px));
+  }
+
+  #img100 {
+    top: 38%;
+    width: clamp(120px, 22vw, 180px);
+  }
+}
+
+/* ── Landing page mobile ── */
+@media screen and (max-width: 991px) {
+  body.landing-page .scene {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    width: 100vw;
+    padding: 0;
+  }
+  body.landing-page .frame-wrap {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    aspect-ratio: unset;
+    cursor: default;
+    overflow: hidden;
+    z-index: 1;
+  }
+  body.landing-page .frame-photo {
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+  }
+  body.landing-page .frame-photo-sybil {
+    inset: 0;
+    margin: 0;
+    background-size: cover;
+    background-position: center;
+    transition: opacity 0.6s ease;
+  }
+  body.landing-page .frame-border,
+  body.landing-page .frame-border-hover,
+  body.landing-page .frame-bg-hover {
+    display: none;
+  }
+  body.landing-page .letter-field {
+    pointer-events: auto;
+    touch-action: none;
+  }
+  body.landing-page .letter-el {
+    pointer-events: none;
+  }
+  body.landing-page .dust {
+    opacity: 0.08;
+  }
 }

@@ -63,16 +63,8 @@ function hoverIn() {
     // Sybil photo fade in
     gsap.to(bgSybilEl, { opacity: 1, duration: 0.4, delay: 0.35, ease: 'power4.in', x:20, overwrite: true });
 
-    // Border clock-sweep in
-    sweepObj.progress = 0;
-    sweepTween = gsap.to(sweepObj, {
-      progress: 1,
-      duration: 0.75,
-      delay: 0.35,
-      ease: 'power2.out',
-      onUpdate: () => { frameBorderEl.style.clipPath = clockWipe(sweepObj.progress); }
-    });
-    gsap.to(frameBorderEl, { x: 20, duration: 0.4, delay: 0.35, ease: 'power4.in', overwrite: true });
+    // Border fade + slide in (same as sybil photo)
+    gsap.to(frameBorderEl, { opacity: 1, x: 20, duration: 0.4, delay: 0.35, ease: 'power4.in', overwrite: true });
   }
 
   // Letters swap every hover
@@ -428,12 +420,7 @@ Events.on(engine, 'afterUpdate', () => {
         // Fade out sybil image overlay + border
         gsap.to(bgSybilEl, { opacity: 0, duration: 0.3, ease: 'power2.out', x: 0, overwrite: true });
         gsap.to(bgHoverEl, { clipPath: 'inset(0 100% 0 0)', duration: 0.4, ease: 'power2.out', overwrite: true });
-        sweepObj.progress = 1;
-        gsap.to(sweepObj, {
-          progress: 0, duration: 0.4, ease: 'power2.out',
-          onUpdate: () => { frameBorderEl.style.clipPath = clockWipe(sweepObj.progress); }
-        });
-        gsap.to(frameBorderEl, { x: 0, duration: 0.4, ease: 'power2.out', overwrite: true });
+        gsap.to(frameBorderEl, { opacity: 0, x: 0, duration: 0.4, ease: 'power2.out', overwrite: true });
         firstHoverDone = false;
 
         const m = getLetterMetrics();

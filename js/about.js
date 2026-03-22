@@ -307,7 +307,7 @@ document.querySelectorAll(".about-section-title").forEach(title => {
 
 /* ── Entrance reveal animation ── */
 (function entranceReveal() {
-  const isMobile = window.innerWidth < 768;
+  const isMobile = window.innerWidth <= 991;
   const aboutBg = document.querySelector(".about-bg");
   const greeting = document.querySelector(".about-greeting");
   const scrollHint = document.querySelector(".about-scroll-hint");
@@ -324,18 +324,55 @@ document.querySelectorAll(".about-section-title").forEach(title => {
     0
   );
 
-  // Step 2: Greeting text fades in
-  tl.fromTo(greeting,
-    { opacity: 0 },
-    { opacity: 1, duration: 0.8, ease: "power3.out" },
-    0.4
-  );
+  // Step 2: Greeting text — vertical cut reveal per character
+  gsap.set(greeting, { opacity: 1 });
+  const greetLine1 = document.querySelector(".greet-line1");
+  const greetLine2 = document.querySelector(".greet-line2");
+
+  function verticalCutReveal(el) {
+    const text = el.textContent;
+    el.textContent = '';
+    el.style.display = 'flex';
+    el.style.flexWrap = 'wrap';
+    const wrappers = [];
+    [...text].forEach(ch => {
+      const outer = document.createElement('span');
+      outer.style.display = 'inline-block';
+      outer.style.overflow = 'hidden';
+      outer.style.verticalAlign = 'bottom';
+      if (ch === ' ') { outer.innerHTML = '&nbsp;'; el.appendChild(outer); return; }
+      const inner = document.createElement('span');
+      inner.textContent = ch;
+      inner.style.display = 'inline-block';
+      inner.style.transform = 'translateY(110%)';
+      outer.appendChild(inner);
+      el.appendChild(outer);
+      wrappers.push(inner);
+    });
+    return wrappers;
+  }
+
+  const chars1 = verticalCutReveal(greetLine1);
+  const chars2 = verticalCutReveal(greetLine2);
+
+  tl.to(chars1, {
+    y: 0, duration: 0.7, ease: "power3.out",
+    stagger: 0.025
+  }, 0.5);
+
+  const line2Start = 0.5 + chars1.length * 0.025 * 0.5;
+  tl.to(chars2, {
+    y: 0, duration: 0.7, ease: "power3.out",
+    stagger: 0.02
+  }, line2Start + 0.15);
+
+  const greetEnd = line2Start + 0.15 + chars2.length * 0.02 + 0.3;
 
   // Step 3: Scroll hint fades in
   tl.fromTo(scrollHint,
     { opacity: 0 },
     { opacity: 1, duration: 0.5, ease: "power2.out" },
-    0.8
+    greetEnd - 0.2
   );
 
   if (!isMobile) {
@@ -343,7 +380,7 @@ document.querySelectorAll(".about-section-title").forEach(title => {
     tl.fromTo(mainNav,
       { opacity: 0 },
       { opacity: 1, duration: 0.7, ease: "power3.out" },
-      0.5
+      greetEnd - 0.4
     );
   } else {
     // Mobile: mob-sheet fades in
@@ -351,28 +388,33 @@ document.querySelectorAll(".about-section-title").forEach(title => {
       tl.fromTo(mobSheet,
         { opacity: 0 },
         { opacity: 1, duration: 0.5, ease: "power3.out" },
-        0.5
+        greetEnd - 0.4
       );
     }
   }
 
-  // Step 4: Content section fades in
-  tl.fromTo(contentSection,
+  // Step 4: Content section appears instantly, about-right fades in
+  const contentStart = greetEnd - 0.5;
+  tl.set(contentSection, { opacity: 1 }, contentStart);
+  const aboutRight = document.querySelector(".about-right");
+  tl.fromTo(aboutRight,
     { opacity: 0 },
-    { opacity: 1, duration: 0.8, ease: "power3.out" },
-    0.6
+    { opacity: 1, duration: 0.6, ease: "power3.out" },
+    contentStart
   );
 
-  // Step 5: Corner elements stagger in
-  tl.from(".corner", {
-    opacity: 0, duration: 0.6,
-    stagger: 0.1, ease: "power2.out",
-  }, "-=0.3");
+  // Step 5: Corner footer fades in
+  const cornern = document.querySelector(".cornern");
+  tl.fromTo(cornern,
+    { opacity: 0 },
+    { opacity: 1, duration: 0.6, ease: "power3.out" },
+    contentStart
+  );
 
   // Mobile contact rows
   if (isMobile) {
     tl.to(".contact-row, .contact-footnote", {
-      opacity: 1, duration: 0.55,
+      opacity: 1, y: 0, duration: 0.55,
       stagger: 0.07, ease: "power2.out",
     }, "-=0.3");
   }
@@ -380,7 +422,7 @@ document.querySelectorAll(".about-section-title").forEach(title => {
   // Cleanup: mark body so CSS overrides initial hidden states
   tl.call(() => {
     document.body.classList.add("entrance-revealed");
-    gsap.set([aboutBg, greeting, scrollHint, mainNav, contentSection], { clearProps: "opacity,scale" });
+    gsap.set([aboutBg, greeting, scrollHint, mainNav], { clearProps: "opacity,scale" });
     if (mobSheet) gsap.set(mobSheet, { clearProps: "opacity" });
     /* Enable WebGL shader after reveal completes */
     if (window._webglRevealDone !== undefined) {
@@ -423,4 +465,63 @@ document.querySelectorAll(".about-section-title").forEach(title => {
   setInterval(tick, 1000);
 })();
 
+/* ── Copy-to-clipboard with GSAP word-rotate ── */
+(function () {
+  const timeCorner = document.querySelector('.corner-time');
+  if (!timeCorner || typeof gsap === 'undefined') return;
 
+  let current = timeCorner.querySelector('.corner-time-inner');
+  const originalHTML = current.innerHTML;
+  let restoreTimer = null;
+  let animating = false;
+  let hovering = false;
+
+  function rotate(newContent, isHTML, cb) {
+    if (animating) return;
+    animating = true;
+
+    const incoming = document.createElement('span');
+    incoming.className = 'corner-time-inner';
+    if (isHTML) incoming.innerHTML = newContent;
+    else incoming.textContent = newContent;
+    timeCorner.appendChild(incoming);
+    gsap.set(incoming, { y: -50, opacity: 0, position: 'absolute', top: 0, left: 0 });
+
+    const old = current;
+    gsap.to(old, {
+      y: 50, opacity: 0, duration: 0.25, ease: 'power2.in',
+      onComplete() { old.remove(); }
+    });
+    gsap.to(incoming, {
+      y: 0, opacity: 1, duration: 0.25, ease: 'power2.out',
+      onComplete() {
+        gsap.set(incoming, { clearProps: 'position,top,left' });
+        current = incoming;
+        animating = false;
+        if (cb) cb();
+      }
+    });
+  }
+
+  document.querySelectorAll('.corner.copyable').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      hovering = true;
+      clearTimeout(restoreTimer);
+      rotate('Click to copy', false);
+    });
+    el.addEventListener('mouseleave', () => {
+      hovering = false;
+      clearTimeout(restoreTimer);
+      restoreTimer = setTimeout(() => {
+        if (hovering || animating) return;
+        rotate(originalHTML, true);
+      }, 150);
+    });
+    el.addEventListener('click', () => {
+      navigator.clipboard.writeText(el.dataset.copy).then(() => {
+        clearTimeout(restoreTimer);
+        rotate('Copied!', false);
+      });
+    });
+  });
+})();
