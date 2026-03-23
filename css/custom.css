@@ -2187,8 +2187,7 @@ body.entrance-revealed.about-page .about-content-mobile {
 /* Prevent white flash between page loads */
 html {
   background: #292823;
-  overflow: hidden;
-  height: 100%;
+  overflow-x: clip;
   overscroll-behavior: none;
 }
 
