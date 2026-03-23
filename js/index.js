@@ -261,41 +261,45 @@ function buildWalls() {
   ));
 }
 buildWalls();
-/* ── Desktop resize: debounce, then re-rain ── */
+/* ── Desktop resize: clean up immediately, re-rain after debounce ── */
 let _resizeTimer;
+let _resizeCleaned = false;
 window.addEventListener('resize', () => {
   if (flushing) return;
   clearTimeout(_resizeTimer);
 
-  // Immediately hide letters while resizing
-  for (const slot of slots) {
-    gsap.set(slot.sofiaEl, { opacity: 0 });
-    gsap.set(slot.sybilEl, { opacity: 0 });
-  }
+  // On first resize event: immediately wipe everything
+  if (!_resizeCleaned) {
+    _resizeCleaned = true;
 
-  _resizeTimer = setTimeout(() => {
-    // Clean up debris clones
+    // Remove debris clones + physics
     for (const dp of debrisPairs) {
       World.remove(world, dp.body);
       dp.el.remove();
     }
     debrisPairs.length = 0;
 
-    // Clean up any active sofia-fall bodies
+    // Remove sofia-fall bodies
     for (const pair of sofiaFallPairs) {
-      if (!pair.settled && world.bodies.includes(pair.body)) {
+      if (!pair.settled && world.bodies.includes(pair.body))
         World.remove(world, pair.body);
-      }
     }
     sofiaFallPairs.length = 0;
 
-    // Clean up any active reveal bodies
+    // Remove reveal bodies
     for (const pair of revealPairs) {
-      if (!pair.settled && world.bodies.includes(pair.body)) {
+      if (!pair.settled && world.bodies.includes(pair.body))
         World.remove(world, pair.body);
-      }
     }
     revealPairs.length = 0;
+
+    // Kill tweens and hide all letters
+    for (const slot of slots) {
+      gsap.killTweensOf(slot.sofiaEl);
+      gsap.killTweensOf(slot.sybilEl);
+      gsap.set(slot.sofiaEl, { opacity: 0 });
+      gsap.set(slot.sybilEl, { opacity: 0 });
+    }
 
     // Reset state
     currentName = 'sofia';
@@ -310,12 +314,13 @@ window.addEventListener('resize', () => {
     gsap.set(bgSybilEl, { opacity: 0, x: 0 });
     gsap.set(bgHoverEl, { clipPath: 'inset(0 100% 0 0)' });
     gsap.set(frameBorderEl, { opacity: 0, x: 0 });
+  }
 
-    // Rebuild walls and recalculate positions
+  // After resize stops: rebuild and re-rain
+  _resizeTimer = setTimeout(() => {
+    _resizeCleaned = false;
     buildWalls();
     initPositions();
-
-    // Re-trigger physics rain
     startLetterRain();
   }, 300);
 });
