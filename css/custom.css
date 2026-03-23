@@ -2191,6 +2191,23 @@ html {
   overscroll-behavior: none;
 }
 
+/* Make body the scroll container on archive + project pages so content
+   clips at the viewport edge and can't extend behind iOS Safari chrome
+   (status bar / bottom pill) where grain overlay can't reach */
+@media (max-width: 991px) {
+  html:has(body.archive-page),
+  html:has(body > .gall3ry-container) {
+    height: 100%;
+    overflow: hidden;
+  }
+  body.archive-page,
+  body:has(> .gall3ry-container) {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* ══════════════════════════════════════════
    Landing Page (index.html)
    ══════════════════════════════════════════ */

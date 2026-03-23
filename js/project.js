@@ -53,7 +53,8 @@ document.querySelectorAll(".imgholder").forEach(el => {
 
 
 /* ── Lenis smooth scroll ── */
-const lenis = new Lenis();
+const isMobileLenis = window.matchMedia('(max-width: 991px)').matches;
+const lenis = new Lenis(isMobileLenis ? { wrapper: document.body } : {});
 function raf(time) {
   lenis.raf(time);
   requestAnimationFrame(raf);
