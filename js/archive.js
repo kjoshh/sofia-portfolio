@@ -1,5 +1,5 @@
 /* ── Lenis smooth scroll ── */
-const lenis = new Lenis({ wrapper: document.body });
+const lenis = new Lenis();
 (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(0);
 
 

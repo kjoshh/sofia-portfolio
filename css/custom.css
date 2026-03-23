@@ -309,6 +309,11 @@ body.is-transitioning * {
   display: block;
 }
 
+.gall3ry-container:has(.layout-2-gall3ry) {
+  height: auto;
+  min-height: 100vh;
+}
+
 .gall3ry {
   grid-column-gap: 4px;
   grid-row-gap: 4px;
@@ -1737,11 +1742,6 @@ text-decoration: none;
 .body {
   background-color: #292823;
   overflow-x: clip;
-  /* Make body the scroll container so content is clipped at viewport edge
-     and can't extend behind iOS Safari chrome (status bar / bottom pill) */
-  height: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 
