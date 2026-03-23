@@ -187,8 +187,6 @@ function applyFontStagger(el) {
   if (logoLink) {
     const top    = logoLink.querySelector('.nav-logo-top');    // Sofia (default visible)
     const bottom = logoLink.querySelector('.nav-logo-bottom'); // Sybil
-    const isIndex = ['', 'index.html'].includes(window.location.pathname.split('/').pop());
-
     if (top) {
       if (bottom) gsap.set(bottom, { display: 'none' });
 
