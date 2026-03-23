@@ -286,6 +286,10 @@ function switchLayout(newLayout) {
       easing: t => 1 - Math.pow(1 - t, 3),
       onComplete: () => switchLayoutHandler(newLayout),
     });
+  } else if (isMobile() && newLayout === "layout-2-gall3ry" && lenis.scroll > 0) {
+    // Entering sequence on mobile with scroll > 0: reset instantly before transition
+    lenis.scrollTo(0, { immediate: true });
+    switchLayoutHandler(newLayout);
   } else {
     switchLayoutHandler(newLayout);
   }
@@ -308,6 +312,16 @@ function switchLayoutHandler(newLayout) {
   // Kill any in-progress animations and clear all stale inline styles before Flip measures
   gsap.killTweensOf(imgholders);
   gsap.set(imgholders, { clearProps: "all" });
+
+  // Safety: if a previous transition was interrupted mid-Flip, Lenis may still be stopped
+  // and container may still have a stale inline height lock. Clean up before proceeding.
+  const container = document.querySelector(".gall3ry-container");
+  const isMob = isMobile();
+  if (isMob) {
+    lenis.start();
+    container.style.height = "";
+    container.style.overflow = "";
+  }
 
   // On mobile, leaving Info tab: images are display:none so there's no Flip "from" position.
   // Fade text out immediately, delay class change so images only appear after text clears.
@@ -383,11 +397,13 @@ function switchLayoutHandler(newLayout) {
     gsap.set(img100, { opacity: 0 });
   }
 
-  // Lock container height on mobile before class swap so :has(.layout-0) → height:auto
-  // transition doesn't cause Flip to measure wrong target positions
-  const container = document.querySelector(".gall3ry-container");
-  const isMob = isMobile();
-  if (isMob && previousLayout === "layout-0-gall3ry") {
+  // Lock container height on mobile before class swap to prevent layout collapse
+  // during Flip animation (absolute: true takes images out of flow)
+  const needsHeightLock = isMob && (
+    previousLayout === "layout-0-gall3ry" ||
+    newLayout === "layout-2-gall3ry"
+  );
+  if (needsHeightLock) {
     container.style.height = container.offsetHeight + "px";
     container.style.overflow = "hidden";
   }
@@ -413,18 +429,24 @@ function switchLayoutHandler(newLayout) {
     ? "power1.inOut"
     : "hop";
 
+  // Stop Lenis during Flip on mobile to prevent scroll jitter
+  if (isMob) lenis.stop();
+
   Flip.from(state, {
     duration: 1.75,
     ease: flipEase,
     stagger: staggerOption,
     absolute: true,
     onComplete: () => {
-      // Unlock container height after Flip settles
-      if (isMob && previousLayout === "layout-0-gall3ry") {
-        container.style.height = "";
-        container.style.overflow = "";
-      }
-      lenis.resize();
+      // Delay unlock to next frame so browser finishes Flip's last paint first
+      requestAnimationFrame(() => {
+        if (needsHeightLock) {
+          container.style.height = "";
+          container.style.overflow = "";
+        }
+        if (isMob) lenis.start();
+        lenis.resize();
+      });
     }
   });
 
