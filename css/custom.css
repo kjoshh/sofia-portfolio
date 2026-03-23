@@ -2098,7 +2098,7 @@ text-decoration: none;
   /* Allow gall3ry-container to grow with content on mobile */
   .gall3ry-container {
     height: auto;
-    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   /* Hide decorative image in Info view on mobile */
@@ -2575,8 +2575,8 @@ html:has(body.landing-page) {
   }
 
   .gall3ry-container:has(.layout-0-gall3ry) {
-    height: 100vh;
-    min-height: 100vh;
+    height: 100dvh;
+    min-height: 100dvh;
     overflow: hidden;
   }
 
@@ -2605,12 +2605,15 @@ html:has(body.landing-page) {
   body.landing-page .frame-wrap {
     position: relative;
     width: calc(100% - 40px);
-    height: calc(100dvh - 100px - 20px);
-    margin-top: 125px;
-    margin-bottom: 20px;
+    height: calc(100dvh - 175px - 40px);
+    margin-top: 175px;
+    margin-bottom: 40px;
     cursor: default;
     overflow: hidden;
     z-index: 2;
+    aspect-ratio: auto;
+    max-height: none;
+  
   }
   body.landing-page .frame-photo {
     inset: 4% 3%;
@@ -2633,7 +2636,7 @@ html:has(body.landing-page) {
     width: 100%;
     height: 100%;
     object-fit: fill;
-    opacity: 0.9;
+    opacity: 0.85;
   }
   body.landing-page .frame-border-hover,
   body.landing-page .frame-bg-hover {
