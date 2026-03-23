@@ -1,3 +1,7 @@
+/* ── Lenis smooth scroll ── */
+const lenis = new Lenis();
+(function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(0);
+
 /* ── WebGL shader background (vanilla WebGL, no Three.js) ── */
 (function () {
   if ('ontouchstart' in window || window.innerWidth < 768) return;
@@ -69,10 +73,10 @@
   let targetRadius = 0;
   let gl, program, uLocs, timeVal = 0, radiusVal = 0;
   let rafId = null, paused = false;
-  let revealDone = false;
+  let revealDone = true;
   let mouseMoving = false;
   let mouseIdleTimer = null;
-  window._webglRevealDone = false;
+  window._webglRevealDone = true;
 
   function compileShader(gl, type, source) {
     const s = gl.createShader(type);
@@ -264,7 +268,7 @@ function openSection(body, titleEl) {
       body.style.height = "auto";
       body.style.overflow = "visible";
       gsap.to(lines, {
-        opacity: 1, y: 0, duration: 0.35, stagger: 0.07, ease: "power2.out",
+        opacity: 0.85, y: 0, duration: 0.35, stagger: 0.07, ease: "power2.out",
       });
     }
   });
