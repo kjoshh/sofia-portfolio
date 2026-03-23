@@ -99,12 +99,12 @@ function getLetterMetrics() {
     // Smaller letters to fit single line above portrait frame
     const fw = frameWrap.getBoundingClientRect().width;
     return {
-      letterH: fw * 0.05,
-      letterW: fw * 0.06,
-      spaceW:  fw * 0.065,
-      swapDist: fw * 0.06,
-      offsetX: fw * 0.025,
-      offsetY: fw * 0.025,
+      letterH: fw * 0.065,
+      letterW: fw * 0.056,
+      spaceW:  fw * 0.052,
+      swapDist: fw * 0.075,
+      offsetX: fw * 0.02,
+      offsetY: fw * 0.04,
     };
   }
   // Pure frame-ratio: at 650px frame width these produce the reference sizes
@@ -158,12 +158,17 @@ function calcPositions() {
   const totalW = 14 * m.letterW + m.spaceW;
   const startX = anchorX - totalW / 2;
 
+  const kernAfter = { m: isMobile ? 0.5 : 0.3 };
+  let kern = 0;
+
   for (const slot of slots) {
     const i = slot.nameIndex;
     if (i < 5) {
       slot.x = startX + i * m.letterW + m.letterW / 2;
     } else {
-      slot.x = startX + 5 * m.letterW + m.spaceW + (i - 6) * m.letterW + m.letterW / 2;
+      slot.x = startX + 5 * m.letterW + m.spaceW + (i - 6) * m.letterW + m.letterW / 2 + kern;
+      const ch = sybilChars[i];
+      if (kernAfter[ch]) kern += m.letterW * kernAfter[ch];
     }
     slot.y = anchorY;
   }
@@ -177,12 +182,20 @@ function initPositions() {
     slot.sofiaEl.style.height = m.letterH + 'px';
     slot.sybilEl.style.height = m.letterH + 'px';
     if (revealComplete) {
-      // After reveal, snap to final positions
-      gsap.set(slot.sofiaEl, {
+      // After reveal, snap active name to final positions
+      const activeEl = currentName === 'sofia' ? slot.sofiaEl : slot.sybilEl;
+      const inactiveEl = currentName === 'sofia' ? slot.sybilEl : slot.sofiaEl;
+      gsap.set(activeEl, {
         x: slot.x - m.offsetX,
         y: slot.y - m.offsetY,
         rotation: slot.restRot,
         opacity: 0.9
+      });
+      gsap.set(inactiveEl, {
+        x: slot.x - m.offsetX,
+        y: slot.y - m.offsetY - (m.swapDist || 55),
+        rotation: slot.restRot,
+        opacity: 0
       });
     } else {
       // Before/during reveal: invisible, above viewport
@@ -192,13 +205,13 @@ function initPositions() {
         rotation: 0,
         opacity: 0
       });
+      gsap.set(slot.sybilEl, {
+        x: slot.x - m.offsetX,
+        y: slot.y - m.offsetY - (m.swapDist || 55),
+        rotation: slot.restRot,
+        opacity: 0
+      });
     }
-    gsap.set(slot.sybilEl, {
-      x: slot.x - m.offsetX,
-      y: slot.y - m.offsetY - (m.swapDist || 55),
-      rotation: slot.restRot,
-      opacity: 0
-    });
   }
 }
 
@@ -248,7 +261,7 @@ function buildWalls() {
   ));
 }
 buildWalls();
-window.addEventListener('resize', () => { buildWalls(); initPositions(); });
+window.addEventListener('resize', () => { if (flushing) return; buildWalls(); initPositions(); });
 
 /* ── Letter rain reveal ── */
 const revealPairs = [];
@@ -675,19 +688,15 @@ if (isMobile) {
     ));
   }
 
-  // ── Reveal: scale-up frame + letter rain ──
+  // ── Reveal: scale-up frame + border together + letter rain ──
   gsap.set(sceneEl, { opacity: 1 });
   gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
-  gsap.set(outerBorder, { opacity: 0 });
 
   const revealTL = gsap.timeline({ delay: 0.3 });
   revealTL.to(frameWrap, {
     scale: 1, opacity: 1, y: 0,
     duration: 1.4, ease: 'power2.out',
   });
-  revealTL.to(outerBorder, {
-    opacity: 1, duration: 0.5, ease: 'power2.out',
-  }, '-=0.4');
 
   // Build walls + start letter rain after frame arrives
   revealTL.call(() => {
@@ -757,10 +766,27 @@ if (isMobile) {
         duration: 0.5, ease: 'power2.out',
         onComplete: () => {
           settledCount++;
-          if (settledCount >= slots.length) { revealComplete = true; }
+          if (settledCount >= slots.length) { revealComplete = true; startBreathe(); }
         }
       }
     );
+  }
+
+  /* ── Breathe pulse until first tap ── */
+  let breatheTL = null;
+  function startBreathe() {
+    breatheTL = gsap.timeline({ repeat: -1, yoyo: true });
+    breatheTL.to(slots.map(s => s.sofiaEl), {
+      scale: 1.1, y: '-=3', duration: 1.4, ease: 'sine.inOut', stagger: 0.05,
+    });
+  }
+  function stopBreathe() {
+    if (!breatheTL) return;
+    breatheTL.kill();
+    breatheTL = null;
+    for (const slot of slots) {
+      gsap.to(slot.sofiaEl, { scale: 1, y: slot.y - getLetterMetrics().offsetY, duration: 0.3, ease: 'power2.out' });
+    }
   }
 
   let revealRecalced = false;
@@ -768,6 +794,7 @@ if (isMobile) {
   /* ── Swap on tap (like desktop swapTo) ── */
   function swapTo(name) {
     if (name === currentName || flushing) return;
+    stopBreathe();
     if (swapCount + 1 >= 40) { swapCount++; return; }
 
     currentName = name;
@@ -1038,6 +1065,8 @@ if (isMobile) {
     if (revealComplete) {
       const m = getLetterMetrics();
       for (const slot of slots) {
+        slot.sofiaEl.style.height = m.letterH + 'px';
+        slot.sybilEl.style.height = m.letterH + 'px';
         const activeEl = currentName === 'sofia' ? slot.sofiaEl : slot.sybilEl;
         gsap.set(activeEl, { x: slot.x - m.offsetX, y: slot.y - m.offsetY });
       }
@@ -1074,18 +1103,6 @@ if (isMobile) {
   // Letter rain starts near the end of the scale-up
   revealTL.call(() => { startLetterRain(); }, null, 1.6);
 
-  /* ── Desktop resize ── */
-  window.addEventListener('resize', () => {
-    if (!revealComplete) return;
-    calcPositions();
-    const m = getLetterMetrics();
-    for (const slot of slots) {
-      const activeEl = currentName === 'sofia' ? slot.sofiaEl : slot.sybilEl;
-      gsap.set(activeEl, { x: slot.x - m.offsetX, y: slot.y - m.offsetY });
-      const inactiveEl = currentName === 'sofia' ? slot.sybilEl : slot.sofiaEl;
-      gsap.set(inactiveEl, { x: slot.x - m.offsetX, y: slot.y - m.offsetY - m.swapDist, opacity: 0 });
-    }
-  });
 }
 
 /* ── Floating dust particles ── */
