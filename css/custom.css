@@ -2571,6 +2571,16 @@ html:has(body.landing-page) {
   }
 }
 
+/* ── About page tablet — roomier padding ── */
+@media (min-width: 768px) and (max-width: 991px) {
+  .about-greeting {
+    left: 48px;
+  }
+  .cornern {
+    padding: 0 48px calc(24px + env(safe-area-inset-bottom));
+  }
+}
+
 /* ── Landing page mobile — portrait frame ── */
 @media screen and (max-width: 991px) {
   body.landing-page .scene {
