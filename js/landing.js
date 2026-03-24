@@ -117,36 +117,9 @@
     proximityRaf = null;
   }
 
-  // Per-letter parallax — letters push away from cursor
-  const LETTER_PARALLAX = 5;
-
-  function updateLetterParallax() {
-    tiles.forEach((t) => {
-      if (t.isSpace) return;
-      const rect = t.el.getBoundingClientRect();
-      const lx = rect.left + rect.width / 2;
-      const ly = rect.top + rect.height / 2;
-      const dx = lx - mouseX;
-      const dy = ly - mouseY;
-      const dist = Math.hypot(dx, dy);
-      const maxDist = 400;
-
-      if (dist < maxDist) {
-        const strength = (1 - dist / maxDist) * LETTER_PARALLAX;
-        const nx = (dx / (dist || 1)) * strength;
-        const ny = (dy / (dist || 1)) * strength;
-        gsap.to(t.el, { x: nx, y: ny, duration: 0.6, ease: 'power2.out', overwrite: 'auto' });
-      } else {
-        gsap.to(t.el, { x: 0, y: 0, duration: 0.8, ease: 'power2.out', overwrite: 'auto' });
-      }
-    });
-  }
-
   function onMouseMove(e) {
     mouseX = e.clientX;
     mouseY = e.clientY;
-    updateParallax(e.clientX, e.clientY);
-    updateLetterParallax();
     if (!proximityRaf) proximityRaf = requestAnimationFrame(checkProximity);
   }
 
@@ -202,22 +175,6 @@
       duration: 0.7, ease: SPRING_SOFT,
     }, i * 0.06);
   });
-
-  // ═══════════════════════════════════════
-  // PARALLAX DEPTH
-  // ═══════════════════════════════════════
-
-  const grainEl = document.querySelector('.grain');
-  const dustiEl = document.querySelector('.dusti');
-
-  function updateParallax(mx, my) {
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
-    const dx = (mx - cx) / cx;
-    const dy = (my - cy) / cy;
-    if (grainEl) grainEl.style.transform = `translate(${-dx * 8}px, ${-dy * 6}px)`;
-    if (dustiEl) dustiEl.style.transform = `translate(${-dx * 12}px, ${-dy * 10}px)`;
-  }
 
   // ═══════════════════════════════════════
   // AUTO-BREATH
