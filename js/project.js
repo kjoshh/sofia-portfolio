@@ -14,7 +14,7 @@ function updateOverviewCellHeight() {
     const gap = 8;
     const availH = window.innerHeight - 88 - 120 - _safeAreaBottom; // below mob-sheet, above tab pill + safe area
     // Find minimum cols so cell height >= 70px
-    let bestCols = 2;
+    let bestCols = (window.innerWidth >= 768) ? 3 : 2;
     for (let c = 2; c <= 6; c++) {
       bestCols = c;
       const rows = Math.ceil(imgCount / c);
