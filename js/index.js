@@ -14,6 +14,9 @@ let currentName = 'sofia';
 let revealComplete = false;
 let revealStarted = false;
 
+/* ── Skip cinematic reveal if returning to index within same session ── */
+const skipReveal = !!sessionStorage.getItem('indexRevealed');
+
 /* ── Hover triggers ── */
 const bgHoverEl = document.getElementById('bgHover');
 const frameBorderEl = document.getElementById('frameBorderHover');
@@ -74,7 +77,7 @@ function hoverIn() {
   swapTo(currentName === 'sofia' ? 'sybil' : 'sofia');
 
   // Soft breathe — scale whole scene
-  gsap.to(sceneEl, { scale: 1.014, duration: 0.7, ease: 'power2.out', overwrite: true });
+  gsap.to(sceneEl, { scale: 1.0075, duration: 0.7, ease: 'power2.out', overwrite: true });
 }
 
 function hoverOut() {
@@ -308,13 +311,6 @@ window.addEventListener('resize', () => {
     const flushBodies = world.bodies.filter(b => b.isStatic && (b.label === 'sofiaFloor' || b.label === 'sofiaWall'));
     if (flushBodies.length) World.remove(world, flushBodies);
 
-    // Remove pile walls
-    for (const b of pileWalls) World.remove(world, b);
-    pileWalls = [];
-
-    // Clean up reveal star
-    removeRevealStar();
-
     // Kill tweens and hide all letters
     for (const slot of slots) {
       gsap.killTweensOf(slot.sofiaEl);
@@ -328,7 +324,6 @@ window.addEventListener('resize', () => {
     revealComplete = false;
     revealStarted = false;
     revealRecalced = false;
-    settledCount = 0;
     swapCount = 0;
     loadingPhase = 0;
     firstHoverDone = false;
@@ -339,233 +334,37 @@ window.addEventListener('resize', () => {
     gsap.set(frameBorderEl, { opacity: 0, x: 0 });
   }
 
-  // After resize stops: rebuild and re-reveal
+  // After resize stops: just reposition letters, keep frame/nav as-is
   _resizeTimer = setTimeout(() => {
     _resizeCleaned = false;
     _resizing = false;
-    // Reset frame/nav to hidden state for re-reveal
-    gsap.set(frameWrap, { opacity: 0, scale: 0.85, transformOrigin: '50% 50%' });
-    gsap.set(outerBorder, { opacity: 0 });
-    gsap.set('.main-nav', { opacity: 0, y: -20 });
-    const dustEl = document.querySelector('.dust');
-    if (dustEl) gsap.set(dustEl, { opacity: 0 });
-    buildPileWalls();
-    initPositions();
-    startLoadingReveal();
+    invalidateMetrics();
+    buildWalls();
+    calcPositions();
+    const m = getLetterMetrics();
+    for (const slot of slots) {
+      slot.sofiaEl.style.height = m.letterH + 'px';
+      slot.sybilEl.style.height = m.letterH + 'px';
+      const activeEl = currentName === 'sofia' ? slot.sofiaEl : slot.sybilEl;
+      gsap.set(activeEl, {
+        x: slot.x - m.offsetX,
+        y: slot.y - m.offsetY,
+        rotation: slot.restRot,
+        opacity: 0.9,
+      });
+    }
+    revealComplete = true;
+    revealStarted = true;
+    frameWrap.style.cursor = '';
   }, 300);
 });
 
-/* ── Loading reveal: 4-phase cinematic entrance ── */
 const revealPairs = [];
-let settledCount = 0;
-let starEl = null;
-let starSpin = null;
-let pileWalls = [];
-let loadingPhase = 0;  // 0=idle, 1=pile, 2=arrange, 3=frame, 4=fly
+let loadingPhase = 0;
 
-/* Build narrow walls in viewport center for the letter pile */
-function buildPileWalls() {
-  // Remove any existing pile walls
-  for (const b of pileWalls) World.remove(world, b);
-  pileWalls = [];
-
-  const cx = window.innerWidth / 2;
-  const m = getLetterMetrics();
-  const pileW = m.letterW * 8;    // narrow zone for tight pile
-  const thick = 80;
-  const wallFilter = { category: 0x0004, mask: 0xFFFF };
-
-  // Use the same floor height as the frame-aligned walls
-  const fr = frameWrap.getBoundingClientRect();
-  const pad = fr.height * FLOOR_PAD_RATIO;
-  const inset = fr.width * 0.007;
-  const floorY = fr.bottom - pad - inset + thick / 2;
-
-  // Floor — same height as the frame bottom wall
-  const floor = Bodies.rectangle(cx, floorY, pileW * 1.6, thick, {
-    isStatic: true, label: 'pileWall', restitution: 0.3, friction: 0.6, collisionFilter: wallFilter
-  });
-  // Left wall
-  const left = Bodies.rectangle(cx - pileW / 2 - thick / 2, floorY - fr.height, thick, fr.height * 2, {
-    isStatic: true, label: 'pileWall', collisionFilter: wallFilter
-  });
-  // Right wall
-  const right = Bodies.rectangle(cx + pileW / 2 + thick / 2, floorY - fr.height, thick, fr.height * 2, {
-    isStatic: true, label: 'pileWall', collisionFilter: wallFilter
-  });
-
-  World.add(world, [floor, left, right]);
-  pileWalls = [floor, left, right];
-}
-
-/* Calculate center-screen name positions */
-function calcCenterPositions() {
-  const m = getLetterMetrics();
-  const cx = window.innerWidth / 2;
-  const cy = window.innerHeight / 2;
-  const totalW = 14 * m.letterW + m.spaceW;
-  const startX = cx - totalW / 2;
-
-  const positions = [];
-  for (const slot of slots) {
-    const i = slot.nameIndex;
-    let x;
-    if (i < 5) {
-      x = startX + i * m.letterW + m.letterW / 2;
-    } else {
-      x = startX + 5 * m.letterW + m.spaceW + (i - 6) * m.letterW + m.letterW / 2;
-    }
-    positions.push({ x, y: cy });
-  }
-  return positions;
-}
-
-/* Create and show the spinning star */
-function createRevealStar() {
-  if (starEl) starEl.remove();
-  starEl = document.createElement('img');
-  starEl.src = 'images-neu/star.png';
-  starEl.className = 'reveal-star';
-  document.body.appendChild(starEl);
-
-  const cx = window.innerWidth / 2;
-  const cy = window.innerHeight / 2;
-  const m = getLetterMetrics();
-  const starX = cx + m.letterW * 8;
-  const starY = cy - m.letterH;
-
-  gsap.set(starEl, { left: starX, top: starY, opacity: 0, scale: 0.5 });
-  gsap.to(starEl, { opacity: 0.75, scale: 1, duration: 0.4, ease: 'power2.out' });
-  starSpin = gsap.to(starEl, { rotation: 360, duration: 1.8, repeat: -1, ease: 'none' });
-}
-
-/* Clean up star element */
-function removeRevealStar() {
-  if (starSpin) { starSpin.kill(); starSpin = null; }
-  if (starEl) { starEl.remove(); starEl = null; } 
-}
-
-/* Phase 1: Drop letters into center pile */
-function startPileDrop() {
-  const m = getLetterMetrics();
-  const cx = window.innerWidth / 2;
-  const gen = _rainGen;
-
-  slots.forEach((slot, idx) => {
-    const delay = idx * 55 + Math.random() * 35;
-
-    setTimeout(() => {
-      if (_rainGen !== gen) return;
-
-      gsap.set(slot.sofiaEl, { opacity: 0.9 });
-
-      // Drop from scattered positions above center
-      const startX = cx + (Math.random() - 0.5) * 120;
-      const startY = -60 - Math.random() * 100;
-
-      const body = Bodies.rectangle(startX, startY, m.letterW * 0.7, m.letterH * 0.65, {
-        restitution: 0.35,
-        friction: 0.5,
-        frictionAir: 0.006,
-        angle: (Math.random() - 0.5) * 0.6,
-        density: 0.003,
-        sleepThreshold: 60,
-      });
-      Body.setVelocity(body, {
-        x: (Math.random() - 0.5) * 2,
-        y: 2.5 + Math.random() * 2,
-      });
-      World.add(world, body);
-
-      revealPairs.push({
-        el: slot.sofiaEl,
-        body,
-        slot,
-        settled: false,
-        born: performance.now(),
-      });
-    }, delay);
-  });
-}
-
-/* Phase 2: Arrange letters from pile to centered name */
-function arrangeToCenter(onComplete) {
-  const centerPos = calcCenterPositions();
-  const m = getLetterMetrics();
-
-  // Remove pile walls
-  for (const b of pileWalls) World.remove(world, b);
-  pileWalls = [];
-
-  // Remove physics bodies and sync GSAP to current physics positions
-  for (const pair of revealPairs) {
-    const pos = pair.body.position;
-    const ang = pair.body.angle * (180 / Math.PI);
-    // Tell GSAP where the letter actually is (physics set style.transform directly)
-    gsap.set(pair.el, {
-      x: pos.x - m.offsetX,
-      y: pos.y - m.offsetY,
-      rotation: ang,
-      opacity: 0.9,
-    });
-    if (world.bodies.includes(pair.body)) {
-      World.remove(world, pair.body);
-    }
-    pair.settled = true;
-  }
-
-  // Slow down star spin
-  if (starSpin) gsap.to(starSpin, { timeScale: 0.2, duration: 1, ease: 'power2.out' });
-
-  // Tween each letter to its center-name position
-  let completed = 0;
-  slots.forEach((slot, idx) => {
-    const target = centerPos[idx];
-    gsap.to(slot.sofiaEl, {
-      x: target.x - m.offsetX,
-      y: target.y - m.offsetY,
-      rotation: 0,
-      duration: 0.65,
-      delay: idx * 0.04 + Math.random() * 0.02,
-      ease: 'power2.out',
-      onComplete: () => {
-        completed++;
-        if (completed >= slots.length && onComplete) onComplete();
-      }
-    });
-  });
-}
-
-/* Phase 3: Bring in the frame */
-function bringInFrame(onComplete) {
-  const tl = gsap.timeline({ onComplete });
-
-  // Frame scales/fades in
-  tl.to(frameWrap, {
-    opacity: 1,
-    scale: 1,
-    duration: 1.2,
-    ease: 'power2.out',
-  }, 0);
-
-  // Frame border fades in
-  tl.to(outerBorder, {
-    opacity: 1,
-    duration: 0.6,
-    ease: 'power2.out',
-  }, 0.5);
-
-  // Dust overlay fades in
-  const dustOverlay = document.querySelector('.dust');
-  if (dustOverlay) {
-    gsap.set(dustOverlay, { opacity: 0 });
-    tl.to(dustOverlay, { opacity: 0.15, duration: 1, ease: 'power2.out' }, 0.3);
-  }
-}
-
-/* Phase 3: Fly letters from pile to final positions */
-function flyToFinalPositions() {
-  // Sync GSAP to current physics positions before tweening
+/* Fly letters from rain to final positions */
+function flyToFinalPositions(onAllSettled) {
+  // Sync GSAP to physics pile positions, then remove physics
   const m = getLetterMetrics();
   for (const pair of revealPairs) {
     if (!pair.settled) {
@@ -583,12 +382,13 @@ function flyToFinalPositions() {
       pair.settled = true;
     }
   }
-
-  // Remove pile walls
-  for (const b of pileWalls) World.remove(world, b);
-  pileWalls = [];
-
+  // Temporarily measure at scale 1 so positions match the final frame size
+  const currentScale = gsap.getProperty(frameWrap, 'scale') || 0.85;
+  gsap.set(frameWrap, { scale: 1 });
+  invalidateMetrics();
   calcPositions();
+  gsap.set(frameWrap, { scale: currentScale });
+  invalidateMetrics();
 
   // Letters fly from pile to final position above frame
   let completed = 0;
@@ -603,145 +403,16 @@ function flyToFinalPositions() {
       onComplete: () => {
         completed++;
         if (completed >= slots.length) {
-          // Build frame-aligned walls for swap debris
           buildWalls();
           revealComplete = true;
           frameWrap.style.cursor = '';
-          loadingPhase = 0;
+          if (onAllSettled) onAllSettled();
         }
       }
     });
   });
-
-  // Nav fades in first so star has a visible target
-  gsap.to('.main-nav', {
-    opacity: 1,
-    y: 0,
-    duration: 0.6,
-    ease: 'power2.out',
-  });
-
-  // Star flies to the nav-star-sep position and morphs into it
-  const navStarTarget = document.getElementById('navStarSep');
-  if (starEl && navStarTarget) {
-    // Get target position — nav currently has y:-20 transform, will animate to y:0
-    // getBoundingClientRect() reflects the -20 offset, so add 20 for final position
-    const targetRect = navStarTarget.getBoundingClientRect();
-    const targetX = targetRect.left;
-    const targetY = targetRect.top + 20;
-
-    // Kill the spin tween so we can control rotation directly
-    if (starSpin) { starSpin.kill(); starSpin = null; }
-
-    // Snap current rotation and animate to nearest full turn (land upright)
-    const currentRot = gsap.getProperty(starEl, 'rotation');
-    const targetRot = Math.ceil(currentRot / 360) * 360;
-
-    // Morph: fly to position, shrink to 16px, match opacity, land upright
-    gsap.to(starEl, {
-      left: targetX,
-      top: targetY,
-      width: 16,
-      height: 16,
-      opacity: 0.55,
-      rotation: targetRot,
-      duration: 1.0,
-      ease: 'power3.inOut',
-      onComplete: () => {
-        // Swap: show the real nav star, remove the flying one
-        gsap.set(navStarTarget, { opacity: 0.55 });
-        removeRevealStar();
-      },
-    });
-  } else if (starEl) {
-    removeRevealStar();
-  }
 }
 
-/* Master orchestrator */
-function startLoadingReveal() {
-  if (revealStarted) return;
-  revealStarted = true;
-  loadingPhase = 1;
-  frameWrap.style.cursor = 'wait';
-
-  const gen = _rainGen;
-
-  // Build pile walls and create star
-  buildPileWalls();
-  createRevealStar();
-
-  // Start Phase 1: letter pile
-  startPileDrop();
-
-  // Check when all letters have settled in the pile
-  const checkPileSettled = () => {
-    if (_rainGen !== gen) return;  // resize cancelled
-
-    // Wait until all letters are spawned
-    if (revealPairs.length < slots.length) {
-      requestAnimationFrame(checkPileSettled);
-      return;
-    }
-
-    // Check if all are slow enough
-    const now = performance.now();
-    const allSlow = revealPairs.every(p =>
-      p.settled || (now - p.born > 600 && p.body.speed < 0.6)
-    );
-    if (!allSlow) {
-      requestAnimationFrame(checkPileSettled);
-      return;
-    }
-
-    // Phase 2: bring in the frame
-    loadingPhase = 2;
-    setTimeout(() => {
-      if (_rainGen !== gen) return;
-      bringInFrame(() => {
-        // Phase 3: letters fly from pile to final positions
-        loadingPhase = 3;
-        setTimeout(() => {
-          if (_rainGen !== gen) return;
-          flyToFinalPositions();
-        }, 200);
-      });
-    }, 300);
-  };
-
-  // Start checking after minimum time for letters to fall
-  setTimeout(() => {
-    if (_rainGen !== gen) return;
-    checkPileSettled();
-  }, 1200);
-
-  // Safety: force through all phases after 6s
-  setTimeout(() => {
-    if (_rainGen !== gen || revealComplete) return;
-    // Force settle any physics
-    for (const pair of revealPairs) {
-      if (!pair.settled && world.bodies.includes(pair.body)) {
-        World.remove(world, pair.body);
-      }
-      pair.settled = true;
-    }
-    for (const b of pileWalls) World.remove(world, b);
-    pileWalls = [];
-
-    if (loadingPhase <= 2) {
-      loadingPhase = 2;
-      bringInFrame(() => {
-        loadingPhase = 3;
-        flyToFinalPositions();
-      });
-    } else if (loadingPhase === 2) {
-      gsap.set(frameWrap, { opacity: 1, scale: 1 });
-      gsap.set(outerBorder, { opacity: 1 });
-      loadingPhase = 3;
-      flyToFinalPositions();
-    }
-  }, 6000);
-}
 
 let revealRecalced = false;
 
@@ -895,7 +566,6 @@ Events.on(engine, 'afterUpdate', () => {
             buildWalls();
             currentName = 'sofia';
             revealPairs.length = 0;
-            settledCount = 0;
             revealStarted = false;
 
             calcPositions();
@@ -1003,6 +673,58 @@ function swapTo(name) {
   });
 }
 
+/* ── Simple letter rain (skip reveal, return visit) ── */
+function startSimpleRain() {
+  revealStarted = true;
+  const m = getLetterMetrics();
+  const gen = _rainGen;
+
+  slots.forEach((slot, idx) => {
+    const delay = idx * 55 + Math.random() * 35;
+    setTimeout(() => {
+      if (_rainGen !== gen) return;
+      gsap.set(slot.sofiaEl, { opacity: 0.9 });
+
+      const startX = slot.x + (Math.random() - 0.5) * 40;
+      const startY = -60 - Math.random() * 100;
+
+      const body = Bodies.rectangle(startX, startY, m.letterW * 0.7, m.letterH * 0.65, {
+        restitution: 0.35, friction: 0.5, frictionAir: 0.006,
+        angle: (Math.random() - 0.5) * 0.6, density: 0.003, sleepThreshold: 60,
+      });
+      Body.setVelocity(body, {
+        x: (Math.random() - 0.5) * 2,
+        y: 2.5 + Math.random() * 2,
+      });
+      World.add(world, body);
+      revealPairs.push({ el: slot.sofiaEl, body, slot, settled: false, born: performance.now() });
+    }, delay);
+  });
+
+  // Settle letters to final positions once they slow down
+  const checkSettled = () => {
+    if (_rainGen !== gen) return;
+    if (revealPairs.length < slots.length) { requestAnimationFrame(checkSettled); return; }
+    const now = performance.now();
+    const allSlow = revealPairs.every(p =>
+      p.settled || (now - p.born > 600 && p.body.speed < 0.6)
+    );
+    if (!allSlow) { requestAnimationFrame(checkSettled); return; }
+    flyToFinalPositions(() => { loadingPhase = 0; });
+  };
+  setTimeout(() => { if (_rainGen !== gen) return; checkSettled(); }, 1200);
+
+  // Safety timeout
+  setTimeout(() => {
+    if (_rainGen !== gen || revealComplete) return;
+    for (const pair of revealPairs) {
+      if (!pair.settled && world.bodies.includes(pair.body)) World.remove(world, pair.body);
+      pair.settled = true;
+    }
+    flyToFinalPositions(() => { loadingPhase = 0; });
+  }, 5000);
+}
+
 } // end if (!isMobile) — desktop physics
 
 initPositions();
@@ -1062,20 +784,34 @@ if (isMobile) {
 
   // ── Reveal: scale-up frame + border together + letter rain ──
   gsap.set(sceneEl, { opacity: 1 });
-  gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
 
-  const revealTL = gsap.timeline({ delay: 0.3 });
-  revealTL.to(frameWrap, {
-    scale: 1, opacity: 1, y: 0,
-    duration: 1.4, ease: 'power2.out',
-  });
+  if (skipReveal) {
+    // Skip cinematic frame reveal — show immediately, just rain letters
+    gsap.set(frameWrap, { scale: 1, opacity: 1, y: 0 });
+    setTimeout(() => {
+      calcPositions();
+      buildWalls();
+      startLetterRain();
+    }, 200);
+  } else {
+    gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
 
-  // Build walls + start letter rain after frame arrives
-  revealTL.call(() => {
-    calcPositions();
-    buildWalls();
-    startLetterRain();
+    const revealTL = gsap.timeline({ delay: 0.3 });
+    revealTL.to(frameWrap, {
+      scale: 1, opacity: 1, y: 0,
+      duration: 1.4, ease: 'power2.out',
+    });
+
+    // Build walls + start letter rain after frame arrives
+    revealTL.call(() => {
+      calcPositions();
+      buildWalls();
+      startLetterRain();
   }, null, 1.2);
+
+    // Mark reveal as done for mobile too
+    sessionStorage.setItem('indexRevealed', '1');
+  } // end else (full mobile reveal)
 
   /* ── Letter rain reveal (physics-based, like desktop) ── */
   const revealPairs = [];
@@ -1510,27 +1246,55 @@ if (isMobile) {
     }, 300);
   });
 
+} else if (skipReveal) {
+  /* ═══════════════════════════════════════
+     DESKTOP: Skip reveal — just letter rain
+     ═══════════════════════════════════════ */
+  gsap.set(sceneEl, { opacity: 1 });
+  gsap.set(frameWrap, { opacity: 1, scale: 1, transformOrigin: '50% 50%' });
+  gsap.set(outerBorder, { opacity: 1 });
+  gsap.set('.main-nav', { opacity: 1, y: 0 });
+  const navStarSkip = document.getElementById('navStarSep');
+  if (navStarSkip) gsap.set(navStarSkip, { opacity: 0.55 });
+  const dustOverlaySkip = document.querySelector('.dust');
+  if (dustOverlaySkip) gsap.set(dustOverlaySkip, { opacity: 0.15 });
+
+  setTimeout(() => {
+    initPositions();
+    buildWalls();
+    startSimpleRain();
+  }, 300);
+
 } else {
   /* ═══════════════════════════════════════
-     DESKTOP: 4-phase loading reveal
+     DESKTOP: Simple animated entrance + letter rain
      ═══════════════════════════════════════ */
 
-  // Start state: frame and nav hidden
   gsap.set(sceneEl, { opacity: 1 });
-  gsap.set(frameWrap, { opacity: 0, scale: 0.85, transformOrigin: '50% 50%' });
+  gsap.set(frameWrap, { opacity: 0, scale: 0.92, transformOrigin: '50% 50%' });
   gsap.set(outerBorder, { opacity: 0 });
-  gsap.set('.main-nav', { opacity: 0, y: -20 });
+  gsap.set('.main-nav', { opacity: 0, y: -15 });
 
-  // Hide dust overlay until Phase 3
   const dustOverlayInit = document.querySelector('.dust');
   if (dustOverlayInit) gsap.set(dustOverlayInit, { opacity: 0 });
 
-  // Start loading reveal after page transition begins fading
+  // Animate everything in
+  const entranceTL = gsap.timeline({ delay: 0.3 });
+  entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1, ease: 'power2.out' }, 0);
+  entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.4);
+  if (dustOverlayInit) entranceTL.to(dustOverlayInit, { opacity: 0.15, duration: 0.8, ease: 'power2.out' }, 0.3);
+  entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
+  const navStarInit = document.getElementById('navStarSep');
+  if (navStarInit) entranceTL.to(navStarInit, { opacity: 0.55, duration: 0.5 }, 0.5);
+
+  // Start letter rain once frame is mostly visible
   setTimeout(() => {
-    buildPileWalls();
     initPositions();
-    startLoadingReveal();
-  }, 500);
+    buildWalls();
+    startSimpleRain();
+  }, 600);
+
+  sessionStorage.setItem('indexRevealed', '1');
 
 }
 
