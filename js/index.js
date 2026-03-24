@@ -238,7 +238,7 @@ const sofiaFallPairs = [];
 let flushing = false;
 let swapCount = 0;
 
-const FLOOR_PAD_RATIO = 0.03;
+const FLOOR_PAD_RATIO = 0.05;
 
 function buildWalls() {
   const oldStatic = world.bodies.filter(b => b.isStatic && b.label === 'wall');
@@ -261,7 +261,7 @@ function buildWalls() {
   ));
   // Right wall
   World.add(world, Bodies.rectangle(
-    fr.right - pad - inset + thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
+    fr.right - pad - inset + thick / 2 + 12, fr.top + fr.height / 2, thick, fr.height * 2,
     { isStatic: true, label: 'wall', collisionFilter: wallFilter }
   ));
 }
@@ -522,7 +522,7 @@ Events.on(engine, 'afterUpdate', () => {
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
         );
         const sofiaRightWall = Bodies.rectangle(
-          fr.right - pad - inset + thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
+          fr.right - pad - inset + thick / 2 + 12, fr.top + fr.height / 2, thick, fr.height * 2,
           { isStatic: true, label: 'sofiaWall', restitution: 0.3, friction: 0.6,
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
         );
