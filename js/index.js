@@ -269,13 +269,15 @@ buildWalls();
 /* ── Desktop resize: clean up immediately, re-rain after debounce ── */
 let _resizeTimer;
 let _resizeCleaned = false;
+let _resizing = false;
 window.addEventListener('resize', () => {
-  if (flushing) return;
   clearTimeout(_resizeTimer);
+  _resizing = true;
 
   // On first resize event: immediately wipe everything
   if (!_resizeCleaned) {
     _resizeCleaned = true;
+    flushing = false;  // cancel any in-progress flush
 
     // Remove debris clones + physics
     for (const dp of debrisPairs) {
@@ -297,6 +299,10 @@ window.addEventListener('resize', () => {
         World.remove(world, pair.body);
     }
     revealPairs.length = 0;
+
+    // Remove flush-specific static bodies (sofiaFloor, sofiaWall)
+    const flushBodies = world.bodies.filter(b => b.isStatic && (b.label === 'sofiaFloor' || b.label === 'sofiaWall'));
+    if (flushBodies.length) World.remove(world, flushBodies);
 
     // Kill tweens and hide all letters
     for (const slot of slots) {
@@ -324,6 +330,7 @@ window.addEventListener('resize', () => {
   // After resize stops: rebuild and re-rain
   _resizeTimer = setTimeout(() => {
     _resizeCleaned = false;
+    _resizing = false;
     buildWalls();
     initPositions();
     startLetterRain();
@@ -466,7 +473,7 @@ Events.on(engine, 'afterUpdate', () => {
   }
 
   // Overflow flush: 35+ swaps OR any debris touches the top of the frame
-  if (!flushing && debrisPairs.length > 0) {
+  if (!flushing && !_resizing && debrisPairs.length > 0) {
     const fr = frameWrap.getBoundingClientRect();
     const pad = fr.height * FLOOR_PAD_RATIO;
     const thick = 80;
