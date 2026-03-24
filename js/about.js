@@ -403,7 +403,7 @@ document.querySelectorAll(".about-section-title").forEach(title => {
 
   // Step 4: Content section appears instantly, about-right fades in
   const contentStart = greetEnd - 0.5;
-  tl.set(contentSection, { opacity: 1 }, contentStart);
+  if (contentSection) tl.set(contentSection, { opacity: 1 }, contentStart);
   const aboutRight = document.querySelector(".about-right");
   tl.fromTo(aboutRight,
     { opacity: 0 },
@@ -470,7 +470,11 @@ document.querySelectorAll(".about-section-title").forEach(title => {
     if (elMob) elMob.textContent = t;
   }
   tick();
-  setInterval(tick, 1000);
+  let clockId = setInterval(tick, 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { clearInterval(clockId); clockId = null; }
+    else if (!clockId) { tick(); clockId = setInterval(tick, 1000); }
+  });
 })();
 
 /* ── Copy-to-clipboard with GSAP word-rotate ── */

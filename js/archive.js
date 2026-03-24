@@ -69,7 +69,6 @@ const lenis = new Lenis(isMobile ? { wrapper: document.body } : {});
 const items = Array.from(document.querySelectorAll(".archive-grid-item"));
 const overlay = document.getElementById("lb-overlay");
 const lbImg = document.getElementById("lb-img");
-const lbProgress = document.getElementById("lb-progress");
 const lbCounterCurrent = document.querySelector(".lb-counter-current");
 const lbCounterTotal = document.querySelector(".lb-counter-total");
 let current = 0;
@@ -77,7 +76,6 @@ let current = 0;
 if (lbCounterTotal) lbCounterTotal.textContent = String(items.length).padStart(2, "0");
 
 function updateProgress() {
-  lbProgress.style.width = ((current + 1) / items.length * 100) + "%";
   if (lbCounterCurrent) {
     gsap.to(lbCounterCurrent, {
       opacity: 0, duration: 0.1, ease: "power2.in",

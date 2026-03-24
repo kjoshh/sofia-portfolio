@@ -131,10 +131,6 @@ body.is-transitioning * {
   pointer-events: all;
 }
 
-.lb-progress {
-  display: none;
-}
-
 .lb-img {
   max-width: 88vw;
   max-height: 88vh;
@@ -146,7 +142,7 @@ body.is-transitioning * {
   position: fixed;
   background: none;
   border: none;
-  cursor: default;
+  cursor: pointer;
   padding: 20px;
   opacity: 0;
   transition: opacity 0.25s ease;
@@ -240,40 +236,11 @@ body.is-transitioning * {
   }
 }
 
-.archive-grid-item:nth-child(6n+1) {
-  --rot: 0deg;
-}
-
-.archive-grid-item:nth-child(6n+2) {
-  --rot: 0deg;
-}
-
-.archive-grid-item:nth-child(6n+3) {
-  --rot: 0deg;
-}
-
-.archive-grid-item:nth-child(6n+4) {
-  --rot: 0deg;
-}
-
-.archive-grid-item:nth-child(6n+5) {
-  --rot: 0deg;
-}
-
-.archive-grid-item:nth-child(6n+6) {
-  --rot: 0deg;
-}
-
 .archive-grid-item {
   break-inside: avoid;
   display: block;
   position: relative;
   overflow: hidden;
-}
-
-.archive-grid-item.visible {
-  opacity: 1;
-  transform: translateY(0) rotate(var(--rot, 0deg));
 }
 
 .archive-grid-item img {

@@ -1262,7 +1262,12 @@ if (isMobile) {
       ctx.restore();
     }
 
-    requestAnimationFrame(tick);
+    if (!dustPaused) requestAnimationFrame(tick);
   }
+  let dustPaused = false;
   requestAnimationFrame(tick);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { dustPaused = true; }
+    else { dustPaused = false; requestAnimationFrame(tick); }
+  });
 })();

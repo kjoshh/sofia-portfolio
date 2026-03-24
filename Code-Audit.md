@@ -30,26 +30,26 @@ Code-Audit aller HTML-Seiten, JS und CSS — Bugs, toter Code, Redundanzen.
 | ~~I3~~  | Index             | Bug           | ~~`sceneEl` vor Deklaration referenziert (TDZ-Risiko)~~ | ✅ done |
 | ~~I5~~  | Index             | Performance   | ~~`getLetterMetrics()` 60x/s → Layout-Recalc pro Frame~~ | ✅ done |
 | ~~AB4~~ | About             | Performance   | ~~Lenis RAF-Loop läuft endlos (kein Visibility-Check)~~ | ✅ done |
-| FD3 | Forgetting Dreams | Accessibility | 10 Bilder ohne `alt`-Attribut                    | 2 min   |
-| HC3 | Hard-Coded        | Accessibility | 19 Bilder ohne `alt`-Attribut                    | 2 min   |
+| ~~FD3~~ | Forgetting Dreams | Accessibility | ~~10 Bilder ohne `alt`-Attribut~~                    | ✅ done |
+| ~~HC3~~ | Hard-Coded        | Accessibility | ~~19 Bilder ohne `alt`-Attribut~~                    | ✅ done |
 
 ### Niedrig / Trivial
 
 | #    | Seite             | Typ           | Beschreibung                                    | Aufwand |
 |------|-------------------|---------------|-------------------------------------------------|---------|
-| G1   | Global            | Cleanup       | `<meta name="generator" content="Webflow">` überall | 2 min |
-| G2   | Global            | Bug           | `cursor: default` auf Lightbox-Buttons statt `pointer` | 1 min |
-| A3   | Archive           | Toter Code    | `.archive-grid-item.visible` wird nie gesetzt    | 1 min   |
-| A5   | Archive           | Toter Code    | 6× `--rot: 0deg` Regeln — redundant mit Fallback | 1 min  |
-| A6   | Archive           | Toter Code    | `.lb-progress` ausgeblendet aber JS berechnet    | 2 min   |
-| A7   | Archive           | Redundanz     | Hardcoded Counter-Total `42` wird sofort überschrieben | 1 min |
-| AB2  | About             | Toter Code    | `page-enter` Inline-Style wird nie aktiviert     | 1 min   |
-| AB6  | About             | Fragil        | Bild-Dateiname mit Leerzeichen                   | 2 min   |
-| AB7  | About             | Minor Bug     | `contentSection` ohne Null-Check                 | 1 min   |
-| AB8  | About (Global)    | Toter Code    | `js/cursor.js` wird nirgends geladen             | 1 min   |
-| AB9  | About             | Kosmetisch    | `setInterval` für Uhr wird nie aufgeräumt        | 2 min   |
+| ~~G1~~   | Global            | Cleanup       | ~~`<meta name="generator" content="Webflow">` überall~~ | ✅ done |
+| ~~G2~~   | Global            | Bug           | ~~`cursor: default` auf Lightbox-Buttons statt `pointer`~~ | ✅ done |
+| ~~A3~~   | Archive           | Toter Code    | ~~`.archive-grid-item.visible` wird nie gesetzt~~    | ✅ done |
+| ~~A5~~   | Archive           | Toter Code    | ~~6× `--rot: 0deg` Regeln — redundant mit Fallback~~ | ✅ done |
+| ~~A6~~   | Archive           | Toter Code    | ~~`.lb-progress` ausgeblendet aber JS berechnet~~    | ✅ done |
+| ~~A7~~   | Archive           | Redundanz     | ~~Hardcoded Counter-Total `42` wird sofort überschrieben~~ | ✅ done |
+| ~~AB2~~  | About             | Toter Code    | ~~`page-enter` Inline-Style wird nie aktiviert — aus allen 4 Seiten entfernt~~ | ✅ done |
+| ~~AB6~~  | About             | Fragil        | ~~Bild-Dateiname mit Leerzeichen~~                   | ✅ done |
+| ~~AB7~~  | About             | Minor Bug     | ~~`contentSection` ohne Null-Check~~                 | ✅ done |
+| ~~AB8~~  | About (Global)    | Toter Code    | ~~`js/cursor.js` wird nirgends geladen~~             | ✅ done |
+| ~~AB9~~  | About             | Kosmetisch    | ~~`setInterval` für Uhr wird nie aufgeräumt~~        | ✅ done |
 | ~~I4~~   | Index             | Bug           | ~~Variable Shadowing in `getLetterMetrics()`~~       | ✅ done |
-| I6   | Index             | Performance   | Dust-Canvas rAF läuft endlos ohne Visibility-Check | 3 min |
+| ~~I6~~   | Index             | Performance   | ~~Dust-Canvas rAF läuft endlos ohne Visibility-Check~~ | ✅ done |
 | I7   | Index             | Toter Code    | nav.js: `w-nav-link`/`w-nav` Selektoren → ~80 Zeilen tot | 2 min |
 | I8   | Index             | Toter Code    | `css/landing.css` (272 Zeilen) von keiner Seite geladen | 1 min |
 | I9   | Index             | Toter Code    | `object-fit: contain` auf Div wirkungslos        | 1 min   |
