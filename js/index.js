@@ -795,11 +795,14 @@ if (isMobile) {
     revealStarted = true;
     const m = getLetterMetrics();
     const fr = frameWrap.getBoundingClientRect();
+    const gen = _mobRainGen;
 
     slots.forEach((slot, idx) => {
       const delay = idx * 45 + Math.random() * 30;
 
       setTimeout(() => {
+        if (_mobRainGen !== gen) return;
+
         gsap.set(slot.sofiaEl, { opacity: 0.9 });
 
         const startX = slot.x + (Math.random() - 0.5) * 30;
@@ -821,6 +824,7 @@ if (isMobile) {
 
     // Safety timeout
     setTimeout(() => {
+      if (_mobRainGen !== gen) return;
       calcPositions();
       for (const pair of revealPairs) {
         if (!pair.settled) settleLetter(pair);
@@ -1148,20 +1152,71 @@ if (isMobile) {
   document.addEventListener('touchend', handleTap);
   document.addEventListener('click', handleTap);
 
-  // ── Mobile resize ──
+  // ── Mobile resize: clean up + re-rain (mirrors desktop resize handler) ──
+  let _mobResizeTimer;
+  let _mobResizeCleaned = false;
+  let _mobRainGen = 0;
   window.addEventListener('resize', () => {
-    if (flushing) return;
-    buildWalls();
-    calcPositions();
-    if (revealComplete) {
-      const m = getLetterMetrics();
-      for (const slot of slots) {
-        slot.sofiaEl.style.height = m.letterH + 'px';
-        slot.sybilEl.style.height = m.letterH + 'px';
-        const activeEl = currentName === 'sofia' ? slot.sofiaEl : slot.sybilEl;
-        gsap.set(activeEl, { x: slot.x - m.offsetX, y: slot.y - m.offsetY });
+    clearTimeout(_mobResizeTimer);
+
+    if (!_mobResizeCleaned) {
+      _mobResizeCleaned = true;
+      _mobRainGen++;
+      flushing = false;
+
+      // Remove debris clones + physics
+      for (const dp of debrisPairs) {
+        World.remove(world, dp.body);
+        dp.el.remove();
       }
+      debrisPairs.length = 0;
+
+      // Remove sofia-fall bodies
+      for (const pair of sofiaFallPairs) {
+        if (!pair.settled && world.bodies.includes(pair.body))
+          World.remove(world, pair.body);
+      }
+      sofiaFallPairs.length = 0;
+
+      // Remove reveal bodies
+      for (const pair of revealPairs) {
+        if (!pair.settled && world.bodies.includes(pair.body))
+          World.remove(world, pair.body);
+      }
+      revealPairs.length = 0;
+
+      // Remove flush-specific static bodies
+      const flushBodies = world.bodies.filter(b => b.isStatic && (b.label === 'sofiaFloor' || b.label === 'sofiaWall'));
+      if (flushBodies.length) World.remove(world, flushBodies);
+
+      // Kill tweens and hide all letters
+      stopBreathe();
+      for (const slot of slots) {
+        gsap.killTweensOf(slot.sofiaEl);
+        gsap.killTweensOf(slot.sybilEl);
+        gsap.set(slot.sofiaEl, { opacity: 0 });
+        gsap.set(slot.sybilEl, { opacity: 0 });
+      }
+
+      // Reset state
+      currentName = 'sofia';
+      revealComplete = false;
+      revealStarted = false;
+      revealRecalced = false;
+      settledCount = 0;
+      swapCount = 0;
+      firstTapDone = false;
+
+      // Reset hover visuals
+      gsap.set(bgSybilEl, { opacity: 0 });
     }
+
+    _mobResizeTimer = setTimeout(() => {
+      _mobResizeCleaned = false;
+      buildWalls();
+      initPositions();
+      startLetterRain();
+    }, 300);
   });
 
 } else {
