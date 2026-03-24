@@ -363,15 +363,26 @@ function applyFontStagger(el) {
     });
 
     // Close dropdown on item click (animate out before navigating)
+    const transitionOverlay = document.querySelector('.page-transition');
     [...dropdownItems, ...deskCells].forEach(item => {
       item.addEventListener('click', (e) => {
         const link = item.closest('a') || item.querySelector('a');
         const href = link ? link.getAttribute('href') : null;
         if (href) {
           e.preventDefault();
+          e.stopImmediatePropagation();
           closeDropdown();
-          // Navigate after close animation completes
-          gsap.delayedCall(0.4, () => { window.location.href = href; });
+          // Trigger page-transition overlay (same as transition.js)
+          if (transitionOverlay) {
+            document.body.classList.add('is-transitioning');
+            transitionOverlay.style.display = 'block';
+            transitionOverlay.style.transition = 'none';
+            transitionOverlay.style.opacity = '0';
+            void transitionOverlay.offsetWidth;
+            transitionOverlay.style.transition = 'opacity 500ms cubic-bezier(0.455, 0.03, 0.515, 0.955)';
+            transitionOverlay.style.opacity = '1';
+          }
+          setTimeout(() => { window.location.href = href; }, 1000);
         }
       });
     });

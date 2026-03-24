@@ -1,6 +1,10 @@
-/* ── Lenis smooth scroll ── */
-const lenis = new Lenis();
-(function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(0);
+/* ── Lenis smooth scroll (mobile only) ── */
+const isMobileAbout = window.matchMedia('(max-width: 991px)').matches;
+if (isMobileAbout) {
+  const lenis = new Lenis();
+  gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+  gsap.ticker.lagSmoothing(0);
+}
 
 /* ── WebGL shader background (vanilla WebGL, no Three.js) ── */
 (function () {
@@ -73,10 +77,10 @@ const lenis = new Lenis();
   let targetRadius = 0;
   let gl, program, uLocs, timeVal = 0, radiusVal = 0;
   let rafId = null, paused = false;
-  let revealDone = true;
+  let revealDone = false;
   let mouseMoving = false;
   let mouseIdleTimer = null;
-  window._webglRevealDone = true;
+  window._webglRevealDone = false;
 
   function compileShader(gl, type, source) {
     const s = gl.createShader(type);
@@ -525,6 +529,8 @@ document.querySelectorAll(".about-section-title").forEach(title => {
       navigator.clipboard.writeText(el.dataset.copy).then(() => {
         clearTimeout(restoreTimer);
         rotate('Copied!', false);
+      }).catch(() => {
+        rotate('Copy failed', false);
       });
     });
   });

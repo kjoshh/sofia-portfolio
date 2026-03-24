@@ -269,9 +269,6 @@ body.is-transitioning * {
   display: block;
   position: relative;
   overflow: hidden;
-  opacity: 0;
-  transform: translateY(10px) rotate(var(--rot, 0deg));
-  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 .archive-grid-item.visible {
