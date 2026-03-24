@@ -2576,6 +2576,9 @@ html:has(body.landing-page) {
   .about-greeting {
     left: 48px;
   }
+  .about-right {
+    padding: 48px 48px 0;
+  }
   .cornern {
     padding: 0 48px calc(24px + env(safe-area-inset-bottom));
   }
