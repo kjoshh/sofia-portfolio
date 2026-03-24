@@ -16,7 +16,7 @@ Photography/art portfolio for Sofia Cartuccia (alias "Sybil Sometimes"). Static 
 ## Architecture
 
 - **Pages:** `index.html` (landing/home), `about.html`, `archive.html`, plus individual project pages (`hard-coded.html`, `forgetting-dreams.html`, etc.) and experimental pages (`sacred-profane.html`, `grain-*.html`, `star-map.html`, etc.)
-- **CSS:** `css/normalize.css` + `css/webflow.css` (Webflow base), `css/custom.css` (all custom styles — cursor, overlays, nav, project pages, about, archive), `css/landing.css` (landing page specific)
+- **CSS:** `css/normalize.css` + `css/webflow.css` (Webflow base), `css/custom.css` (all custom styles — cursor, overlays, nav, project pages, about, archive, landing)
 - **JS (all vanilla, no framework):**
   - `js/nav.js` — shared nav: staggered character animation on logo hover (swaps "Sofia Cartuccia" ↔ "Sybil Sometimes"), dropdown menu, star rotation on hover
   - `js/index.js` — landing page: fluid nav-bar wobble via procedural noise-based border-radius animation
