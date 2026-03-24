@@ -2,6 +2,7 @@
 
 const letterField = document.getElementById('letterField');
 const frameWrap = document.getElementById('frameWrap');
+const sceneEl = document.getElementById('scene');
 
 /* ── Mobile detection ── */
 const isMobile = window.matchMedia('(max-width: 991px)').matches;
@@ -93,11 +94,10 @@ frameWrap.addEventListener('click', () => {
 const sofiaChars = 'sofia cartuccia'.split('');
 const sybilChars = 'sybil sometimes'.split('');
 
-function getLetterMetrics() {
+let _metricsCache = null;
+function _computeMetrics() {
   const fw = frameWrap.getBoundingClientRect().width;
   if (isMobile) {
-    // Smaller letters to fit single line above portrait frame
-    const fw = frameWrap.getBoundingClientRect().width;
     return {
       letterH: fw * 0.065,
       letterW: fw * 0.056,
@@ -107,16 +107,21 @@ function getLetterMetrics() {
       offsetY: fw * 0.04,
     };
   }
-  // Pure frame-ratio: at 650px frame width these produce the reference sizes
   return {
-    letterH: fw * 0.03225,   // 46 / 650
-    letterW: fw * 0.042,   // 43 / 650
-    spaceW:  fw * 0.0525,   // 47 / 650
-    swapDist: fw * 0.05,  // 55 / 650
-    offsetX: fw * 0.02,     // 26 / 650
-    offsetY: fw * 0.0225,   // 18 / 650
+    letterH: fw * 0.03225,
+    letterW: fw * 0.042,
+    spaceW:  fw * 0.0525,
+    swapDist: fw * 0.05,
+    offsetX: fw * 0.02,
+    offsetY: fw * 0.0225,
   };
 }
+function getLetterMetrics() {
+  if (!_metricsCache) _metricsCache = _computeMetrics();
+  return _metricsCache;
+}
+function invalidateMetrics() { _metricsCache = null; }
+window.addEventListener('resize', invalidateMetrics);
 
 const slots = [];
 
@@ -233,7 +238,7 @@ const sofiaFallPairs = [];
 let flushing = false;
 let swapCount = 0;
 
-const FLOOR_PAD_RATIO = 0.05;
+const FLOOR_PAD_RATIO = 0.03;
 
 function buildWalls() {
   const oldStatic = world.bodies.filter(b => b.isStatic && b.label === 'wall');
@@ -256,7 +261,7 @@ function buildWalls() {
   ));
   // Right wall
   World.add(world, Bodies.rectangle(
-    fr.right - pad - inset + thick / 2 + 12, fr.top + fr.height / 2, thick, fr.height * 2,
+    fr.right - pad - inset + thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
     { isStatic: true, label: 'wall', collisionFilter: wallFilter }
   ));
 }
@@ -517,7 +522,7 @@ Events.on(engine, 'afterUpdate', () => {
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
         );
         const sofiaRightWall = Bodies.rectangle(
-          fr.right - pad - inset + thick / 2 + 12, fr.top + fr.height / 2, thick, fr.height * 2,
+          fr.right - pad - inset + thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
           { isStatic: true, label: 'sofiaWall', restitution: 0.3, friction: 0.6,
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
         );
@@ -697,7 +702,6 @@ function swapTo(name) {
 initPositions();
 
 /* ── Cinematic reveal ── */
-const sceneEl = document.getElementById('scene');
 
 if (isMobile) {
   /* ═══════════════════════════════════════
@@ -721,7 +725,7 @@ if (isMobile) {
   let swapCount = 0;
   let firstTapDone = false;
 
-  const FLOOR_PAD_RATIO = 0.04;
+  const FLOOR_PAD_RATIO = 0.03;
 
   function buildWalls() {
     const oldStatic = world.bodies.filter(b => b.isStatic && b.label === 'wall');
@@ -745,7 +749,7 @@ if (isMobile) {
     ));
     // Right wall
     World.add(world, Bodies.rectangle(
-      fr.right - pad - inset + thick / 2 + 8, fr.top + fr.height / 2, thick, fr.height * 2,
+      fr.right - pad - inset + thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
       { isStatic: true, label: 'wall', collisionFilter: wallFilter }
     ));
   }
@@ -1000,13 +1004,23 @@ if (isMobile) {
         const mainFloor = floorBodies.find(b => b.position.y > fr2.top + fr2.height * 0.5);
         if (mainFloor) World.remove(world, mainFloor);
 
-        // Private floor for sofia re-rain
+        // Private floor + side walls for sofia re-rain
         const sofiaFloor = Bodies.rectangle(
           fr2.left + fr2.width / 2, fr2.bottom - fr2.height * FLOOR_PAD_RATIO - inset + 30, fr2.width * 1.4, thick,
           { isStatic: true, label: 'sofiaFloor', restitution: 0.3, friction: 0.6,
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
         );
-        World.add(world, sofiaFloor);
+        const sofiaLeftWall = Bodies.rectangle(
+          fr2.left + inset - thick / 2, fr2.top + fr2.height / 2, thick, fr2.height * 2,
+          { isStatic: true, label: 'sofiaWall', restitution: 0.3, friction: 0.6,
+            collisionFilter: { category: 0x0002, mask: 0x0004 } }
+        );
+        const sofiaRightWall = Bodies.rectangle(
+          fr2.right - inset + thick / 2, fr2.top + fr2.height / 2, thick, fr2.height * 2,
+          { isStatic: true, label: 'sofiaWall', restitution: 0.3, friction: 0.6,
+            collisionFilter: { category: 0x0002, mask: 0x0004 } }
+        );
+        World.add(world, [sofiaFloor, sofiaLeftWall, sofiaRightWall]);
 
         // Wake debris, nudge down
         for (const dp of debrisPairs) {
@@ -1142,7 +1156,7 @@ if (isMobile) {
 
   // Start state: frame small near the bottom of the scene
   gsap.set(sceneEl, { opacity: 1 });
-  gsap.set(frameWrap, { scale: 0.18, y: '38vh', transformOrigin: '50% 100%' });
+  gsap.set(frameWrap, { scale: 0.18, transformOrigin: '50% 100%' });
   gsap.set(outerBorder, { opacity: 0 });
 
   const revealTL = gsap.timeline({ delay: 0.3 });
@@ -1150,7 +1164,6 @@ if (isMobile) {
   // Scale up from small-at-bottom to full size at center
   revealTL.to(frameWrap, {
     scale: 1,
-    y: 0,
     duration: 2.2,
     ease: 'power2.out',
   });

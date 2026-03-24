@@ -49,9 +49,11 @@ Photography/art portfolio for Sofia Cartuccia (alias "Sybil Sometimes"). Static 
 - **Interactive states:** Every clickable element needs hover, focus-visible, and active states.
 - **Images:** Gradient overlay + color treatment with `mix-blend-multiply`.
 
-## Git Workflow
-- **After every meaningful set of changes, commit and push to GitHub.**
+## Git Workflow — CRITICAL, DO NOT SKIP
+- **You MUST commit and push after every meaningful set of changes. This is non-negotiable.**
+- Do NOT wait until the end of a conversation. Commit as you go — after finishing each feature, fix, or logical unit of work.
 - Use `git add` for specific changed files (not `git add -A`), then commit with a clean message, then `git push`.
+- If you completed changes and haven't committed yet, stop what you're doing and commit now.
 - Remote: `origin` → `https://github.com/kjoshh/sofia-portfolio.git`, branch: `main`
 
 ## Hard Rules

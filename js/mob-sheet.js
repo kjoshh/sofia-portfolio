@@ -19,7 +19,10 @@
   sheetToggle.addEventListener('click', function() {
     var isOpen = sheet.classList.toggle('is-open');
     var body = sheet.querySelector('.mob-sheet-body');
-    var children = body.querySelectorAll('.mob-sheet-section-label, .mob-sheet-grid');
+    var cells = body.querySelectorAll('.mob-sheet-cell');
+    var cellImgs = body.querySelectorAll('.mob-sheet-cell-img');
+    var cellLabels = body.querySelectorAll('.mob-sheet-cell-label');
+    var sectionLabel = body.querySelector('.mob-sheet-section-label');
 
     if (isOpen) {
       // Calculate how far left the star needs to travel
@@ -45,11 +48,28 @@
         { height: 'auto', duration: 0.45, ease: 'power4.out', overflow: 'hidden',
           onComplete: function() { body.style.overflow = ''; } }
       );
-      // Fade grid up
-      gsap.fromTo(children,
-        { opacity: 0, y: 8 },
-        { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: 0.2 }
+      // Cells stagger in with scale overshoot
+      gsap.fromTo(cells,
+        { scale: 0.85, yPercent: 15, opacity: 0 },
+        { scale: 1, yPercent: 0, opacity: 1, duration: 0.5, stagger: 0.06, ease: 'back.out(1.4)', delay: 0.15 }
       );
+      // Image zoom settle
+      gsap.fromTo(cellImgs,
+        { scale: 1.15 },
+        { scale: 1, duration: 0.55, stagger: 0.06, ease: 'power2.out', delay: 0.15 }
+      );
+      // Labels fade in after cells start
+      gsap.fromTo(cellLabels,
+        { opacity: 0, yPercent: 8 },
+        { opacity: 1, yPercent: 0, duration: 0.3, stagger: 0.06, ease: 'power2.out', delay: 0.3 }
+      );
+      // Section label fades in
+      if (sectionLabel) {
+        gsap.fromTo(sectionLabel,
+          { opacity: 0, y: 6 },
+          { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', delay: 0.15 }
+        );
+      }
     } else {
       // Links fade out immediately
       gsap.to(linkItems, { opacity: 0, x: -6, duration: 0.18, ease: 'power2.in', stagger: 0.05 });
@@ -59,8 +79,12 @@
       gsap.to(iconWrap, { x: 0, duration: 0.5, ease: 'power3.inOut', delay: 0.12 });
       gsap.to(icon, { rotation: 0, duration: 0.5, ease: 'power3.inOut', delay: 0.12 });
 
-      // Fade grid out
-      gsap.to(children, { opacity: 0, y: 4, duration: 0.2, ease: 'power2.in' });
+      // Cells shrink out
+      gsap.to(cells, { opacity: 0, scale: 0.9, yPercent: 10, duration: 0.2, stagger: 0.03, ease: 'power2.in' });
+      // Labels fade out
+      gsap.to(cellLabels, { opacity: 0, duration: 0.15, ease: 'power2.in' });
+      // Section label out
+      if (sectionLabel) gsap.to(sectionLabel, { opacity: 0, duration: 0.15, ease: 'power2.in' });
       // Collapse body
       gsap.to(body, { height: 0, duration: 0.35, ease: 'power3.inOut', delay: 0.1 });
     }
