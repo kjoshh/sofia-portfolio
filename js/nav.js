@@ -3,8 +3,6 @@ function applyFontStagger(el) {
   el.dataset.staggerApplied = "true";
   const original = el.textContent.trim();
   el.style.display = "inline-block";
-  // We no longer lock the width, as "Sybil Sometimes" is longer than "Sofia Cartuccia"
-  // el.style.width = el.offsetWidth + "px";
   el.style.textAlign = "center";
   el.style.whiteSpace = "nowrap";
   el.style.overflow = "visible";
