@@ -14,8 +14,7 @@ let currentName = 'sofia';
 let revealComplete = false;
 let revealStarted = false;
 
-/* ── Skip cinematic reveal if returning to index within same session ── */
-const skipReveal = !!sessionStorage.getItem('indexRevealed');
+
 
 /* ── Hover triggers ── */
 const bgHoverEl = document.getElementById('bgHover');
@@ -785,33 +784,20 @@ if (isMobile) {
   // ── Reveal: scale-up frame + border together + letter rain ──
   gsap.set(sceneEl, { opacity: 1 });
 
-  if (skipReveal) {
-    // Skip cinematic frame reveal — show immediately, just rain letters
-    gsap.set(frameWrap, { scale: 1, opacity: 1, y: 0 });
-    setTimeout(() => {
-      calcPositions();
-      buildWalls();
-      startLetterRain();
-    }, 200);
-  } else {
-    gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
+  gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
 
-    const revealTL = gsap.timeline({ delay: 0.3 });
-    revealTL.to(frameWrap, {
-      scale: 1, opacity: 1, y: 0,
-      duration: 1.4, ease: 'power2.out',
-    });
+  const revealTL = gsap.timeline({ delay: 0.3 });
+  revealTL.to(frameWrap, {
+    scale: 1, opacity: 1, y: 0,
+    duration: 1.4, ease: 'power2.out',
+  });
 
-    // Build walls + start letter rain after frame arrives
-    revealTL.call(() => {
-      calcPositions();
-      buildWalls();
-      startLetterRain();
+  // Build walls + start letter rain after frame arrives
+  revealTL.call(() => {
+    calcPositions();
+    buildWalls();
+    startLetterRain();
   }, null, 1.2);
-
-    // Mark reveal as done for mobile too
-    sessionStorage.setItem('indexRevealed', '1');
-  } // end else (full mobile reveal)
 
   /* ── Letter rain reveal (physics-based, like desktop) ── */
   const revealPairs = [];
@@ -1246,28 +1232,9 @@ if (isMobile) {
     }, 300);
   });
 
-} else if (skipReveal) {
-  /* ═══════════════════════════════════════
-     DESKTOP: Skip reveal — just letter rain
-     ═══════════════════════════════════════ */
-  gsap.set(sceneEl, { opacity: 1 });
-  gsap.set(frameWrap, { opacity: 1, scale: 1, transformOrigin: '50% 50%' });
-  gsap.set(outerBorder, { opacity: 1 });
-  gsap.set('.main-nav', { opacity: 1, y: 0 });
-  const navStarSkip = document.getElementById('navStarSep');
-  if (navStarSkip) gsap.set(navStarSkip, { opacity: 0.55 });
-  const dustOverlaySkip = document.querySelector('.dust');
-  if (dustOverlaySkip) gsap.set(dustOverlaySkip, { opacity: 0.15 });
-
-  setTimeout(() => {
-    initPositions();
-    buildWalls();
-    startSimpleRain();
-  }, 300);
-
 } else {
   /* ═══════════════════════════════════════
-     DESKTOP: Simple animated entrance + letter rain
+     DESKTOP: Animated entrance + letter rain
      ═══════════════════════════════════════ */
 
   gsap.set(sceneEl, { opacity: 1 });
@@ -1293,8 +1260,6 @@ if (isMobile) {
     buildWalls();
     startSimpleRain();
   }, 600);
-
-  sessionStorage.setItem('indexRevealed', '1');
 
 }
 
