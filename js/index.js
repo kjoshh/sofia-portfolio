@@ -361,6 +361,7 @@ window.addEventListener('resize', () => {
 
 const revealPairs = [];
 let loadingPhase = 0;
+let isInitialReveal = false;
 
 /* Fly letters from rain to final positions */
 function flyToFinalPositions(onAllSettled) {
@@ -406,6 +407,20 @@ function flyToFinalPositions(onAllSettled) {
           buildWalls();
           revealComplete = true;
           frameWrap.style.cursor = '';
+
+          // On initial reveal: animate frame + nav in after letters settle
+          if (isInitialReveal) {
+            isInitialReveal = false;
+            const entranceTL = gsap.timeline({ delay: 0.2 });
+            entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1, ease: 'power2.out' }, 0);
+            entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.4);
+            const dustEl = document.querySelector('.dust');
+            if (dustEl) entranceTL.to(dustEl, { opacity: 0.15, duration: 0.8, ease: 'power2.out' }, 0.3);
+            entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
+            const navStar = document.getElementById('navStarSep');
+            if (navStar) entranceTL.to(navStar, { opacity: 0.55, duration: 0.5 }, 0.5);
+          }
+
           if (onAllSettled) onAllSettled();
         }
       }
@@ -794,20 +809,16 @@ if (isMobile) {
       startLetterRain();
     }, 200);
   } else {
+    // Frame stays hidden — letters rain first, then frame reveals after settle
+    isMobInitialReveal = true;
     gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
 
-    const revealTL = gsap.timeline({ delay: 0.3 });
-    revealTL.to(frameWrap, {
-      scale: 1, opacity: 1, y: 0,
-      duration: 1.4, ease: 'power2.out',
-    });
-
-    // Build walls + start letter rain after frame arrives
-    revealTL.call(() => {
+    // Start letter rain immediately
+    setTimeout(() => {
       calcPositions();
       buildWalls();
       startLetterRain();
-  }, null, 1.2);
+    }, 300);
 
     // Mark reveal as done for mobile too
     sessionStorage.setItem('indexRevealed', '1');
@@ -816,6 +827,7 @@ if (isMobile) {
   /* ── Letter rain reveal (physics-based, like desktop) ── */
   const revealPairs = [];
   let settledCount = 0;
+  let isMobInitialReveal = false;
 
   function startLetterRain() {
     if (revealStarted) return;
@@ -878,7 +890,18 @@ if (isMobile) {
         duration: 0.5, ease: 'power2.out',
         onComplete: () => {
           settledCount++;
-          if (settledCount >= slots.length) { revealComplete = true; startBreathe(); }
+          if (settledCount >= slots.length) {
+            revealComplete = true;
+            // On initial reveal: animate frame in after letters settle
+            if (isMobInitialReveal) {
+              isMobInitialReveal = false;
+              gsap.to(frameWrap, {
+                scale: 1, opacity: 1, y: 0,
+                duration: 1.2, delay: 0.2, ease: 'power2.out',
+              });
+            }
+            startBreathe();
+          }
         }
       }
     );
@@ -1267,8 +1290,10 @@ if (isMobile) {
 
 } else {
   /* ═══════════════════════════════════════
-     DESKTOP: Simple animated entrance + letter rain
+     DESKTOP: Letter rain first, then frame + nav reveal
      ═══════════════════════════════════════ */
+
+  isInitialReveal = true;
 
   gsap.set(sceneEl, { opacity: 1 });
   gsap.set(frameWrap, { opacity: 0, scale: 0.92, transformOrigin: '50% 50%' });
@@ -1278,21 +1303,12 @@ if (isMobile) {
   const dustOverlayInit = document.querySelector('.dust');
   if (dustOverlayInit) gsap.set(dustOverlayInit, { opacity: 0 });
 
-  // Animate everything in
-  const entranceTL = gsap.timeline({ delay: 0.3 });
-  entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1, ease: 'power2.out' }, 0);
-  entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.4);
-  if (dustOverlayInit) entranceTL.to(dustOverlayInit, { opacity: 0.15, duration: 0.8, ease: 'power2.out' }, 0.3);
-  entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
-  const navStarInit = document.getElementById('navStarSep');
-  if (navStarInit) entranceTL.to(navStarInit, { opacity: 0.55, duration: 0.5 }, 0.5);
-
-  // Start letter rain once frame is mostly visible
+  // Start letter rain immediately — frame/nav reveal after letters settle
   setTimeout(() => {
     initPositions();
     buildWalls();
     startSimpleRain();
-  }, 600);
+  }, 300);
 
   sessionStorage.setItem('indexRevealed', '1');
 
