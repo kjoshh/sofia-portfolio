@@ -2217,7 +2217,6 @@ html:has(body.landing-page) {
   inset: 0% 0%;
   width: 96%;
   margin-left: 4%;
-  object-fit: contain;
   z-index: 1;
   background: url("../brand_assets/backgroundbd.png") center / contain no-repeat;
   clip-path: inset(0 100% 0 0);
