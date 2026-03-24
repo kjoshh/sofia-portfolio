@@ -40,7 +40,7 @@
         overlay.style.transition = 'opacity 500ms cubic-bezier(0.455, 0.03, 0.515, 0.955)';
         overlay.style.opacity = '1';
         setTimeout(function () {
-          window.location = href;
+          window.location.href = href;
         }, 1000);
       });
     }

@@ -42,14 +42,16 @@ window.addEventListener("resize", updateOverviewCellHeight);
 
 /* ── Imgholder cursor grow (overview layout only) ── */
 const cursor = document.getElementById("cursor");
-document.querySelectorAll(".imgholder").forEach(el => {
-  el.addEventListener("mouseenter", () => {
-    if (typeof activeLayout !== "undefined" && activeLayout === "layout-1-gall3ry") {
-      cursor.classList.add("hover");
-    }
+if (cursor) {
+  document.querySelectorAll(".imgholder").forEach(el => {
+    el.addEventListener("mouseenter", () => {
+      if (typeof activeLayout !== "undefined" && activeLayout === "layout-1-gall3ry") {
+        cursor.classList.add("hover");
+      }
+    });
+    el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
   });
-  el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
-});
+}
 
 
 /* ── Lenis smooth scroll ── */
@@ -548,20 +550,6 @@ items.forEach((item) => {
 });
 
 
-/* ── Hover preview ── */
-const hoverPreview = document.getElementById("hover-preview");
-const hoverPreviewImg = hoverPreview.querySelector("img");
-
-gsap.set(hoverPreview, { xPercent: -50, yPercent: -50 });
-
-const leftTo = gsap.quickTo(hoverPreview, "left", { duration: 0.6, ease: "power3.out" });
-const topTo = gsap.quickTo(hoverPreview, "top", { duration: 0.6, ease: "power3.out" });
-
-window.addEventListener("mousemove", (e) => {
-  if (activeLayout !== "layout-1-gall3ry") return;
-  leftTo(e.clientX);
-  topTo(e.clientY);
-});
 
 
 /* ── Font stagger + active/notactive + cross-hover on pro-nav (mirrors main nav) ── */
@@ -587,14 +575,6 @@ function updateProNavActive(activeEl) {
       el.classList.add("notactive");
       el.classList.remove("active");
     }
-  });
-}
-
-function clearProNavActive() {
-  proNavEls.forEach(el => {
-    el._isCurrentPage = false;
-    el.classList.remove("active", "notactive");
-    if (el._staggerOff) el._staggerOff();
   });
 }
 
