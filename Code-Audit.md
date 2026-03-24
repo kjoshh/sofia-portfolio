@@ -58,7 +58,7 @@ Code-Audit aller HTML-Seiten, JS und CSS — Bugs, toter Code, Redundanzen.
 | ~~FD4~~  | Forgetting Dreams | Accessibility | ~~Film-Roll `alt=""` — als dekorativ markiert~~      | ✅ done   |
 | FD5  | Forgetting Dreams | Kosmetisch    | Doppelte Leerzeichen in HTML-Attributen          | 2 min   |
 | ~~HC4~~  | Hard-Coded        | Accessibility | ~~Film-Roll `alt=""` — als dekorativ markiert~~      | ✅ done   |
-| HC5  | Hard-Coded        | Bug           | `hover-preview` mit `src=""` → Phantom-Request   | 1 min   |
+| ~~HC5~~  | Hard-Coded        | Bug           | ~~`hover-preview` mit `src=""` → Phantom-Request~~   | ✅ done   |
 | HC6  | Hard-Coded        | Kosmetisch    | Trailing Spaces in CSS-Klassen                   | 1 min   |
 
 ### Optional (Refactoring)
