@@ -270,6 +270,7 @@ buildWalls();
 let _resizeTimer;
 let _resizeCleaned = false;
 let _resizing = false;
+let _rainGen = 0;
 window.addEventListener('resize', () => {
   clearTimeout(_resizeTimer);
   _resizing = true;
@@ -277,6 +278,7 @@ window.addEventListener('resize', () => {
   // On first resize event: immediately wipe everything
   if (!_resizeCleaned) {
     _resizeCleaned = true;
+    _rainGen++;        // invalidate pending rain setTimeout callbacks
     flushing = false;  // cancel any in-progress flush
 
     // Remove debris clones + physics
@@ -347,11 +349,14 @@ function startLetterRain() {
   frameWrap.style.cursor = 'wait';
   const m = getLetterMetrics();
   const fr = frameWrap.getBoundingClientRect();
+  const gen = _rainGen;
 
   slots.forEach((slot, idx) => {
     const delay = idx * 45 + Math.random() * 30;
 
     setTimeout(() => {
+      if (_rainGen !== gen) return;  // resize cancelled this rain
+
       // Make visible just before dropping
       gsap.set(slot.sofiaEl, { opacity: 0.9 });
 
@@ -385,6 +390,7 @@ function startLetterRain() {
 
   // Safety timeout: force-settle any remaining after 4s
   setTimeout(() => {
+    if (_rainGen !== gen) return;  // resize cancelled this rain
     calcPositions();
     for (const pair of revealPairs) {
       if (!pair.settled) settleLetter(pair);
