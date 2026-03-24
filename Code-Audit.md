@@ -55,9 +55,9 @@ Code-Audit aller HTML-Seiten, JS und CSS — Bugs, toter Code, Redundanzen.
 | ~~I9~~   | Index             | Toter Code    | ~~`object-fit: contain` auf Div wirkungslos~~        | ✅ done   |
 | ~~I10~~  | Index             | Cleanup       | ~~Recovery-Kommentarblock in custom.css~~             | ✅ done   |
 | ~~I13~~  | Index             | Cleanup       | ~~Kommentierter Code in nav.js~~                     | ✅ done   |
-| FD4  | Forgetting Dreams | Accessibility | Film-Roll `alt=""` — als dekorativ markiert      | 1 min   |
+| ~~FD4~~  | Forgetting Dreams | Accessibility | ~~Film-Roll `alt=""` — als dekorativ markiert~~      | ✅ done   |
 | FD5  | Forgetting Dreams | Kosmetisch    | Doppelte Leerzeichen in HTML-Attributen          | 2 min   |
-| HC4  | Hard-Coded        | Accessibility | Film-Roll `alt=""` — als dekorativ markiert      | 1 min   |
+| ~~HC4~~  | Hard-Coded        | Accessibility | ~~Film-Roll `alt=""` — als dekorativ markiert~~      | ✅ done   |
 | HC5  | Hard-Coded        | Bug           | `hover-preview` mit `src=""` → Phantom-Request   | 1 min   |
 | HC6  | Hard-Coded        | Kosmetisch    | Trailing Spaces in CSS-Klassen                   | 1 min   |
 
