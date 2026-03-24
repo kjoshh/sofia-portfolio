@@ -34,7 +34,7 @@ Vollständiger Responsive-Check aller Seiten. Geprüft: CSS Media Queries, feste
 
 | #    | Bereich           | Typ         | Beschreibung                                                     | Datei                    |
 |------|-------------------|-------------|------------------------------------------------------------------|--------------------------|
-| R7   | Global (Mobile)   | Safe Area   | `.mob-sheet` fehlt `env(safe-area-inset-bottom)` → überdeckt von Home-Indicator | `css/custom.css:994`     |
+| ~~R7~~   | Global (Mobile)   | Safe Area   | ~~`.mob-sheet` fehlt `env(safe-area-inset-bottom)` → überdeckt von Home-Indicator~~ | ✅ done     |
 | R8   | About (Tablet)    | Layout      | Padding-Werte (24px) auf Tablets (768-991px) zu eng              | `css/custom.css:2503-2529` |
 | R9   | Projekt-Seiten    | Layout      | Overview-Grid geht von 5 Spalten direkt auf 2 — kein Tablet-Zwischenschritt | `css/custom.css:363-374` |
 
