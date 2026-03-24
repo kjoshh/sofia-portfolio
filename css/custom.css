@@ -233,6 +233,9 @@ body.is-transitioning * {
   .archive-grid {
     columns: 3;
   }
+  .gall3ry.layout-1-gall3ry {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 767px) {
@@ -1398,6 +1401,13 @@ text-decoration: none;
     color: rgba(233, 229, 221, 0.35);
   }
 
+}
+
+/* Disable grain animation on small phones for battery/CPU */
+@media (max-width: 479px) {
+  .grain::after {
+    animation: none;
+  }
 }
 
 /* ══════════════════════════════════════════
