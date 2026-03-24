@@ -53,7 +53,7 @@ Code-Audit aller HTML-Seiten, JS und CSS — Bugs, toter Code, Redundanzen.
 | ~~I7~~   | Index             | Toter Code    | ~~nav.js: `w-nav-link`/`w-nav` Selektoren → ~80 Zeilen tot~~ | ✅ done |
 | ~~I8~~   | Index             | Toter Code    | ~~`css/landing.css` (272 Zeilen) von keiner Seite geladen~~ | ✅ done |
 | ~~I9~~   | Index             | Toter Code    | ~~`object-fit: contain` auf Div wirkungslos~~        | ✅ done   |
-| I10  | Index             | Cleanup       | Recovery-Kommentarblock in custom.css             | 1 min   |
+| ~~I10~~  | Index             | Cleanup       | ~~Recovery-Kommentarblock in custom.css~~             | ✅ done   |
 | I13  | Index             | Cleanup       | Kommentierter Code in nav.js                     | 1 min   |
 | FD4  | Forgetting Dreams | Accessibility | Film-Roll `alt=""` — als dekorativ markiert      | 1 min   |
 | FD5  | Forgetting Dreams | Kosmetisch    | Doppelte Leerzeichen in HTML-Attributen          | 2 min   |

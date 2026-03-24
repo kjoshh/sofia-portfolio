@@ -2372,11 +2372,6 @@ html:has(body.landing-page) {
 }
 
 
-/* ══════════════════════════════════════════════════════════════
-   RECOVERED RESPONSIVE STYLES — from Cursor backup (tEAI.css)
-   Review and remove this comment block when confirmed working.
-   ══════════════════════════════════════════════════════════════ */
-
 /* ── Lightbox mobile ── */
 @media (max-width: 767px) {
   .lb-img {
