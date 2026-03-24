@@ -223,6 +223,12 @@ body.is-transitioning * {
   padding: 0;
 }
 
+@media (max-width: 1200px) {
+  .archive-grid {
+    columns: 4;
+  }
+}
+
 @media (max-width: 991px) {
   .archive-grid {
     columns: 3;

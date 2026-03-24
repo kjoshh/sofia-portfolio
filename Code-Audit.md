@@ -26,7 +26,7 @@ Vollständiger Responsive-Check aller Seiten. Geprüft: CSS Media Queries, feste
 | ~~R2~~   | Index (Mobile)    | Overflow    | ~~`.imgbg` nutzt `width: 100vw` innerhalb ≤991px Block (hat bereits `inset: 0`)~~ | ✅ done     |
 | ~~R3~~   | Projekt-Seiten    | Overflow    | ~~`.gall3ry.layout-0-gall3ry` nutzt `width: 100vw`~~               | ✅ done     |
 | ~~R4~~   | Projekt-Seiten    | Overflow    | ~~`.gall3ry.layout-1-gall3ry` nutzt `width: 100vw`~~               | ✅ done     |
-| R5   | Archive           | Layout      | Grid springt von 6 auf 3 Spalten bei 991px — zu harter Sprung   | `css/custom.css:224-241` |
+| ~~R5~~   | Archive           | Layout      | ~~Grid springt von 6 auf 3 Spalten bei 991px — zu harter Sprung~~   | ✅ done |
 
 *R1 und R6 waren in `css/landing.css` — Datei wurde gelöscht (I8), Issues damit erledigt.*
 
