@@ -6,6 +6,8 @@ const sceneEl = document.getElementById('scene');
 
 /* ── Mobile detection ── */
 const isMobile = window.matchMedia('(max-width: 991px)').matches;
+const mobileQuery = window.matchMedia('(max-width: 991px)');
+mobileQuery.addEventListener('change', () => { location.reload(); });
 
 /* ── State ── */
 let currentName = 'sofia';
