@@ -2234,6 +2234,7 @@ html:has(body.landing-page) {
   background: url("../images-neu/paint-stroke.png") center / contain no-repeat;
   clip-path: inset(0 100% 0 0);
 }
+
 .frame-photo {
   position: absolute;
   inset: 4% 3%;
@@ -2251,6 +2252,7 @@ html:has(body.landing-page) {
   margin-bottom: 5%;
 }
 .frame-border-hover {
+
   position: absolute;
   inset: 19% 21%;
   margin-bottom: 5%;
@@ -2264,6 +2266,8 @@ html:has(body.landing-page) {
   height: 100%;
   display: block;
   mix-blend-mode: multiply;
+
+  
 }
 .frame-border {
   position: absolute;
@@ -2317,17 +2321,6 @@ html:has(body.landing-page) {
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: auto;
-}
-
-/* ── Reveal star (loading indicator) ── */
-.reveal-star {
-  position: fixed;
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  will-change: transform, opacity;
-  pointer-events: none;
-  z-index: 10010;
 }
 
 /* ── Hide nav until reveal completes (desktop only) ── */
