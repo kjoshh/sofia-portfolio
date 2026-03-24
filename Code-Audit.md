@@ -56,10 +56,10 @@ Code-Audit aller HTML-Seiten, JS und CSS — Bugs, toter Code, Redundanzen.
 | ~~I10~~  | Index             | Cleanup       | ~~Recovery-Kommentarblock in custom.css~~             | ✅ done   |
 | ~~I13~~  | Index             | Cleanup       | ~~Kommentierter Code in nav.js~~                     | ✅ done   |
 | ~~FD4~~  | Forgetting Dreams | Accessibility | ~~Film-Roll `alt=""` — als dekorativ markiert~~      | ✅ done   |
-| FD5  | Forgetting Dreams | Kosmetisch    | Doppelte Leerzeichen in HTML-Attributen          | 2 min   |
+| ~~FD5~~  | Forgetting Dreams | Kosmetisch    | ~~Doppelte Leerzeichen in HTML-Attributen~~          | ✅ done   |
 | ~~HC4~~  | Hard-Coded        | Accessibility | ~~Film-Roll `alt=""` — als dekorativ markiert~~      | ✅ done   |
 | ~~HC5~~  | Hard-Coded        | Bug           | ~~`hover-preview` mit `src=""` → Phantom-Request~~   | ✅ done   |
-| HC6  | Hard-Coded        | Kosmetisch    | Trailing Spaces in CSS-Klassen                   | 1 min   |
+| ~~HC6~~  | Hard-Coded        | Kosmetisch    | ~~Trailing Spaces in CSS-Klassen~~                   | ✅ done   |
 
 ### Optional (Refactoring)
 
