@@ -50,7 +50,7 @@ Code-Audit aller HTML-Seiten, JS und CSS — Bugs, toter Code, Redundanzen.
 | ~~AB9~~  | About             | Kosmetisch    | ~~`setInterval` für Uhr wird nie aufgeräumt~~        | ✅ done |
 | ~~I4~~   | Index             | Bug           | ~~Variable Shadowing in `getLetterMetrics()`~~       | ✅ done |
 | ~~I6~~   | Index             | Performance   | ~~Dust-Canvas rAF läuft endlos ohne Visibility-Check~~ | ✅ done |
-| I7   | Index             | Toter Code    | nav.js: `w-nav-link`/`w-nav` Selektoren → ~80 Zeilen tot | 2 min |
+| ~~I7~~   | Index             | Toter Code    | ~~nav.js: `w-nav-link`/`w-nav` Selektoren → ~80 Zeilen tot~~ | ✅ done |
 | I8   | Index             | Toter Code    | `css/landing.css` (272 Zeilen) von keiner Seite geladen | 1 min |
 | I9   | Index             | Toter Code    | `object-fit: contain` auf Div wirkungslos        | 1 min   |
 | I10  | Index             | Cleanup       | Recovery-Kommentarblock in custom.css             | 1 min   |

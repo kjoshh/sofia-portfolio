@@ -87,14 +87,6 @@ function applyFontStagger(el) {
 
   // Mark active nav link based on current URL
   const path = window.location.pathname.split('/').pop() || 'index.html';
-  document.querySelectorAll('.w-nav-link').forEach(link => {
-    const href = (link.getAttribute('href') || '').split('/').pop();
-    if (href === path) {
-      link.classList.add('w--current');
-    } else {
-      link.classList.remove('w--current');
-    }
-  });
 
   // Set active/notactive on top nav links (excluding pro/layout nav)
   document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)').forEach(link => {
@@ -118,55 +110,6 @@ function applyFontStagger(el) {
       logo.classList.add('notactive');
       logo.classList.remove('active');
     }
-  });
-
-  // Mobile navbar collapse
-  const breakpoints = { medium: 991, small: 767, tiny: 479, all: Infinity };
-
-  document.querySelectorAll('.w-nav[data-collapse]').forEach(nav => {
-    const collapse = nav.getAttribute('data-collapse');
-    const bp = breakpoints[collapse] || 0;
-    const menu = nav.querySelector('.w-nav-menu');
-    if (!menu) return;
-
-    // Create hamburger button (matches webflow.css .w-nav-button styles)
-    const btn = document.createElement('div');
-    btn.className = 'w-nav-button';
-    btn.setAttribute('tabindex', '0');
-    btn.setAttribute('role', 'button');
-    btn.setAttribute('aria-label', 'menu');
-    btn.setAttribute('aria-expanded', 'false');
-    btn.innerHTML = '<div class="w-icon-nav-menu"></div>';
-    nav.appendChild(btn);
-
-    const isMobile = () => window.innerWidth <= bp;
-
-    function openMenu() {
-      menu.setAttribute('data-nav-menu-open', '');
-      btn.classList.add('w--open');
-      btn.setAttribute('aria-expanded', 'true');
-    }
-
-    function closeMenu() {
-      menu.removeAttribute('data-nav-menu-open');
-      btn.classList.remove('w--open');
-      btn.setAttribute('aria-expanded', 'false');
-    }
-
-    btn.addEventListener('click', () => {
-      btn.classList.contains('w--open') ? closeMenu() : openMenu();
-    });
-    btn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
-    });
-
-    menu.querySelectorAll('.w-nav-link').forEach(link => {
-      link.addEventListener('click', closeMenu);
-    });
-
-    window.addEventListener('resize', () => {
-      if (!isMobile()) closeMenu();
-    });
   });
 
   // Apply font stagger + cross-hover to top nav links (exclude logo-link — it uses images, not text)
