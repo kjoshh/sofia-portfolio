@@ -8,7 +8,7 @@ if (isMobileAbout) {
 
 /* ── WebGL shader background (vanilla WebGL, no Three.js) ── */
 (function () {
-  if ('ontouchstart' in window || window.innerWidth < 768) return;
+  if (window.matchMedia('(pointer: coarse)').matches && window.innerWidth < 768) return;
 
   const vsSource = `
     attribute vec2 a_position;
@@ -86,6 +86,11 @@ if (isMobileAbout) {
     const s = gl.createShader(type);
     gl.shaderSource(s, source);
     gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.warn('Shader compile error:', gl.getShaderInfoLog(s));
+      gl.deleteShader(s);
+      return null;
+    }
     return s;
   }
 
@@ -530,12 +535,22 @@ document.querySelectorAll(".about-section-title").forEach(title => {
       }, 150);
     });
     el.addEventListener('click', () => {
-      navigator.clipboard.writeText(el.dataset.copy).then(() => {
-        clearTimeout(restoreTimer);
-        rotate('Copied!', false);
-      }).catch(() => {
-        rotate('Copy failed', false);
-      });
+      const text = el.dataset.copy;
+      const onSuccess = () => { clearTimeout(restoreTimer); rotate('Copied!', false); };
+      const onFail = () => { rotate('Copy failed', false); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(onSuccess).catch(onFail);
+      } else {
+        // Fallback for browsers without Clipboard API
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy') ? onSuccess() : onFail(); }
+        catch (_) { onFail(); }
+        ta.remove();
+      }
     });
   });
 })();

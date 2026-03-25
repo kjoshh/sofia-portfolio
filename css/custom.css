@@ -2,6 +2,11 @@
    SHARED — Base Overrides
    ══════════════════════════════════════════ */
 
+/* Hide info paragraphs until Webflow IX3 interactions are ready (prevents FOUC on project pages) */
+html.w-mod-js:not(.w-mod-ix3) :is(.info-para) {
+  visibility: hidden !important;
+}
+
 body {
   background-color: #1e1e1b;
 }
@@ -82,7 +87,7 @@ body.is-transitioning * {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.95);
-  z-index: 9999999;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -256,7 +261,6 @@ body.is-transitioning * {
   grid-column-gap: 4px;
   grid-row-gap: 4px;
   transform-origin: center;
-  will-change: transform;
   flex-flow: wrap;
   justify-content: center;
   align-items: center;
@@ -310,7 +314,7 @@ body.is-transitioning * {
   grid-template-columns: repeat(5, 1fr);
   grid-auto-rows: var(--overview-cell-h, 13.5vw);
   gap: 10px;
-  padding: 88px 89.89px 110px;
+  padding: 88px 90px 110px;
   box-sizing: border-box;
 }
 
@@ -359,7 +363,7 @@ body.is-transitioning * {
   align-items: center;
   justify-content: flex-start;
   overflow: visible;
-  padding-bottom: 89.89px;
+  padding-bottom: 90px;
 }
 
 .gall3ry.layout-2-gall3ry .imgholder {
@@ -1617,7 +1621,6 @@ text-decoration: none;
   border-radius: 5px;
   text-decoration: none;
   opacity: 0;
-  will-change: transform, opacity;
 }
 
 .desk-nav-cell-img {

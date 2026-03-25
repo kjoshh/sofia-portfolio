@@ -323,7 +323,7 @@ function applyFontStagger(el) {
             transitionOverlay.style.transition = 'opacity 500ms cubic-bezier(0.455, 0.03, 0.515, 0.955)';
             transitionOverlay.style.opacity = '1';
           }
-          setTimeout(() => { window.location.href = href; }, 1000);
+          setTimeout(() => { window.location.href = href; }, 500);
         }
       });
     });

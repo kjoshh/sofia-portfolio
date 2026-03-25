@@ -27,6 +27,8 @@
   }
 
   document.querySelectorAll('a').forEach(function (a) {
+    // Skip links handled by nav.js dropdown (they manage their own transition)
+    if (a.closest('.nav-dropdown-wrap') || a.closest('.desk-nav-cell') || a.closest('.nav-dropdown')) return;
     if (isInternal(a)) {
       a.addEventListener('click', function (e) {
         e.preventDefault();
@@ -41,7 +43,7 @@
         overlay.style.opacity = '1';
         setTimeout(function () {
           window.location.href = href;
-        }, 1000);
+        }, 500);
       });
     }
   });

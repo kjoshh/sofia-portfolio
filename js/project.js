@@ -55,8 +55,8 @@ if (cursor) {
 
 
 /* ── Lenis smooth scroll ── */
-const isMobileLenis = window.matchMedia('(max-width: 991px)').matches;
-const lenis = new Lenis(isMobileLenis ? { wrapper: document.body } : {});
+const _mobileMediaLenis = window.matchMedia('(max-width: 991px)');
+const lenis = new Lenis(_mobileMediaLenis.matches ? { wrapper: document.body } : {});
 function raf(time) {
   lenis.raf(time);
   requestAnimationFrame(raf);
@@ -95,7 +95,6 @@ textContainer.style.display = "none";
 textContainer.style.visibility = "";
 
 const isMobile = () => window.innerWidth <= 991;
-const isTablet = () => false; // tablet now uses mobile nav
 
 // Compute nav Y offset for layout-0: position nav just below the centered image cluster
 function getLayout0NavY() {
@@ -328,7 +327,7 @@ function switchLayoutHandler(newLayout) {
 
   // On mobile, leaving Info tab: images are display:none so there's no Flip "from" position.
   // Fade text out immediately, delay class change so images only appear after text clears.
-  if ((isMobile() || isTablet()) && previousLayout === "layout-3-gall3ry") {
+  if (isMobile() && previousLayout === "layout-3-gall3ry") {
     if (textContainer) {
       gsap.killTweensOf(infoLines);
       gsap.to(infoLines, {

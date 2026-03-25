@@ -7,7 +7,7 @@ const sceneEl = document.getElementById('scene');
 /* ── Mobile detection ── */
 const isMobile = window.matchMedia('(max-width: 991px)').matches;
 const mobileQuery = window.matchMedia('(max-width: 991px)');
-mobileQuery.addEventListener('change', () => { location.reload(); });
+// Breakpoint changes are handled by CSS; no forced reload needed
 
 /* ── State ── */
 let currentName = 'sofia';

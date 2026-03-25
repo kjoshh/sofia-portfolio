@@ -13,11 +13,11 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 
 | #    | Datei                   | Zeile    | Beschreibung                                                                                                                                                                                                                 |
 |------|-------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| B1   | `js/transition.js`      | 29–47    | **Transition-Links werden doppelt gebunden.** `transition.js` bindet `click` auf *alle* `<a>` Elemente. `nav.js` bindet ebenfalls `click` auf Dropdown-Zellen (Z.308–329) mit eigenem `e.preventDefault()` + `setTimeout`. Bei Klick auf einen Dropdown-Link feuern BEIDE Handler — der `transition.js`-Handler navigiert nach 1000ms, der `nav.js`-Handler ebenfalls nach 1000ms → Race Condition, doppelte Navigation. |
-| B2   | `js/project.js`         | 56       | **`isMobileLenis` wird einmal beim Laden gesetzt und nie aktualisiert.** `const isMobileLenis = window.matchMedia('(max-width: 991px)').matches;` — bei Resize über den Breakpoint bleibt Lenis im falschen Modus. Gleiches Problem in `archive.js:2` (`const isMobile`). |
+| B1   | `js/transition.js`      | 29–47    | ✅ **Transition-Links werden doppelt gebunden.** `transition.js` bindet `click` auf *alle* `<a>` Elemente. `nav.js` bindet ebenfalls `click` auf Dropdown-Zellen (Z.308–329) mit eigenem `e.preventDefault()` + `setTimeout`. Bei Klick auf einen Dropdown-Link feuern BEIDE Handler — der `transition.js`-Handler navigiert nach 1000ms, der `nav.js`-Handler ebenfalls nach 1000ms → Race Condition, doppelte Navigation. |
+| B2   | `js/project.js`         | 56       | ✅ **`isMobileLenis` wird einmal beim Laden gesetzt und nie aktualisiert.** `const isMobileLenis = window.matchMedia('(max-width: 991px)').matches;` — bei Resize über den Breakpoint bleibt Lenis im falschen Modus. Gleiches Problem in `archive.js:2` (`const isMobile`). (Mitigiert: Lenis unterstützt keine Runtime-Rekonfiguration; Variable umbenannt.) |
 | B3   | `js/project.js`         | 44       | ✅ **`cursor` Element wird referenziert, existiert aber nicht im HTML.** `const cursor = document.getElementById("cursor");` — kein Element mit `id="cursor"` in `hard-coded.html` oder `forgetting-dreams.html`. `cursor.classList.add("hover")` wirft TypeError bei mouseenter auf `.imgholder`. |
-| B4   | `js/index.js`           | 10       | **`location.reload()` bei Breakpoint-Wechsel.** `mobileQuery.addEventListener('change', () => { location.reload(); })` — forcierter Page-Reload wenn Nutzer das Fenster über 991px resized. Disruptiv und unnötig, wenn stattdessen Layout angepasst wird. |
-| B5   | `js/about.js`           | 11       | **WebGL wird auf Touch-Geräten komplett übersprungen.** `if ('ontouchstart' in window || window.innerWidth < 768) return;` — viele Laptops mit Touchscreen (Surface, MacBook) haben `ontouchstart` → kein WebGL-Effekt trotz Desktop. |
+| B4   | `js/index.js`           | 10       | ✅ **`location.reload()` bei Breakpoint-Wechsel.** `mobileQuery.addEventListener('change', () => { location.reload(); })` — forcierter Page-Reload wenn Nutzer das Fenster über 991px resized. Disruptiv und unnötig, wenn stattdessen Layout angepasst wird. |
+| B5   | `js/about.js`           | 11       | ✅ **WebGL wird auf Touch-Geräten komplett übersprungen.** `if ('ontouchstart' in window || window.innerWidth < 768) return;` — viele Laptops mit Touchscreen (Surface, MacBook) haben `ontouchstart` → kein WebGL-Effekt trotz Desktop. |
 
 ### 1.2 Hoch (Visuell / UX-relevant)
 
@@ -27,8 +27,8 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | B7   | `index.html`            | —        | ✅ **Kein Favicon.** `index.html` hat keine `<link rel="shortcut icon">` — alle anderen Seiten haben Favicon-Links. Browser zeigt 404 für `/favicon.ico`.                                                                        |
 | B8   | `hard-coded.html`       | 21       | ✅ **Lenis Version 1.1.9** geladen, aber `archive.html` und `about.html` nutzen **1.1.14**. Inkonsistente Library-Versionen können zu unterschiedlichem Scroll-Verhalten führen. Betrifft auch `forgetting-dreams.html:15`.        |
 | B9   | `css/custom.css`        | 2017     | ✅ **`transition: all 200ms ease`** auf `.mob-proj-title` — verstößt gegen die eigene Regel "Never `transition-all`". Animiert potentiell Layout-Properties.                                                                      |
-| B10  | `js/nav.js`             | 326      | **Navigation delay 1000ms ist zu lang.** User klickt einen Dropdown-Link und wartet 1 volle Sekunde bevor navigiert wird. Der Transition-Overlay braucht nur 500ms — 500ms wären ausreichend.                                    |
-| B11  | `js/about.js`           | 85–89    | **WebGL Shader kompiliert ohne Fehlerprüfung.** `compileShader()` prüft nicht `gl.getShaderParameter(s, gl.COMPILE_STATUS)` — bei Shader-Fehler gibt es keinen Hinweis, nur ein schwarzes Bild.                                  |
+| B10  | `js/nav.js`             | 326      | ✅ **Navigation delay 1000ms ist zu lang.** User klickt einen Dropdown-Link und wartet 1 volle Sekunde bevor navigiert wird. Der Transition-Overlay braucht nur 500ms — 500ms wären ausreichend.                                    |
+| B11  | `js/about.js`           | 85–89    | ✅ **WebGL Shader kompiliert ohne Fehlerprüfung.** `compileShader()` prüft nicht `gl.getShaderParameter(s, gl.COMPILE_STATUS)` — bei Shader-Fehler gibt es keinen Hinweis, nur ein schwarzes Bild.                                  |
 
 ---
 
@@ -68,7 +68,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 |------|--------------------|--------------|---------------------------------------------------------------------------------------------------------|
 | D19  | `js/nav.js`        | 124          | **`dropdownItems` werden gequeried und animiert, aber die Klasse `.nav-dropdown-item` existiert in keinem HTML.** Die Arrays `dropdownItems` sind immer leer — die `gsap.to(dropdownItems, ...)` Aufrufe (Z.242, 281) animieren nichts. |
 | D20  | `js/project.js`    | 551–564      | ✅ **`hoverPreview`-System** — `#hover-preview` wird positioniert und `mousemove` verfolgt, aber `hoverPreviewImg.src` wird nie gesetzt und `visibility` nie auf `visible` gesetzt. Das gesamte Hover-Preview-System ist nicht funktional. |
-| D21  | `js/project.js`    | 96            | **`isTablet()` gibt immer `false` zurück.** `const isTablet = () => false;` — der Kommentar sagt "tablet now uses mobile nav", aber die Funktion wird noch in Bedingungen aufgerufen (Z.329). |
+| D21  | `js/project.js`    | 96            | ✅ **`isTablet()` gibt immer `false` zurück.** `const isTablet = () => false;` — der Kommentar sagt "tablet now uses mobile nav", aber die Funktion wird noch in Bedingungen aufgerufen (Z.329). |
 | D22  | `js/project.js`    | 593–599      | ✅ **`clearProNavActive()` wird nie aufgerufen.** Definiert aber nie verwendet.                               |
 
 ---
@@ -118,7 +118,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | P1   | `js/index.js`      | **Matter.js Engine läuft permanent.** `Runner.run(runner, engine)` — die Physics-Engine läuft in einer Endlosschleife, auch wenn alle Körper schlafen. Sollte pausiert werden wenn keine aktiven Körper vorhanden sind. |
 | P2   | `js/index.js`      | **Dust-Particles Canvas läuft permanent.** 65 Partikel werden jeden Frame gerendert (Desktop), unabhängig davon ob die Landing-Page sichtbar ist. `visibilitychange` pausiert, aber Tab-Wechsel auf andere Pages (about, archive) pausiert nicht — dust canvas existiert nur auf index.html. |
 | P3   | `js/index.js`      | **7 separate `resize` Event-Listener** auf `window` (invalidateMetrics, desktop-resize-handler, mobile-resize-handler, dust-canvas-resize, plus project.js adds 2 more). Keine sind debounced (außer die timer-basierten). |
-| P4   | `css/custom.css`   | **`will-change` auf statische Elemente.** `.gall3ry { will-change: transform }` (Z.294) — die Gallery selbst wird nicht transformiert, nur ihre Kinder. Verschwendet GPU-Memory. `.desk-nav-cell { will-change: transform, opacity }` ist ebenfalls dauerhaft statt nur während Animation. |
+| P4   | `css/custom.css`   | ✅ **`will-change` auf statische Elemente.** `.gall3ry { will-change: transform }` (Z.294) — die Gallery selbst wird nicht transformiert, nur ihre Kinder. Verschwendet GPU-Memory. `.desk-nav-cell { will-change: transform, opacity }` ist ebenfalls dauerhaft statt nur während Animation. |
 | P5   | `css/custom.css`   | **Grain-Overlay: 300% Breite/Höhe Element.** `.grain::after` hat `width: 300%; height: 300%` — ein riesiges Element, das der Browser rendern muss. Auf Retina-Displays sind das 6x viewport-Pixel. |
 | P6   | `js/project.js`    | ✅ **`mousemove` Listener immer aktiv.** Z.560–564: `window.addEventListener('mousemove', ...)` — feuert auf jede Mausbewegung, prüft `activeLayout !== 'layout-1-gall3ry'` und returnt. Sollte nur in Layout-1 aktiv sein. (Entfernt mit D20) |
 | P7   | `js/nav.js`        | **`fullHeight()` erzwingt Reflow.** Z.181–187: `dropdown.style.maxHeight = 'none'; const h = dropdown.scrollHeight; dropdown.style.maxHeight = prev;` — forced layout/reflow bei jedem Dropdown-Open. |
@@ -144,7 +144,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | #    | Bereich            | Beschreibung                                                                                                                                                   |
 |------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | S1   | `about.html`       | **Telefonnummer im HTML.** `+39 3356093992` und E-Mail stehen als Klartext im HTML. Spam-Bots können diese scrapen. Üblich bei Portfolio-Seiten, aber erwähnenswert. |
-| S2   | `js/about.js`      | **`navigator.clipboard.writeText()` ohne Permissions-Check.** Z.533: In manchen Browsern (insbes. Firefox ohne User-Gesture) wirft dies einen Fehler. Der `.catch()` handler zeigt "Copy failed", aber es gibt kein Fallback (z.B. `document.execCommand`). |
+| S2   | `js/about.js`      | ✅ **`navigator.clipboard.writeText()` ohne Permissions-Check.** Z.533: In manchen Browsern (insbes. Firefox ohne User-Gesture) wirft dies einen Fehler. Der `.catch()` handler zeigt "Copy failed", aber es gibt kein Fallback (z.B. `document.execCommand`). |
 | S3   | Alle HTML           | **CDN-Dependencies ohne `integrity` (SRI).** GSAP, Lenis, Matter.js, SplitText werden von CDNs geladen ohne `integrity`-Hashes. Bei CDN-Compromise könnte Schadcode injiziert werden. |
 | S4   | `js/transition.js`  | ✅ **`window.location = href` statt `window.location.href = href`.** Z.43 — funktioniert, ist aber unüblich und weniger explizit. |
 
@@ -155,8 +155,8 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | #    | Datei                     | Beschreibung                                                                                                         |
 |------|---------------------------|----------------------------------------------------------------------------------------------------------------------|
 | H1   | `index.html`              | ✅ **`<div class="nav-bg"></div>` (Z.20)** — leeres Element, CSS setzt `display: none`. Kann entfernt werden.             |
-| H2   | `hard-coded.html`         | **`<style>` im `<head>` (Z.11–15)** — inline CSS für `.info-para visibility`. Sollte in `custom.css` stehen.          |
-| H3   | `forgetting-dreams.html`  | **Identischer `<style>` Block (Z.10)** — wie H2, ebenfalls inline. Duplizierung.                                      |
+| H2   | `hard-coded.html`         | ✅ **`<style>` im `<head>` (Z.11–15)** — inline CSS für `.info-para visibility`. Sollte in `custom.css` stehen.          |
+| H3   | `forgetting-dreams.html`  | ✅ **Identischer `<style>` Block (Z.10)** — wie H2, ebenfalls inline. Duplizierung.                                      |
 | H4   | Projektseiten             | **Seq-Counter Totals hardcoded** — `<span class="seq-counter-total">19</span>` in HTML, obwohl JS den Wert setzt (project.js:724). HTML und JS müssen synchron gehalten werden. |
 | H5   | `about.html`              | **Doppeltes `id="italy-time"`.** Desktop hat `id="italy-time"` (Z.137), Mobile hat `id="italy-time-mob"` (Z.158). IDs sind unique, aber die Desktop-Version ist auf Mobile unsichtbar statt nicht vorhanden. |
 
@@ -167,10 +167,10 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | #    | Zeile(n)        | Beschreibung                                                                                                                                                   |
 |------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | C1   | 39              | ✅ **`z-index: 2147483647`** auf `.cursor` — MAX_INT als z-index. Cursor-Element existiert nicht mal, aber das ist trotzdem ein Anti-Pattern. (Entfernt mit D4) |
-| C2   | 120             | **`z-index: 9999999`** auf `.lb-overlay` — Lightbox. Keine Notwendigkeit für einen 7-stelligen z-index. |
+| C2   | 120             | ✅ **`z-index: 9999999`** auf `.lb-overlay` — Lightbox. Keine Notwendigkeit für einen 7-stelligen z-index. |
 | C3   | 131             | ✅ **`pointer-events: all`** — sollte `pointer-events: auto` sein. `all` ist kein valider Wert (wird als `auto` interpretiert in den meisten Browsern, ist aber technisch falsch laut Spec). |
 | C4   | 670–678         | ✅ **`cursor: pointer` doppelt** auf `.about-section-title` (Z.676 + Z.678). Copy-paste Fehler. |
-| C5   | 397             | **`padding-bottom: 89.89px`** auf `.layout-2-gall3ry` — ungewöhnlich präziser Wert, vermutlich von Webflow übernommen. Sollte gerundet werden (90px). Gleiches bei `padding: 88px 89.89px 110px` (Z.348). |
+| C5   | 397             | ✅ **`padding-bottom: 89.89px`** auf `.layout-2-gall3ry` — ungewöhnlich präziser Wert, vermutlich von Webflow übernommen. Sollte gerundet werden (90px). Gleiches bei `padding: 88px 89.89px 110px` (Z.348). |
 | C6   | 854–858         | ✅ **Mobile-spezifische CSS innerhalb Desktop-Regeln.** `.wrapin.index` hat `!important` — diese Klasse wird nie im HTML verwendet.                               |
 | C7   | 896–901         | ✅ **Complex Mobile-Menu Selectors.** `.nav-menu>*:not(.logo-link):not(.mobile-menu-toggle)` — selektiert Elemente basierend auf `.mobile-menu-toggle`, einer Klasse die nicht im HTML existiert. Toter Selektor-Teil. |
 | C8   | 909–917         | ✅ **`.main-nav.mobile-open` Styles** — `.mobile-open` wird nie per JS hinzugefügt. Gesamter Block (909–947) ist tot. |
@@ -233,7 +233,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 ### Top 5 Prioritäten
 
 1. ✅ **B3** — `cursor` TypeError auf Projektseiten fixen (null reference)
-2. **B1** — Doppelte Click-Handler auf Dropdown-Links (race condition)
+2. ✅ **B1** — Doppelte Click-Handler auf Dropdown-Links (race condition)
 3. ✅ **D1–D3** — 3 ungenutzte JS-Dateien entfernen
 4. ✅ **D4–D18** — ~250 Zeilen toten CSS entfernen
 5. ✅ **K1–K2** — Lenis-Versionen vereinheitlichen + Favicon auf index.html
