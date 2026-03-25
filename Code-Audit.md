@@ -79,8 +79,8 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 
 | #    | Datei                     | Beschreibung                                                                                                         |
 |------|---------------------------|----------------------------------------------------------------------------------------------------------------------|
-| H4   | Projektseiten             | **Seq-Counter Totals hardcoded** — `<span class="seq-counter-total">19</span>` in HTML, obwohl JS den Wert setzt (project.js:724). HTML und JS müssen synchron gehalten werden. |
-| H5   | `about.html`              | **Doppeltes `id="italy-time"`.** Desktop hat `id="italy-time"` (Z.137), Mobile hat `id="italy-time-mob"` (Z.158). IDs sind unique, aber die Desktop-Version ist auf Mobile unsichtbar statt nicht vorhanden. |
+| ~~H4~~ ✅ | Projektseiten             | **Seq-Counter Totals** — hardgecodete Werte entfernt, JS setzt den Wert dynamisch aus `.imgholder`-Count. |
+| ~~H5~~ ✅ | `about.html`              | **Doppeltes `id="italy-time"`.** — won't fix: IDs sind unique (`italy-time` vs `italy-time-mob`), JS hat Guards und `visibilitychange`-Listener. Overhead ist trivial (~0.01ms/s). Normales responsive Pattern mit `display:none`. |
 
 ## CSS-spezifische Probleme
 
