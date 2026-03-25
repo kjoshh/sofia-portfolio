@@ -11,6 +11,21 @@ body {
   background-color: #1e1e1b;
 }
 
+/* ── z-index scale ──
+   Global stacking layers for fixed / root-level elements.
+   Component-internal z-indices (nav innards, cards, frame) stay as raw numbers. */
+:root {
+  --z-content:       10;     /* page content: greeting, bio, letter-field              */
+  --z-page-fade:     90;     /* about-page bottom vignette gradient                    */
+  --z-corner:       100;     /* fixed corner links (about page)                        */
+  --z-particles:   9996;     /* dust-particle canvas (landing)                         */
+  --z-scene:       9997;     /* scene overlays: vignette, seq-counter                  */
+  --z-nav:         9998;     /* navigation bars + landing dust texture                 */
+  --z-lightbox:   10000;     /* lightbox overlay                                       */
+  --z-transition: 10001;     /* page transition                                        */
+  --z-grain:      10002;     /* dust + grain texture (topmost)                         */
+}
+
 /* ══════════════════════════════════════════
    SHARED — Page Transition Overlay
    ══════════════════════════════════════════ */
@@ -18,7 +33,7 @@ body {
 .page-transition {
   position: fixed;
   inset: 0;
-  z-index: 10001; /* above nav but below grain/dust */
+  z-index: var(--z-transition);
   background-color: #292823;
   pointer-events: none;
 }
@@ -39,7 +54,7 @@ body.is-transitioning * {
   inset: 0;
   pointer-events: none;
   opacity: 0.05;
-  z-index: 10002;
+  z-index: var(--z-grain);
   background-image: url("../images-neu/dust.jpg");
 }
 
@@ -47,7 +62,7 @@ body.is-transitioning * {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 10002;
+  z-index: var(--z-grain);
   overflow: hidden;
 }
 
@@ -90,7 +105,7 @@ body.is-transitioning * {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.95);
-  z-index: 10000;
+  z-index: var(--z-lightbox);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -542,7 +557,7 @@ body.about-page {
   position: fixed;
   top: 23%;
   left: 12%;
-  z-index: 10;
+  z-index: var(--z-content);
   font-family: Alegreya, serif;
   font-size: 20px;
   color: #e7e7e7;
@@ -582,7 +597,7 @@ body.about-page {
   position: fixed;
   top: 33%;
   right: 8.5%;
-  z-index: 10;
+  z-index: var(--z-content);
   width: 28%;
   max-height: calc(100vh - 33% - 40px);
   overflow-y: auto;
@@ -687,7 +702,7 @@ body.about-page {
   width: 100%;
   height: 18vh;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
-  z-index: 90;
+  z-index: var(--z-page-fade);
   pointer-events: none;
 }
 
@@ -696,7 +711,7 @@ body.about-page {
 
 .cornern {
   position: fixed;
-  z-index: 100;
+  z-index: var(--z-corner);
   font-family: Alegreya, serif;
   font-size: 18px;
   color: #e7e7e7;
@@ -840,7 +855,7 @@ text-decoration: none;
     /* Warm near-black — like darkroom paper, not glass */
     background: rgba(15, 13, 11, 0.96);
     border-radius: 13px;
-    z-index: 9998;
+    z-index: var(--z-nav);
   }
 
   .mob-sheet--top {
@@ -1309,7 +1324,7 @@ text-decoration: none;
 .main-nav {
   font-family: Alegreya, serif;
   font-size: 14.5px;
-  z-index: 9998;
+  z-index: var(--z-nav);
   pointer-events: auto;
   padding: 0;
   display: flex;
@@ -1364,7 +1379,7 @@ text-decoration: none;
   font-family: Alegreya, serif;
   font-size: 14.5px;
 
-  z-index: 9998;
+  z-index: var(--z-nav);
   pointer-events: auto;
   background: rgba(15, 13, 11, 0.96);
   border-radius: 999px;
@@ -1440,7 +1455,7 @@ text-decoration: none;
 .nav-star-sep {
   width: 16px;
   height: 16px;
-  z-index: 100;
+  z-index: var(--z-corner);
   object-fit: contain;
   display: block;
   opacity: 0.55;
@@ -1507,7 +1522,7 @@ text-decoration: none;
 }
 
 .header {
-  z-index: 9998;
+  z-index: var(--z-nav);
   pointer-events: none;
   width: 100vw;
   height: 100vh;
@@ -1667,7 +1682,7 @@ text-decoration: none;
     background: rgba(15, 13, 11, 0.96);
     border-radius: 13px;
     padding: 8px 8px 6px;
-    z-index: 9998;
+    z-index: var(--z-nav);
     border: 1px solid rgba(233, 229, 221, 0.07);
     overflow: hidden;
     justify-content: center;
@@ -1958,7 +1973,7 @@ html:has(body.landing-page) {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9998;
+  z-index: var(--z-nav);
   background-image: url("../images-neu/dust.jpg");
   opacity: 0.15;
 }
@@ -1967,7 +1982,7 @@ html:has(body.landing-page) {
 .vignette {
   position: fixed;
   inset: 0;
-  z-index: 9997;
+  z-index: var(--z-scene);
   pointer-events: none;
   background: radial-gradient(
     ellipse at center,
@@ -1980,7 +1995,7 @@ html:has(body.landing-page) {
 .letter-field {
   position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: var(--z-content);
   pointer-events: none;
   overflow: visible;
 }
@@ -2009,7 +2024,7 @@ html:has(body.landing-page) {
   position: fixed;
   bottom: 48px;
   right: 36px;
-  z-index: 9997;
+  z-index: var(--z-scene);
   pointer-events: none;
   opacity: 0;
   font-family: 'Alegreya', serif;
@@ -2062,7 +2077,7 @@ html:has(body.landing-page) {
 .dust-particles {
   position: fixed;
   inset: 0;
-  z-index: 9996;
+  z-index: var(--z-particles);
   pointer-events: none;
 }
 

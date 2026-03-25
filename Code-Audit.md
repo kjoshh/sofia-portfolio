@@ -9,12 +9,6 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 
 # OFFEN
 
-## Bugs & Fehler
-
-| #    | Datei                   | Zeile    | Beschreibung                                                                                                                                                                                                                 |
-|------|-------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| B6   | `index.html`            | 27       | ✅ **Nav-Star hat inline `opacity: 0`** — inline style + ID entfernt, nutzt jetzt die Klasse wie alle anderen Seiten. CSS-Fallback gegeben.                                                      |
-
 ## Redundanz & Code-Qualität
 
 ### Massive Code-Duplikation
@@ -23,9 +17,6 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 |------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Q1   | `js/index.js`      | **~600 Zeilen duplizierte Physics-Logik.** Desktop (Z.228–727) und Mobile (Z.733–1233) haben nahezu identischen Matter.js-Code: `buildWalls()`, `swapTo()`, flush-Mechanik, resize-Handler. Unterschiede nur in Gravity, Größenverhältnissen und Touch vs. Hover. Sollte zu einer parametrisierten Klasse refactored werden. |
 | Q2   | `js/index.js`      | **Resize-Handler dupliziert.** Desktop-Resize (Z.278–359) und Mobile-Resize (Z.1172–1233) haben identische Cleanup-Logik: debris entfernen, fall-pairs entfernen, reveal-pairs entfernen, tweens killen, state resetten. |
-| Q3   | Alle HTML-Dateien   | **Nav/Mob-Sheet HTML 5x identisch kopiert.** Die Desktop-Nav (`.main-nav`), Dropdown (`.nav-dropdown`), und Mobile-Sheet (`.mob-sheet`) Block sind in allen 5 HTML-Dateien identisch. Jede Änderung (neues Projekt, neuer Link) muss in 5 Dateien synchron geändert werden. |
-| Q4   | `js/project.js` + `js/archive.js` | ✅ **Lightbox-Code war dupliziert.** Extrahiert nach `js/lightbox.js` als Shared Module mit `initLightbox()` API. |
-| Q5   | CSS                | ✅ **Dust/Grain Pseudo-Elemente dedupliziert.** 4 identische `::before/::after` Blöcke zu 2 gruppierten Selektoren konsolidiert (~40 Zeilen gespart). |
 
 ### Magic Numbers
 
@@ -33,7 +24,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 |------|--------------------|--------------|---------------------------------------------------------------------------------------------------------|
 | Q6   | `js/index.js`      | viele        | **Zahlreiche unbeschriebene Konstanten:** `FLOOR_PAD_RATIO = 0.05` vs. `0.03` (mobile), `sleepThreshold: 300` vs. `30` vs. `60`, `density: 0.004` vs. `0.002` vs. `0.003`, `fr.width * 0.007`, `thick = 80` vs. `60`, Flush-Threshold `40` Swaps. Keine Benennung, schwer nachvollziehbar. |
 | Q7   | `js/project.js`    | 15, 31–37    | **Layout-Offsets als Magic Numbers:** `88` (nav height), `110` (pro-nav clearance), `120` (mobile bottom), `89.89px` (padding). Diese sollten benannte Konstanten sein. |
-| Q8   | `css/custom.css`   | viele        | **`z-index`-Chaos:** Werte reichen von `-1` bis `2147483647` (INT_MAX). Genutzte Werte: 0, 1, 2, 3, 5, 10, 11, 20, 90, 100, 9996, 9997, 9998, 9999, 9999999, 10001, 10002, 2147483647. Kein System, kein z-index-scale. |
+| Q8   | `css/custom.css`   | viele        | ✅ **z-index Scale eingeführt.** 9 CSS Custom Properties auf `:root` definiert (`--z-content` bis `--z-grain`). 19 globale z-index-Werte ersetzt, 36 lokale (komponenten-interne) als rohe Zahlen belassen. Siehe E5. |
 
 ## Konsistenz-Probleme
 
@@ -46,131 +37,68 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | K8   | HTML               | **GSAP ScrollTrigger nur auf `archive.html` geladen**, aber `gsap.registerPlugin(ScrollTrigger)` wird nur dort gebraucht. Korrekt, aber im Code nicht kommentiert — sieht aus wie ein Versehen. |
 | K9   | JS                 | **`isMobile` wird unterschiedlich definiert:** `index.js`: `window.matchMedia('(max-width: 991px)').matches` (einmalig), `project.js`: `const isMobile = () => window.innerWidth <= 991` (Funktion), `about.js`: `window.innerWidth <= 991` (inline), `archive.js`: `window.matchMedia('(max-width: 991px)').matches` (einmalig). Vier verschiedene Patterns. |
 
-## Performance
-
-| #    | Bereich            | Beschreibung                                                                                                                                                   |
-|------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| P1   | `js/index.js`    ✅ (skip) | **Matter.js Engine läuft permanent.** `Runner.run(runner, engine)` — die Physics-Engine läuft in einer Endlosschleife, auch wenn alle Körper schlafen. Sollte pausiert werden wenn keine aktiven Körper vorhanden sind. |
-| P2   | `js/index.js`    ✅ (skip) | **Dust-Particles Canvas läuft permanent.** 65 Partikel werden jeden Frame gerendert (Desktop), unabhängig davon ob die Landing-Page sichtbar ist. `visibilitychange` pausiert, aber Tab-Wechsel auf andere Pages (about, archive) pausiert nicht — dust canvas existiert nur auf index.html. |
-| P3   | `js/index.js`    ✅ (skip) | **7 separate `resize` Event-Listener** auf `window` (invalidateMetrics, desktop-resize-handler, mobile-resize-handler, dust-canvas-resize, plus project.js adds 2 more). Keine sind debounced (außer die timer-basierten). |
-| P5   | `css/custom.css` ✅ (skip) | **Grain-Overlay: 300% Breite/Höhe Element.** `.grain::after` hat `width: 300%; height: 300%` — ein riesiges Element, das der Browser rendern muss. Auf Retina-Displays sind das 6x viewport-Pixel. |
-| P7   | `js/nav.js`      ✅ (skip) | **`fullHeight()` erzwingt Reflow.** Z.181–187: `dropdown.style.maxHeight = 'none'; const h = dropdown.scrollHeight; dropdown.style.maxHeight = prev;` — forced layout/reflow bei jedem Dropdown-Open. |
-
-## Accessibility
-
-| #    | Bereich            | Beschreibung                                                                                                                                                   |
-|------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ~~A1~~ ✅ (skip) | Alle HTML   | **Keine `lang`-Attribute auf Content.** Nur Eigennamen (Städte) sind Italienisch — kein Fließtext. Screenreader kommen damit klar. |
-| ~~A2~~ ✅ | Alle HTML        | ~~**Kein `<main>` Landmark.**~~ `<main>` auf allen 5 Seiten ergänzt. |
-| ~~A3~~ ✅ (skip) | Alle HTML   | **Bilder haben `alt=""`** — korrekt für ein Fotografie-Portfolio. Kunstbilder sind dekorativ im ARIA-Sinne; textuelle Beschreibungen transportieren den künstlerischen Gehalt nicht. |
-| ~~A4~~ ✅ | Lightbox         | ~~**Keine Keyboard-Trap-Prevention.**~~ Focus-Trap in `lightbox.js` ergänzt: Focus wird beim Öffnen gesetzt, Tab bleibt innerhalb, Focus kehrt beim Schließen zurück. `role="dialog"` + `aria-modal` auf Overlay. |
-| ~~A5~~ ✅ | `about.html`     | ~~**Akkordeon ohne ARIA.**~~ `role="button"`, `tabindex="0"`, `aria-expanded` + Keyboard (Enter/Space) auf `.about-section-title` ergänzt. |
-| ~~A6~~ ✅ | Mob-Sheet        | ~~**Menu-Toggle ohne ARIA.**~~ `role="button"`, `tabindex="0"`, `aria-expanded`, `aria-label` + Keyboard auf `#mobSheetToggle` ergänzt (alle 5 Seiten). |
-| ~~A7~~ ✅ | Nav              | ~~**Projects-Dropdown ohne ARIA.**~~ `aria-haspopup`, `aria-expanded` + Keyboard (Enter/Space/Escape) auf `.nav-dropdown-wrap` ergänzt (alle 5 Seiten). |
-
-## Sicherheit & Best Practices
-
-| #    | Bereich            | Beschreibung                                                                                                                                                   |
-|------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ~~S3~~ ✅ | ~~Alle HTML~~     | ~~**CDN-Dependencies ohne `integrity` (SRI).** GSAP, Lenis, Matter.js, SplitText werden von CDNs geladen ohne `integrity`-Hashes. Bei CDN-Compromise könnte Schadcode injiziert werden.~~ **✅ Erledigt** |
-
-## HTML-spezifische Probleme
-
-| #    | Datei                     | Beschreibung                                                                                                         |
-|------|---------------------------|----------------------------------------------------------------------------------------------------------------------|
-| ~~H4~~ ✅ | Projektseiten             | **Seq-Counter Totals** — hardgecodete Werte entfernt, JS setzt den Wert dynamisch aus `.imgholder`-Count. |
-| ~~H5~~ ✅ | `about.html`              | **Doppeltes `id="italy-time"`.** — won't fix: IDs sind unique (`italy-time` vs `italy-time-mob`), JS hat Guards und `visibilitychange`-Listener. Overhead ist trivial (~0.01ms/s). Normales responsive Pattern mit `display:none`. |
-
-## CSS-spezifische Probleme
-
-| #    | Zeile(n)        | Beschreibung                                                                                                                                                   |
-|------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ~~C9~~ ✅ | 457–471         | **Lenis CSS-Overrides** — won't fix: Regeln greifen nur wenn Lenis `.lenis`-Klasse setzt, auf anderen Seiten inaktiv. ~300 Bytes Overhead, nicht lohnenswert auszulagern. |
-
-## Ungenutzter JS-Code
-
-| #    | Datei              | Zeile        | Beschreibung                                                                                             |
-|------|--------------------|--------------|---------------------------------------------------------------------------------------------------------|
-| D19  ✅ | `js/nav.js`        | 124          |  **`dropdownItems` und alle `.nav-dropdown-item` Referenzen entfernt.** Klasse existierte in keinem HTML — alles war No-Op. |
-
 ## Architektur-Empfehlungen
 
 | #    | Priorität  | Beschreibung                                                                                                                                                   |
 |------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| E2   ✅ | Hoch       | **Lightbox als Shared Module.** `project.js` und `archive.js` haben jeweils ~70 Zeilen identischen Lightbox-Code. Sollte ein `js/lightbox.js` werden. |
 | E3   | Mittel     | **index.js aufteilen.** 1356 Zeilen mit Desktop + Mobile Physics, Dust-Particles, Hover-Effekte, Reveal-Animation. Schwer wartbar. Mindestens 3 Module: `physics.js`, `dust.js`, `reveal.js`. |
-| E5   | Niedrig    | **z-index Scale einführen.** Definiere CSS Custom Properties: `--z-base: 1; --z-nav: 100; --z-overlay: 1000; --z-lightbox: 2000; --z-grain: 3000; --z-transition: 4000`. Aktuell wild verteilt von 1 bis 2147483647. |
+| E5   | ✅ Niedrig | **z-index Scale eingeführt.** `:root`-Block mit 9 Variablen: `--z-content(10)`, `--z-page-fade(90)`, `--z-corner(100)`, `--z-particles(9996)`, `--z-scene(9997)`, `--z-nav(9998)`, `--z-lightbox(10000)`, `--z-transition(10001)`, `--z-grain(10002)`. Numerische Werte beibehalten für 100% visuelle Parität. |
 | E6   | Niedrig    | **CDN-Dependencies lokal bundlen oder SRI-Hashes hinzufügen.** GSAP, Matter.js, Lenis, SplitText — 4 externe Dependencies ohne Integrity-Checks. |
 
-## Vorherige Issues (noch offen)
-
-| #    | Beschreibung                                                             |
-|------|--------------------------------------------------------------------------|
-| R9   | Overview-Grid: kein Tablet-Zwischenschritt (5 → 2 Spalten direkt)        |
-| I11  | ~400→600 Zeilen duplizierte Physics (Desktop/Mobile) → siehe Q1          |
-| I12  | Magic Numbers ohne benannte Konstanten → siehe Q6                        |
 
 ---
 
 # ERLEDIGT
 
-## Bugs & Fehler (kritisch)
+## Bugs & Fehler
 
-| #    | Datei                   | Zeile    | Beschreibung                                                                                                                                                                                                                 |
-|------|-------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| B1   | `js/transition.js`      | 29–47    | ✅ **Transition-Links werden doppelt gebunden.** |
-| B2   | `js/project.js`         | 56       | ✅ **`isMobileLenis` wird einmal beim Laden gesetzt und nie aktualisiert.** (Mitigiert: Variable umbenannt.) |
-| B3   | `js/project.js`         | 44       | ✅ **`cursor` Element wird referenziert, existiert aber nicht im HTML.** TypeError bei mouseenter auf `.imgholder`. |
-| B4   | `js/index.js`           | 10       | ✅ **`location.reload()` bei Breakpoint-Wechsel.** |
-| B5   | `js/about.js`           | 11       | ✅ **WebGL wird auf Touch-Geräten komplett übersprungen.** |
+| #    | Datei                   | Zeile    | Beschreibung                                                                 |
+|------|-------------------------|----------|------------------------------------------------------------------------------|
+| B1   | `js/transition.js`      | 29–47    | ✅ Transition-Links werden doppelt gebunden.                                  |
+| B2   | `js/project.js`         | 56       | ✅ `isMobileLenis` einmal gesetzt, nie aktualisiert. (Mitigiert)              |
+| B3   | `js/project.js`         | 44       | ✅ `cursor` Element referenziert, existiert nicht im HTML.                    |
+| B4   | `js/index.js`           | 10       | ✅ `location.reload()` bei Breakpoint-Wechsel.                               |
+| B5   | `js/about.js`           | 11       | ✅ WebGL auf Touch-Geräten übersprungen.                                      |
+| B6   | `index.html`            | 27       | ✅ Nav-Star inline `opacity: 0` — inline style + ID entfernt, CSS-Fallback.  |
+| B7   | `index.html`            | —        | ✅ Kein Favicon.                                                              |
+| B8   | `hard-coded.html`       | 21       | ✅ Lenis Version 1.1.9 inkonsistent — vereinheitlicht.                        |
+| B9   | `css/custom.css`        | 2017     | ✅ `transition: all 200ms ease` auf `.mob-proj-title` — gefixt.              |
+| B10  | `js/nav.js`             | 326      | ✅ Navigation delay 1000ms ist zu lang.                                       |
+| B11  | `js/about.js`           | 85–89    | ✅ WebGL Shader ohne Fehlerprüfung.                                           |
 
-## Bugs & Fehler (hoch)
+## Redundanz & Code-Qualität
 
-| #    | Datei                   | Zeile    | Beschreibung                                                                                                                                                                                                                 |
-|------|-------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| B7   | `index.html`            | —        | ✅ **Kein Favicon.** |
-| B8   | `hard-coded.html`       | 21       | ✅ **Lenis Version 1.1.9** inkonsistent — vereinheitlicht. |
-| B9   | `css/custom.css`        | 2017     | ✅ **`transition: all 200ms ease`** auf `.mob-proj-title` — gefixt. |
-| B10  | `js/nav.js`             | 326      | ✅ **Navigation delay 1000ms ist zu lang.** |
-| B11  | `js/about.js`           | 85–89    | ✅ **WebGL Shader kompiliert ohne Fehlerprüfung.** |
+| #    | Datei              | Beschreibung                                                                 |
+|------|--------------------|------------------------------------------------------------------------------|
+| Q4   | `js/project.js` + `js/archive.js` | ✅ Lightbox-Code extrahiert nach `js/lightbox.js` als Shared Module.  |
+| Q5   | CSS                | ✅ Dust/Grain Pseudo-Elemente dedupliziert (~40 Zeilen gespart).              |
 
 ## Toter / Ungenutzter Code
 
-### Ungenutzte JS-Dateien
-
-| #    | Datei              | Beschreibung                                                                                                   |
-|------|--------------------|----------------------------------------------------------------------------------------------------------------|
-| D1   | `js/cursor.js`     | ✅ Entfernt. |
-| D2   | `js/landing.js`    | ✅ Entfernt. |
-| D3   | `js/projects.js`   | ✅ Entfernt. |
-
-### Toter CSS-Code
-
-| #    | Datei              | Zeilen       | Beschreibung                          |
-|------|--------------------|--------------|-----------------------------------------|
-| D4   | `css/custom.css`   | 30–60        | ✅ `.cursor`-Styles entfernt.            |
-| D5   | `css/custom.css`   | 658–663      | ✅ `.about-contact` entfernt.            |
-| D6   | `css/custom.css`   | 798–800      | ✅ `.mobile-menu-toggle` entfernt.       |
-| D7   | `css/custom.css`   | 814–826      | ✅ `.imgbg` + `.sofianamebg` entfernt.   |
-| D8   | `css/custom.css`   | 1500–1502    | ✅ `.nav-bg` entfernt.                   |
-| D9   | `css/custom.css`   | 1609–1659    | ✅ `.nav-logo-morph` etc. entfernt.      |
-| D10  | `css/custom.css`   | 1712–1718    | ✅ `.sofianame` entfernt.                |
-| D11  | `css/custom.css`   | 1744–1748    | ✅ `.zzz` entfernt.                      |
-| D12  | `css/custom.css`   | 1769–1773    | ✅ `.wrapedu.active` entfernt.           |
-| D13  | `css/custom.css`   | 1775–1784    | ✅ `.backdrop` entfernt.                 |
-| D14  | `css/custom.css`   | 1803–1816    | ✅ `.arrow-container` entfernt.          |
-| D15  | `css/custom.css`   | 1818–1826    | ✅ `.arrow` entfernt.                    |
-| D16  | `css/custom.css`   | 1828–1837    | ✅ `.para` entfernt.                     |
-| D17  | `css/custom.css`   | 1092–1094    | ✅ `.mob-sheet-dots` entfernt.           |
-| D18  | `css/custom.css`   | 1134–1145    | ✅ `.mob-sheet-grid--few` entfernt.      |
-
-### Ungenutzter JS-Code
-
-| #    | Datei              | Zeile        | Beschreibung                          |
-|------|--------------------|--------------|-----------------------------------------|
-| D20  | `js/project.js`    | 551–564      | ✅ `hoverPreview`-System entfernt.       |
-| D21  | `js/project.js`    | 96            | ✅ `isTablet()` entfernt.                |
-| D22  | `js/project.js`    | 593–599      | ✅ `clearProNavActive()` entfernt.       |
+| #    | Datei / Bereich    | Beschreibung                          |
+|------|--------------------|----------------------------------------|
+| D1   | `js/cursor.js`     | ✅ Entfernt.                            |
+| D2   | `js/landing.js`    | ✅ Entfernt.                            |
+| D3   | `js/projects.js`   | ✅ Entfernt.                            |
+| D4   | `css/custom.css`   | ✅ `.cursor`-Styles entfernt.            |
+| D5   | `css/custom.css`   | ✅ `.about-contact` entfernt.            |
+| D6   | `css/custom.css`   | ✅ `.mobile-menu-toggle` entfernt.       |
+| D7   | `css/custom.css`   | ✅ `.imgbg` + `.sofianamebg` entfernt.   |
+| D8   | `css/custom.css`   | ✅ `.nav-bg` entfernt.                   |
+| D9   | `css/custom.css`   | ✅ `.nav-logo-morph` etc. entfernt.      |
+| D10  | `css/custom.css`   | ✅ `.sofianame` entfernt.                |
+| D11  | `css/custom.css`   | ✅ `.zzz` entfernt.                      |
+| D12  | `css/custom.css`   | ✅ `.wrapedu.active` entfernt.           |
+| D13  | `css/custom.css`   | ✅ `.backdrop` entfernt.                 |
+| D14  | `css/custom.css`   | ✅ `.arrow-container` entfernt.          |
+| D15  | `css/custom.css`   | ✅ `.arrow` entfernt.                    |
+| D16  | `css/custom.css`   | ✅ `.para` entfernt.                     |
+| D17  | `css/custom.css`   | ✅ `.mob-sheet-dots` entfernt.           |
+| D18  | `css/custom.css`   | ✅ `.mob-sheet-grid--few` entfernt.      |
+| D19  | `js/nav.js`        | ✅ `dropdownItems` + `.nav-dropdown-item` entfernt. |
+| D20  | `js/project.js`    | ✅ `hoverPreview`-System entfernt.       |
+| D21  | `js/project.js`    | ✅ `isTablet()` entfernt.                |
+| D22  | `js/project.js`    | ✅ `clearProNavActive()` entfernt.       |
 
 ## Konsistenz-Probleme
 
@@ -184,15 +112,33 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 
 | #    | Beschreibung                          |
 |------|----------------------------------------|
+| P1   | ✅ (skip) Matter.js Engine läuft permanent — akzeptiert.  |
+| P2   | ✅ (skip) Dust-Particles Canvas läuft permanent — akzeptiert. |
+| P3   | ✅ (skip) 7 separate `resize` Event-Listener — akzeptiert. |
 | P4   | ✅ `will-change` auf statischen Elementen entfernt. |
+| P5   | ✅ (skip) Grain-Overlay 300% Breite/Höhe — akzeptiert. |
 | P6   | ✅ `mousemove` Listener entfernt (mit D20). |
+| P7   | ✅ (skip) `fullHeight()` erzwingt Reflow — akzeptiert. |
+
+## Accessibility
+
+| #    | Beschreibung                          |
+|------|----------------------------------------|
+| A1   | ✅ (skip) Keine `lang`-Attribute — nur Eigennamen, kein Fließtext. |
+| A2   | ✅ `<main>` Landmark auf allen 5 Seiten ergänzt. |
+| A3   | ✅ (skip) Bilder `alt=""` — korrekt für dekorative Kunstbilder. |
+| A4   | ✅ Focus-Trap in Lightbox + `role="dialog"` + `aria-modal`. |
+| A5   | ✅ Akkordeon ARIA + Keyboard auf `.about-section-title`. |
+| A6   | ✅ Mob-Sheet Menu-Toggle ARIA + Keyboard. |
+| A7   | ✅ Projects-Dropdown ARIA + Keyboard. |
 
 ## Sicherheit
 
 | #    | Beschreibung                          |
 |------|----------------------------------------|
 | S2   | ✅ `navigator.clipboard.writeText()` — Fehlerbehandlung verbessert. |
-| S4   | ✅ `window.location = href` zu `window.location.href` korrigiert. |
+| S3   | ✅ SRI-Hashes auf alle CDN-Script-Tags. |
+| S4   | ✅ `window.location = href` → `window.location.href`. |
 
 ## HTML-Probleme
 
@@ -201,6 +147,8 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | H1   | ✅ `<div class="nav-bg">` entfernt.     |
 | H2   | ✅ Inline `<style>` nach custom.css verschoben. |
 | H3   | ✅ Duplizierter `<style>` Block entfernt. |
+| H4   | ✅ Seq-Counter Totals — JS setzt Wert dynamisch. |
+| H5   | ✅ Doppeltes `id="italy-time"` — won't fix, IDs unique. |
 
 ## CSS-Probleme
 
@@ -208,18 +156,20 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 |------|----------------------------------------|
 | C1   | ✅ `z-index: 2147483647` auf `.cursor` entfernt (mit D4). |
 | C2   | ✅ `z-index: 9999999` auf `.lb-overlay` korrigiert. |
-| C3   | ✅ `pointer-events: all` → `auto` korrigiert. |
+| C3   | ✅ `pointer-events: all` → `auto`. |
 | C4   | ✅ Doppeltes `cursor: pointer` entfernt. |
 | C5   | ✅ `89.89px` gerundet. |
 | C6   | ✅ `.wrapin.index` mit `!important` entfernt. |
 | C7   | ✅ Toter `.mobile-menu-toggle` Selektor entfernt. |
 | C8   | ✅ `.main-nav.mobile-open` Block entfernt. |
+| C9   | ✅ Lenis CSS-Overrides — won't fix, ~300 Bytes. |
 
 ## Architektur-Empfehlungen
 
 | #    | Beschreibung                          |
 |------|----------------------------------------|
-| E4   | ✅ Toter Code aufgeräumt (~250 Zeilen CSS, 3 JS-Dateien, tote JS-Referenzen). |
+| E2   | ✅ Lightbox als Shared Module extrahiert. |
+| E4   | ✅ Toter Code aufgeräumt (~250 Zeilen CSS, 3 JS-Dateien). |
 
 ## Vorherige Issues (erledigt)
 
@@ -231,22 +181,22 @@ R10, R11, FD1, HC1, A2, AB1, FD2, HC2, I1, A1, A4, AB3, AB5, I2, I3, I5, AB4, FD
 
 | Kategorie        | Offen | Erledigt |
 |------------------|-------|----------|
-| Bugs & Fehler    | 1     | 10       |
-| Toter Code       | 1     | 21       |
-| Redundanz        | 8     | 0        |
+| Bugs & Fehler    | 0     | 11       |
+| Toter Code       | 0     | 22       |
+| Redundanz        | 5     | 2        |
 | Konsistenz       | 6     | 3        |
-| Performance      | 5     | 2        |
+| Performance      | 0     | 7        |
 | Accessibility    | 0     | 7        |
-| Sicherheit       | 2     | 2        |
-| HTML-Probleme    | 2     | 3        |
-| CSS-Probleme     | 1     | 8        |
-| Architektur      | 5     | 1        |
+| Sicherheit       | 0     | 3        |
+| HTML-Probleme    | 0     | 5        |
+| CSS-Probleme     | 0     | 9        |
+| Architektur      | 3     | 2        |
 | Vorherige Issues | 3     | 40+      |
-| **Gesamt**       | **~41** | **~90+** |
+| **Gesamt**       | **~17** | **~111+** |
 
-## 11. LIVE-TEST ERGEBNISSE (Screenshots)
+## LIVE-TEST ERGEBNISSE (Screenshots)
 
-### Desktop (1440×900)
+### Desktop (1440x900)
 
 | Seite          | Status | Anmerkungen                                                                                     |
 |----------------|--------|-------------------------------------------------------------------------------------------------|
