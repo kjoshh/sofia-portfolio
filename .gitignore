@@ -3,3 +3,4 @@ Thumbs.db
 *.log
 .claude/
 node_modules/
+temporary screenshots/
