@@ -73,7 +73,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | #    | Bereich            | Beschreibung                                                                                                                                                   |
 |------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | S1   | `about.html`       | **Telefonnummer im HTML.** `+39 3356093992` und E-Mail stehen als Klartext im HTML. Spam-Bots können diese scrapen. Üblich bei Portfolio-Seiten, aber erwähnenswert. |
-| S3   | Alle HTML           | **CDN-Dependencies ohne `integrity` (SRI).** GSAP, Lenis, Matter.js, SplitText werden von CDNs geladen ohne `integrity`-Hashes. Bei CDN-Compromise könnte Schadcode injiziert werden. |
+| ~~S3~~ | ~~Alle HTML~~     | ~~**CDN-Dependencies ohne `integrity` (SRI).** GSAP, Lenis, Matter.js, SplitText werden von CDNs geladen ohne `integrity`-Hashes. Bei CDN-Compromise könnte Schadcode injiziert werden.~~ **✅ Erledigt** |
 
 ## HTML-spezifische Probleme
 

@@ -26,8 +26,8 @@
           </span>
         </a>
         <img src="images-neu/star.png" class="nav-star-sep" alt="">
-        <div class="nav-dropdown-wrap">
-          <a href="#" class="nav-link">Projects</a>
+        <div class="nav-dropdown-wrap" aria-haspopup="true" aria-expanded="false">
+          <a href="#" class="nav-link" role="button" aria-expanded="false">Projects</a>
         </div>
         <a href="archive.html" class="nav-link">Archive</a>
         <a href="about.html" class="nav-link">About</a>
@@ -50,6 +50,7 @@
     </div>
   </div>
 
+  <main>
   <div class="scene" id="scene">
     <div class="frame-wrap" id="frameWrap">
       <div class="frame-bg-hover" id="bgHover"></div>
@@ -72,9 +73,10 @@
   <div class="vignette"></div>
   <div class="dust"></div>
   <div class="grain"></div>
+  </main>
 
   <div class="mob-sheet mob-sheet--top" id="mobSheet">
-    <div class="mob-sheet-header" id="mobSheetToggle">
+    <div class="mob-sheet-header" id="mobSheetToggle" role="button" tabindex="0" aria-expanded="false" aria-label="Navigation menu">
       <a href="index.html" class="mob-sheet-logo-link" onclick="event.stopPropagation()">
         <img src="images-neu/logo.png" class="mob-sheet-logo" alt="Sofia Cartuccia">
       </a>
@@ -102,8 +104,8 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js" integrity="sha384-ZRKYEXtLBVeqs9z1WxyeKutCqnkqolS/r1EUWuoUpG4ZKbnRAIXnHhHdnNuiB6CL" crossorigin="anonymous"></script>
   <script src="js/index.js"></script>
 
   <script src="js/nav.js"></script>
