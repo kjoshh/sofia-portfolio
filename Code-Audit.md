@@ -86,7 +86,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 
 | #    | Zeile(n)        | Beschreibung                                                                                                                                                   |
 |------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| C9   | 457–471         | **Lenis CSS-Overrides** für Klassen die Lenis automatisch setzt — korrekt, aber nur auf Seiten mit Lenis relevant. Auf `index.html` (kein Lenis) sind diese Regeln unnötig geladen. |
+| ~~C9~~ ✅ | 457–471         | **Lenis CSS-Overrides** — won't fix: Regeln greifen nur wenn Lenis `.lenis`-Klasse setzt, auf anderen Seiten inaktiv. ~300 Bytes Overhead, nicht lohnenswert auszulagern. |
 
 ## Ungenutzter JS-Code
 
