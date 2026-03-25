@@ -17,6 +17,7 @@
 
   <div class="page-transition" style="display: block; opacity: 1;"></div>
 
+  <main>
   <!-- Section 1: Portrait hero -->
   <div class="about-hero-mobile">
 
@@ -49,8 +50,8 @@
           </span>
         </a>
         <img src="images-neu/star.png" class="nav-star-sep" alt="">
-        <div class="nav-dropdown-wrap">
-          <a href="#" class="nav-link">Projects</a>
+        <div class="nav-dropdown-wrap" aria-haspopup="true" aria-expanded="false">
+          <a href="#" class="nav-link" role="button" aria-expanded="false">Projects</a>
         </div>
         <a href="archive.html" class="nav-link">Archive</a>
         <a href="about.html" aria-current="page" class="nav-link">About</a>
@@ -74,7 +75,7 @@
   </div>
 
   <div class="mob-sheet mob-sheet--top" id="mobSheet">
-    <div class="mob-sheet-header" id="mobSheetToggle">
+    <div class="mob-sheet-header" id="mobSheetToggle" role="button" tabindex="0" aria-expanded="false" aria-label="Navigation menu">
       <a href="index.html" class="mob-sheet-logo-link" onclick="event.stopPropagation()">
         <img src="images-neu/logo.png" class="mob-sheet-logo" alt="Sofia Cartuccia">
       </a>
@@ -114,7 +115,7 @@
       </div>
 
       <div class="about-section">
-        <span class="about-section-title">SELECTED EXHIBITIONS</span>
+        <span class="about-section-title" role="button" tabindex="0" aria-expanded="false">SELECTED EXHIBITIONS</span>
         <div class="about-section-body">
           <p>Circolo Arci Spaziotempo (Solo) - Recanati (IT) - January 2026</p>
           <p>MindMarea (Collective) – Rimini (IT) - December 2025</p>
@@ -125,7 +126,7 @@
       </div>
 
       <div class="about-section">
-        <span class="about-section-title">SELECTED PUBLICATIONS</span>
+        <span class="about-section-title" role="button" tabindex="0" aria-expanded="false">SELECTED PUBLICATIONS</span>
         <div class="about-section-body">
           <p>"L'arte del tatuaggio" interview and feature – Lomography Magazine - July 2024</p>
         </div>
@@ -161,6 +162,7 @@
     </div>
 
   </div>
+  </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" integrity="sha384-O55L/6rhHr9CFvrxqv5luxOCcmVaBmETbZbJDP+Do8T0pztTACsFBD/IXCNkj7DV" crossorigin="anonymous"></script>

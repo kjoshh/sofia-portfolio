@@ -31,8 +31,8 @@
               </span>
             </a>
             <img src="images-neu/star.png" class="nav-star-sep" alt="">
-            <div class="nav-dropdown-wrap">
-              <a href="#" class="nav-link">Projects</a>
+            <div class="nav-dropdown-wrap" aria-haspopup="true" aria-expanded="false">
+              <a href="#" class="nav-link" role="button" aria-expanded="false">Projects</a>
             </div>
             <a href="archive.html" class="nav-link">Archive</a>
             <a href="about.html" class="nav-link">About</a>
@@ -72,6 +72,7 @@
       </div>
     </div>
   </div>
+  <main>
   <div class="gall3ry-container">
     <div id="hover-preview"><img alt=""></div>
     <div class="gall3ry layout-0-gall3ry">
@@ -99,6 +100,7 @@
       <p class="info-para">Forgetting Dreams treats 35mm b/w film as the material parallel to the unconscious - unstable, intuitive, imperfect, and physical. It holds on to what is slipping away, not to preserve it, but to honor the impossibility of returning to it.</p>
     </div>
   </div>
+  </main>
 
   <!-- Lightbox -->
   <div class="lb-overlay" id="lb-overlay">
@@ -124,7 +126,7 @@
   </div>
 
   <div class="mob-sheet mob-sheet--top" id="mobSheet">
-    <div class="mob-sheet-header" id="mobSheetToggle">
+    <div class="mob-sheet-header" id="mobSheetToggle" role="button" tabindex="0" aria-expanded="false" aria-label="Navigation menu">
       <a href="index.html" class="mob-sheet-logo-link" onclick="event.stopPropagation()">
         <img src="images-neu/logo.png" class="mob-sheet-logo" alt="Sofia Cartuccia">
       </a>

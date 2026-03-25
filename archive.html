@@ -31,8 +31,8 @@
           </span>
         </a>
         <img src="images-neu/star.png" class="nav-star-sep" alt="">
-        <div class="nav-dropdown-wrap">
-          <a href="#" class="nav-link">Projects</a>
+        <div class="nav-dropdown-wrap" aria-haspopup="true" aria-expanded="false">
+          <a href="#" class="nav-link" role="button" aria-expanded="false">Projects</a>
         </div>
         <a href="archive.html" aria-current="page" class="nav-link">Archive</a>
         <a href="about.html" class="nav-link">About</a>
@@ -58,7 +58,7 @@
   </div>
 
   <div class="mob-sheet mob-sheet--top" id="mobSheet">
-    <div class="mob-sheet-header" id="mobSheetToggle">
+    <div class="mob-sheet-header" id="mobSheetToggle" role="button" tabindex="0" aria-expanded="false" aria-label="Navigation menu">
       <a href="index.html" class="mob-sheet-logo-link" onclick="event.stopPropagation()">
         <img src="images-neu/logo.png" class="mob-sheet-logo" alt="Sofia Cartuccia">
       </a>
@@ -87,6 +87,7 @@
     </div>
   </div>
 
+  <main>
   <div class="archive-grid">
     <div class="archive-grid-item" data-full="images-neu/archive-29.jpg"><img src="images-neu/archive-29.jpg" loading="lazy" alt=""></div>
     <div class="archive-grid-item" data-full="images-neu/archive-15.jpg"><img src="images-neu/archive-15.jpg" loading="lazy" alt=""></div>
@@ -131,6 +132,7 @@
     <div class="archive-grid-item" data-full="images-neu/archive-6.jpg"><img src="images-neu/archive-6.jpg" loading="lazy" alt=""></div>
     <div class="archive-grid-item" data-full="images-neu/archive-31.jpg"><img src="images-neu/archive-31.jpg" loading="lazy" alt=""></div>
   </div>
+  </main>
 
   <!-- Lightbox -->
   <div class="lb-overlay" id="lb-overlay">

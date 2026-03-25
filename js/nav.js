@@ -276,6 +276,29 @@ function applyFontStagger(el) {
       }, 0.08);
     };
 
+    // Update aria-expanded on open/close
+    const projLink = dropdownWrap.querySelector('.nav-link');
+    const setDropdownAria = (open) => {
+      dropdownWrap.setAttribute('aria-expanded', open);
+      if (projLink) projLink.setAttribute('aria-expanded', open);
+    };
+
+    const _origOpen = openDropdown;
+    const _origClose = closeDropdown;
+    openDropdown = () => { _origOpen(); setDropdownAria('true'); };
+    closeDropdown = () => { _origClose(); setDropdownAria('false'); };
+
+    // Keyboard: Enter/Space opens, Escape closes
+    dropdownWrap.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (dropdownWrap.classList.contains('is-open')) closeDropdown();
+        else openDropdown();
+      } else if (e.key === 'Escape') {
+        closeDropdown();
+      }
+    });
+
     dropdownWrap.addEventListener('mouseenter', openDropdown);
 
     const mainNavWrapper = document.querySelector('.main-nav');

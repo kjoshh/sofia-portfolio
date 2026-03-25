@@ -258,6 +258,7 @@ function closeSection(body, titleEl) {
     })
   });
   titleEl.classList.remove("open");
+  titleEl.setAttribute("aria-expanded", "false");
 }
 
 function openSection(body, titleEl) {
@@ -282,9 +283,18 @@ function openSection(body, titleEl) {
     }
   });
   titleEl.classList.add("open");
+  titleEl.setAttribute("aria-expanded", "true");
 }
 
 document.querySelectorAll(".about-section-title").forEach(title => {
+  // Keyboard: Enter/Space toggles the section
+  title.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      title.click();
+    }
+  });
+
   title.addEventListener("click", () => {
     const body = title.nextElementSibling;
     const isOpen = title.classList.contains("open");

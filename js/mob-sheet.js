@@ -16,8 +16,17 @@
     }
   });
 
+  // Keyboard: Enter/Space toggles the menu
+  sheetToggle.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      sheetToggle.click();
+    }
+  });
+
   sheetToggle.addEventListener('click', function() {
     var isOpen = sheet.classList.toggle('is-open');
+    sheetToggle.setAttribute('aria-expanded', isOpen);
     var body = sheet.querySelector('.mob-sheet-body');
     var cells = body.querySelectorAll('.mob-sheet-cell');
     var cellImgs = body.querySelectorAll('.mob-sheet-cell-img');
