@@ -50,8 +50,8 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 
 | #    | Bereich            | Beschreibung                                                                                                                                                   |
 |------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| P1   | `js/index.js`      | **Matter.js Engine läuft permanent.** `Runner.run(runner, engine)` — die Physics-Engine läuft in einer Endlosschleife, auch wenn alle Körper schlafen. Sollte pausiert werden wenn keine aktiven Körper vorhanden sind. |
-| P2   | `js/index.js`      | **Dust-Particles Canvas läuft permanent.** 65 Partikel werden jeden Frame gerendert (Desktop), unabhängig davon ob die Landing-Page sichtbar ist. `visibilitychange` pausiert, aber Tab-Wechsel auf andere Pages (about, archive) pausiert nicht — dust canvas existiert nur auf index.html. |
+| P1   | `js/index.js`    ✅ (skip)  | **Matter.js Engine läuft permanent.** `Runner.run(runner, engine)` — die Physics-Engine läuft in einer Endlosschleife, auch wenn alle Körper schlafen. Sollte pausiert werden wenn keine aktiven Körper vorhanden sind. |
+| P2   | `js/index.js`     ✅ (skip) | **Dust-Particles Canvas läuft permanent.** 65 Partikel werden jeden Frame gerendert (Desktop), unabhängig davon ob die Landing-Page sichtbar ist. `visibilitychange` pausiert, aber Tab-Wechsel auf andere Pages (about, archive) pausiert nicht — dust canvas existiert nur auf index.html. |
 | P3   | `js/index.js`      | **7 separate `resize` Event-Listener** auf `window` (invalidateMetrics, desktop-resize-handler, mobile-resize-handler, dust-canvas-resize, plus project.js adds 2 more). Keine sind debounced (außer die timer-basierten). |
 | P5   | `css/custom.css`   | **Grain-Overlay: 300% Breite/Höhe Element.** `.grain::after` hat `width: 300%; height: 300%` — ein riesiges Element, das der Browser rendern muss. Auf Retina-Displays sind das 6x viewport-Pixel. |
 | P7   | `js/nav.js`        | **`fullHeight()` erzwingt Reflow.** Z.181–187: `dropdown.style.maxHeight = 'none'; const h = dropdown.scrollHeight; dropdown.style.maxHeight = prev;` — forced layout/reflow bei jedem Dropdown-Open. |
@@ -61,19 +61,18 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | #    | Bereich            | Beschreibung                                                                                                                                                   |
 |------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | A1   | Alle HTML           | **Keine `lang`-Attribute auf Content.** Seiten haben `lang="en"`, aber der About-Text ist Englisch und Ausstellungsorte sind Italienisch. Mixed-language content ohne `lang`-Tags auf Absätzen. |
-| A2   | `index.html`        | **Kein `<main>` Landmark.** Kein semantisches `<main>` Element — Screenreader haben keinen primären Content-Bereich. Gleiches Problem auf allen Seiten. |
+| ~~A2~~ ✅ | Alle HTML        | ~~**Kein `<main>` Landmark.**~~ `<main>` auf allen 5 Seiten ergänzt. |
 | A3   | Alle HTML           | **Bilder ohne aussagekräftige `alt`-Texte.** Archive: alle 42 Bilder haben `alt=""`. Projekt-Bilder: alle haben `alt=""`. Frame-Bilder auf Index: `alt=""`. |
 | A4   | Lightbox            | **Keine Keyboard-Trap-Prevention.** Lightbox öffnet sich, aber Focus wird nicht in die Lightbox gesetzt. Tab-Taste navigiert zu unsichtbaren Elementen hinter dem Overlay. |
-| A5   | `about.html`        | **Akkordeon ohne ARIA.** `.about-section-title` ist ein `<span>` mit Click-Handler — kein `role="button"`, kein `aria-expanded`, kein `aria-controls`. Nicht mit Tastatur bedienbar. |
-| A6   | Mob-Sheet           | **Menu-Toggle ohne ARIA.** `#mobSheetToggle` ist ein `<div>` mit Click-Handler — kein `role="button"`, kein `aria-expanded`. |
-| A7   | Nav                 | **Projects-Dropdown ohne ARIA.** `.nav-dropdown-wrap` öffnet Dropdown auf Hover — kein `aria-haspopup`, kein `aria-expanded`, nicht per Tastatur erreichbar. |
+| ~~A5~~ ✅ | `about.html`     | ~~**Akkordeon ohne ARIA.**~~ `role="button"`, `tabindex="0"`, `aria-expanded` + Keyboard (Enter/Space) auf `.about-section-title` ergänzt. |
+| ~~A6~~ ✅ | Mob-Sheet        | ~~**Menu-Toggle ohne ARIA.**~~ `role="button"`, `tabindex="0"`, `aria-expanded`, `aria-label` + Keyboard auf `#mobSheetToggle` ergänzt (alle 5 Seiten). |
+| ~~A7~~ ✅ | Nav              | ~~**Projects-Dropdown ohne ARIA.**~~ `aria-haspopup`, `aria-expanded` + Keyboard (Enter/Space/Escape) auf `.nav-dropdown-wrap` ergänzt (alle 5 Seiten). |
 
 ## Sicherheit & Best Practices
 
 | #    | Bereich            | Beschreibung                                                                                                                                                   |
 |------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| S1   | `about.html`       | **Telefonnummer im HTML.** `+39 3356093992` und E-Mail stehen als Klartext im HTML. Spam-Bots können diese scrapen. Üblich bei Portfolio-Seiten, aber erwähnenswert. |
-| ~~S3~~ | ~~Alle HTML~~     | ~~**CDN-Dependencies ohne `integrity` (SRI).** GSAP, Lenis, Matter.js, SplitText werden von CDNs geladen ohne `integrity`-Hashes. Bei CDN-Compromise könnte Schadcode injiziert werden.~~ **✅ Erledigt** |
+| ~~S3~~ ✅ | ~~Alle HTML~~     | ~~**CDN-Dependencies ohne `integrity` (SRI).** GSAP, Lenis, Matter.js, SplitText werden von CDNs geladen ohne `integrity`-Hashes. Bei CDN-Compromise könnte Schadcode injiziert werden.~~ **✅ Erledigt** |
 
 ## HTML-spezifische Probleme
 
@@ -92,14 +91,13 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 
 | #    | Datei              | Zeile        | Beschreibung                                                                                             |
 |------|--------------------|--------------|---------------------------------------------------------------------------------------------------------|
-| D19  | `js/nav.js`        | 124          | ✅ **`dropdownItems` und alle `.nav-dropdown-item` Referenzen entfernt.** Klasse existierte in keinem HTML — alles war No-Op. |
+| D19  ✅ | `js/nav.js`        | 124          |  **`dropdownItems` und alle `.nav-dropdown-item` Referenzen entfernt.** Klasse existierte in keinem HTML — alles war No-Op. |
 
 ## Architektur-Empfehlungen
 
 | #    | Priorität  | Beschreibung                                                                                                                                                   |
 |------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| E1   | Hoch       | **Nav/Footer als Include-System.** Nav + Mob-Sheet sind in 5 HTML-Dateien identisch kopiert (~70 Zeilen pro Datei). Jedes neue Projekt erfordert 5 manuelle Edits. Ein einfaches JS-Include (`fetch + insertAdjacentHTML`) oder Build-Step würde dies lösen. |
-| E2   | Hoch       | **Lightbox als Shared Module.** `project.js` und `archive.js` haben jeweils ~70 Zeilen identischen Lightbox-Code. Sollte ein `js/lightbox.js` werden. |
+| E2   ✅ | Hoch       | **Lightbox als Shared Module.** `project.js` und `archive.js` haben jeweils ~70 Zeilen identischen Lightbox-Code. Sollte ein `js/lightbox.js` werden. |
 | E3   | Mittel     | **index.js aufteilen.** 1356 Zeilen mit Desktop + Mobile Physics, Dust-Particles, Hover-Effekte, Reveal-Animation. Schwer wartbar. Mindestens 3 Module: `physics.js`, `dust.js`, `reveal.js`. |
 | E5   | Niedrig    | **z-index Scale einführen.** Definiere CSS Custom Properties: `--z-base: 1; --z-nav: 100; --z-overlay: 1000; --z-lightbox: 2000; --z-grain: 3000; --z-transition: 4000`. Aktuell wild verteilt von 1 bis 2147483647. |
 | E6   | Niedrig    | **CDN-Dependencies lokal bundlen oder SRI-Hashes hinzufügen.** GSAP, Matter.js, Lenis, SplitText — 4 externe Dependencies ohne Integrity-Checks. |
@@ -238,7 +236,7 @@ R10, R11, FD1, HC1, A2, AB1, FD2, HC2, I1, A1, A4, AB3, AB5, I2, I3, I5, AB4, FD
 | Redundanz        | 8     | 0        |
 | Konsistenz       | 6     | 3        |
 | Performance      | 5     | 2        |
-| Accessibility    | 7     | 0        |
+| Accessibility    | 3     | 4        |
 | Sicherheit       | 2     | 2        |
 | HTML-Probleme    | 2     | 3        |
 | CSS-Probleme     | 1     | 8        |
