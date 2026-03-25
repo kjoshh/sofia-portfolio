@@ -87,7 +87,7 @@ function applyFontStagger(el) {
   const path = window.location.pathname.split('/').pop() || 'index.html';
 
   // Set active/notactive on top nav links (excluding pro/layout nav)
-  document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)').forEach(link => {
+  document.querySelectorAll('.main-nav .nav-link').forEach(link => {
     const href = (link.getAttribute('href') || '').split('/').pop();
     if (href === path) {
       link.classList.add('active');
@@ -112,7 +112,7 @@ function applyFontStagger(el) {
 
   // Apply font stagger + cross-hover to top nav links (exclude logo-link — it uses images, not text)
   const topEls = [
-    ...document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item):not(.logo-link)'),
+    ...document.querySelectorAll('.main-nav .nav-link:not(.logo-link)'),
   ].filter(Boolean);
 
   topEls.forEach(el => {
@@ -120,8 +120,6 @@ function applyFontStagger(el) {
     applyFontStagger(el);
   });
 
-  // Dropdown items get the same font stagger (no active state management)
-  document.querySelectorAll('.nav-dropdown-item').forEach(el => applyFontStagger(el));
 
   // ── Logo image toggle ──
   const logoLink = document.querySelector('.main-nav .logo-link');
@@ -172,7 +170,6 @@ function applyFontStagger(el) {
   const deskCells = dropdown ? [...dropdown.querySelectorAll('.desk-nav-cell')] : [];
   const deskCellImgs = dropdown ? [...dropdown.querySelectorAll('.desk-nav-cell-img')] : [];
   const deskLabels = dropdown ? [...dropdown.querySelectorAll('.desk-nav-label')] : [];
-  const dropdownItems = dropdown ? [...dropdown.querySelectorAll('.nav-dropdown-item')] : [];
 
   if (dropdownWrap && dropdown) {
     let openTl = null;
@@ -238,13 +235,6 @@ function applyFontStagger(el) {
         ease: 'power2.out',
       }, 0.15);
 
-      // Dropdown text items (font-stagger links)
-      openTl.to(dropdownItems, {
-        opacity: 1,
-        duration: 0.2,
-        stagger: 0.06,
-        ease: 'power2.out',
-      }, 0.05);
     };
 
     const closeDropdown = () => {
@@ -277,12 +267,6 @@ function applyFontStagger(el) {
         ease: 'power2.in',
       }, 0);
 
-      // Dropdown text items
-      closeTl.to(dropdownItems, {
-        opacity: 0,
-        duration: 0.15,
-        ease: 'power2.in',
-      }, 0);
 
       // Container collapse
       closeTl.to(dropdown, {
@@ -297,7 +281,7 @@ function applyFontStagger(el) {
     const mainNavWrapper = document.querySelector('.main-nav');
     if (mainNavWrapper) mainNavWrapper.addEventListener('mouseleave', closeDropdown);
 
-    document.querySelectorAll('.main-nav .nav-link:not(.nav-dropdown-item)').forEach(link => {
+    document.querySelectorAll('.main-nav .nav-link').forEach(link => {
       if (!link.closest('.nav-dropdown-wrap')) {
         link.addEventListener('mouseenter', closeDropdown);
       }
@@ -305,7 +289,7 @@ function applyFontStagger(el) {
 
     // Close dropdown on item click (animate out before navigating)
     const transitionOverlay = document.querySelector('.page-transition');
-    [...dropdownItems, ...deskCells].forEach(item => {
+    deskCells.forEach(item => {
       item.addEventListener('click', (e) => {
         const link = item.closest('a') || item.querySelector('a');
         const href = link ? link.getAttribute('href') : null;
