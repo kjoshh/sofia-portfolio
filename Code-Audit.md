@@ -106,6 +106,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | K1   | ✅ Lenis-Versionen vereinheitlicht.     |
 | K2   | ✅ Favicon auf `index.html` hinzugefügt. |
 | K3   | ✅ `view-transition` Meta-Tag ergänzt.  |
+| K5   | ✅ Lenis aus `<head>` in `<body>` verschoben (hard-coded.html, forgetting-dreams.html). |
 | K7   | ✅ Doppeltes Logo + Split-Swap-Effekt entfernt. Nur 1 Logo auf allen Seiten. |
 
 ## Performance
