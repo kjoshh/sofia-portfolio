@@ -22,40 +22,9 @@ const frameBorderEl = document.getElementById('frameBorderHover');
 const outerBorder = frameWrap.querySelector('.frame-border');
 const framePhotoEl = document.getElementById('bg');
 
-/* Clock-sweep clip-path: sweeps clockwise from top-left corner */
-function clockWipe(progress) {
-  const sweep = progress * 360;
-  const pts = ['50% 50%', '0% 0%'];
-  const corners = [
-    { rel: 90,  p: '100% 0%' },
-    { rel: 180, p: '100% 100%' },
-    { rel: 270, p: '0% 100%' },
-  ];
-  for (const c of corners) {
-    if (sweep > c.rel) pts.push(c.p);
-  }
-  if (progress >= 1) {
-    pts.push('0% 0%');
-  } else {
-    const absAngle = (315 + sweep) % 360;
-    const rad = (absAngle - 90) * Math.PI / 180;
-    const dx = Math.cos(rad);
-    const dy = Math.sin(rad);
-    const adx = Math.abs(dx), ady = Math.abs(dy);
-    let s;
-    if (adx < 1e-6) s = 50 / ady;
-    else if (ady < 1e-6) s = 50 / adx;
-    else s = Math.min(50 / adx, 50 / ady);
-    pts.push(`${(50 + dx * s).toFixed(1)}% ${(50 + dy * s).toFixed(1)}%`);
-  }
-  return `polygon(${pts.join(', ')})`;
-}
-
 /* ── Hover ── */
 let firstHoverDone = false;
 const bgSybilEl = document.getElementById('bgSybil');
-let sweepTween = null;
-let sweepObj = { progress: 0 };
 
 function hoverIn() {
   if (!revealComplete) return;
