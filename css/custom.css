@@ -85,7 +85,10 @@ body.is-transitioning * {
 
 .lb-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.95);
   z-index: 10000;
   display: flex;
@@ -845,8 +848,9 @@ text-decoration: none;
     top: 24px;
   }
 
-  /* Dust/scratch grain overlay — gives the sheet a physical, analogue feel */
-  .mob-sheet::before {
+  /* Dust/grain overlays — shared across mobile nav elements */
+  .mob-sheet::before,
+  .mob-proj-tabs::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -855,11 +859,11 @@ text-decoration: none;
     opacity: 0.14;
     mix-blend-mode: screen;
     pointer-events: none;
-    z-index: 10;
+    z-index: 1;
   }
 
-  /* Fine noise on top for extra texture depth */
-  .mob-sheet::after {
+  .mob-sheet::after,
+  .mob-proj-tabs::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -868,8 +872,11 @@ text-decoration: none;
     opacity: 0.06;
     mix-blend-mode: overlay;
     pointer-events: none;
-    z-index: 11;
+    z-index: 2;
   }
+
+  .mob-sheet::before { z-index: 10; }
+  .mob-sheet::after  { z-index: 11; }
 
   .mob-sheet-header {
     display: flex;
@@ -1320,7 +1327,9 @@ text-decoration: none;
 }
 
 /* Dust/scratch grain — analogue darkroom feel */
-.main-nav::before {
+/* Dust/grain overlays — shared across nav elements */
+.main-nav::before,
+.pro-nav::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -1332,8 +1341,8 @@ text-decoration: none;
   z-index: 1;
 }
 
-/* Fine noise for extra texture depth */
-.main-nav::after {
+.main-nav::after,
+.pro-nav::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -1343,6 +1352,11 @@ text-decoration: none;
   mix-blend-mode: overlay;
   pointer-events: none;
   z-index: 2;
+}
+
+.pro-nav::before,
+.pro-nav::after {
+  transition: opacity 0.8s ease;
 }
 
 
@@ -1365,33 +1379,6 @@ text-decoration: none;
 
 .nav-menu.pro{
   padding:0;
-}
-/* Dust/scratch grain — analogue darkroom feel */
-.pro-nav::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url('../images-neu/dust.jpg');
-  background-size: cover;
-  opacity: 0.14;
-  mix-blend-mode: screen;
-  pointer-events: none;
-  z-index: 1;
-  transition: opacity 0.8s ease;
-}
-
-/* Fine noise for extra texture depth */
-.pro-nav::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url('../images-neu/grain.jpg');
-  background-size: 200px 200px;
-  opacity: 0.06;
-  mix-blend-mode: overlay;
-  transition: opacity 0.8s ease;
-  pointer-events: none;
-  z-index: 2;
 }
 
 .logo {
@@ -1686,32 +1673,6 @@ text-decoration: none;
     justify-content: center;
   }
 
-
-  /* Dust/scratch grain — analogue darkroom feel */
-  .mob-proj-tabs::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url('../images-neu/dust.jpg');
-    background-size: cover;
-    opacity: 0.14;
-    mix-blend-mode: screen;
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  /* Fine noise for extra texture depth */
-  .mob-proj-tabs::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url('../images-neu/grain.jpg');
-    background-size: 200px 200px;
-    opacity: 0.06;
-    mix-blend-mode: overlay;
-    pointer-events: none;
-    z-index: 2;
-  }
 
   .mob-proj-title {
     width: 100%;
