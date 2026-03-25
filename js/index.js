@@ -1251,8 +1251,7 @@ if (isMobile) {
   entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.4);
   if (dustOverlayInit) entranceTL.to(dustOverlayInit, { opacity: 0.15, duration: 0.8, ease: 'power2.out' }, 0.3);
   entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
-  const navStarInit = document.getElementById('navStarSep');
-  if (navStarInit) entranceTL.to(navStarInit, { opacity: 0.55, duration: 0.5 }, 0.5);
+  entranceTL.to('.nav-star-sep', { opacity: 0.55, duration: 0.5 }, 0.5);
 
   // Start letter rain once frame is mostly visible
   setTimeout(() => {
