@@ -146,14 +146,6 @@ body.is-transitioning * {
   right: 20px;
 }
 
-.lb-progress {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 2px;
-  background: hsla(50, 23%, 95%, 0.4);
-}
-
 .lb-counter {
   position: absolute;
   bottom: 28px;

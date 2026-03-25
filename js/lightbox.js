@@ -7,7 +7,6 @@
 function initLightbox({ items, getSrc, canOpen }) {
   const overlay = document.getElementById("lb-overlay");
   const lbImg = document.getElementById("lb-img");
-  const lbProgress = document.getElementById("lb-progress");
   const lbCounterCurrent = document.querySelector(".lb-counter-current");
   const lbCounterTotal = document.querySelector(".lb-counter-total");
   if (!overlay || !lbImg) return;
@@ -18,7 +17,6 @@ function initLightbox({ items, getSrc, canOpen }) {
   if (lbCounterTotal) lbCounterTotal.textContent = String(list.length).padStart(2, "0");
 
   function updateProgress() {
-    if (lbProgress) lbProgress.style.width = ((current + 1) / list.length * 100) + "%";
     if (lbCounterCurrent) {
       gsap.to(lbCounterCurrent, {
         opacity: 0, duration: 0.1, ease: "power2.in",
