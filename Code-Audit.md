@@ -92,7 +92,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 
 | #    | Datei              | Zeile        | Beschreibung                                                                                             |
 |------|--------------------|--------------|---------------------------------------------------------------------------------------------------------|
-| D19  | `js/nav.js`        | 124          | **`dropdownItems` werden gequeried und animiert, aber die Klasse `.nav-dropdown-item` existiert in keinem HTML.** Die Arrays `dropdownItems` sind immer leer — die `gsap.to(dropdownItems, ...)` Aufrufe (Z.242, 281) animieren nichts. |
+| D19  | `js/nav.js`        | 124          | ✅ **`dropdownItems` und alle `.nav-dropdown-item` Referenzen entfernt.** Klasse existierte in keinem HTML — alles war No-Op. |
 
 ## Architektur-Empfehlungen
 
