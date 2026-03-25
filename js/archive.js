@@ -66,73 +66,9 @@ const lenis = new Lenis(isMobile ? { wrapper: document.body } : {});
 
 
 /* ── Lightbox ── */
-const items = Array.from(document.querySelectorAll(".archive-grid-item"));
-const overlay = document.getElementById("lb-overlay");
-const lbImg = document.getElementById("lb-img");
-const lbCounterCurrent = document.querySelector(".lb-counter-current");
-const lbCounterTotal = document.querySelector(".lb-counter-total");
-let current = 0;
-
-if (lbCounterTotal) lbCounterTotal.textContent = String(items.length).padStart(2, "0");
-
-function updateProgress() {
-  if (lbCounterCurrent) {
-    gsap.to(lbCounterCurrent, {
-      opacity: 0, duration: 0.1, ease: "power2.in",
-      onComplete: () => {
-        lbCounterCurrent.textContent = String(current + 1).padStart(2, "0");
-        gsap.to(lbCounterCurrent, { opacity: 1, duration: 0.12, ease: "power2.out" });
-      }
-    });
-  }
-}
-function openLightbox(index) {
-  current = index;
-  lbImg.src = items[current].dataset.full;
-  overlay.classList.add("open");
-  if (lbCounterCurrent) lbCounterCurrent.textContent = String(current + 1).padStart(2, "0");
-  updateProgress();
-}
-function closeLightbox() {
-  overlay.classList.remove("open");
-}
-function showPrev() {
-  current = (current - 1 + items.length) % items.length;
-  lbImg.src = items[current].dataset.full;
-  updateProgress();
-}
-function showNext() {
-  current = (current + 1) % items.length;
-  lbImg.src = items[current].dataset.full;
-  updateProgress();
-}
-
-items.forEach((item, i) => item.addEventListener("click", () => openLightbox(i)));
-document.getElementById("lb-close").addEventListener("click", closeLightbox);
-document.getElementById("lb-prev").addEventListener("click", showPrev);
-document.getElementById("lb-next").addEventListener("click", showNext);
-overlay.addEventListener("click", (e) => { if (e.target === overlay) closeLightbox(); });
-document.addEventListener("keydown", (e) => {
-  if (!overlay.classList.contains("open")) return;
-  if (e.key === "Escape") closeLightbox();
-  if (e.key === "ArrowLeft") showPrev();
-  if (e.key === "ArrowRight") showNext();
-});
-
-/* ── Lightbox swipe ── */
-let lbTouchStartX = 0;
-let lbTouchStartY = 0;
-overlay.addEventListener("touchstart", (e) => {
-  lbTouchStartX = e.changedTouches[0].clientX;
-  lbTouchStartY = e.changedTouches[0].clientY;
-}, { passive: true });
-overlay.addEventListener("touchend", (e) => {
-  if (!overlay.classList.contains("open")) return;
-  const dx = e.changedTouches[0].clientX - lbTouchStartX;
-  const dy = e.changedTouches[0].clientY - lbTouchStartY;
-  if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
-  if (dx < 0) showNext();
-  else showPrev();
+initLightbox({
+  items: document.querySelectorAll(".archive-grid-item"),
+  getSrc: (item) => item.dataset.full
 });
 
 

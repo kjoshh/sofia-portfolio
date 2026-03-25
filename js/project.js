@@ -594,79 +594,10 @@ function updateProNavActive(activeEl) {
 
 
 /* ── Lightbox (overview layout) ── */
-const lbHolders = Array.from(document.querySelectorAll(".imgholder"));
-const lbOverlay = document.getElementById("lb-overlay");
-const lbImg = document.getElementById("lb-img");
-const lbProgress = document.getElementById("lb-progress");
-const lbCounterCurrent = document.querySelector(".lb-counter-current");
-const lbCounterTotal = document.querySelector(".lb-counter-total");
-let lbCurrent = 0;
-
-if (lbCounterTotal) lbCounterTotal.textContent = String(lbHolders.length).padStart(2, "0");
-
-function lbUpdateProgress() {
-  lbProgress.style.width = ((lbCurrent + 1) / lbHolders.length * 100) + "%";
-  if (lbCounterCurrent) {
-    gsap.to(lbCounterCurrent, {
-      opacity: 0, duration: 0.1, ease: "power2.in",
-      onComplete: () => {
-        lbCounterCurrent.textContent = String(lbCurrent + 1).padStart(2, "0");
-        gsap.to(lbCounterCurrent, { opacity: 1, duration: 0.12, ease: "power2.out" });
-      }
-    });
-  }
-}
-function lbOpen(index) {
-  lbCurrent = index;
-  lbImg.src = lbHolders[lbCurrent].querySelector("img").src;
-  lbOverlay.classList.add("open");
-  if (lbCounterCurrent) lbCounterCurrent.textContent = String(lbCurrent + 1).padStart(2, "0");
-  lbUpdateProgress();
-}
-function lbClose() { lbOverlay.classList.remove("open"); }
-function lbPrev() {
-  lbCurrent = (lbCurrent - 1 + lbHolders.length) % lbHolders.length;
-  lbImg.src = lbHolders[lbCurrent].querySelector("img").src;
-  lbUpdateProgress();
-}
-function lbNext() {
-  lbCurrent = (lbCurrent + 1) % lbHolders.length;
-  lbImg.src = lbHolders[lbCurrent].querySelector("img").src;
-  lbUpdateProgress();
-}
-
-lbHolders.forEach((holder, i) => {
-  const img = holder.querySelector("img");
-  (img || holder).addEventListener("click", () => {
-    if (activeLayout !== "layout-1-gall3ry") return;
-    lbOpen(i);
-  });
-});
-document.getElementById("lb-close").addEventListener("click", lbClose);
-document.getElementById("lb-prev").addEventListener("click", lbPrev);
-document.getElementById("lb-next").addEventListener("click", lbNext);
-lbOverlay.addEventListener("click", (e) => { if (e.target === lbOverlay) lbClose(); });
-document.addEventListener("keydown", (e) => {
-  if (!lbOverlay.classList.contains("open")) return;
-  if (e.key === "Escape") lbClose();
-  if (e.key === "ArrowLeft") lbPrev();
-  if (e.key === "ArrowRight") lbNext();
-});
-
-/* ── Lightbox swipe ── */
-let lbTouchStartX = 0;
-let lbTouchStartY = 0;
-lbOverlay.addEventListener("touchstart", (e) => {
-  lbTouchStartX = e.changedTouches[0].clientX;
-  lbTouchStartY = e.changedTouches[0].clientY;
-}, { passive: true });
-lbOverlay.addEventListener("touchend", (e) => {
-  if (!lbOverlay.classList.contains("open")) return;
-  const dx = e.changedTouches[0].clientX - lbTouchStartX;
-  const dy = e.changedTouches[0].clientY - lbTouchStartY;
-  if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
-  if (dx < 0) lbNext();
-  else lbPrev();
+initLightbox({
+  items: document.querySelectorAll(".imgholder"),
+  getSrc: (holder) => holder.querySelector("img").src,
+  canOpen: () => activeLayout === "layout-1-gall3ry"
 });
 
 
