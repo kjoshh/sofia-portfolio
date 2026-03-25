@@ -33,7 +33,6 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | K4   | HTML               | **Body-Klasse inkonsistent.** `index.html` hat `class="landing-page"`, `about.html` hat `class="body about-page"`, `archive.html` hat `class="body archive-page"`, Projektseiten nur `class="body"`. Inkonsistente Benennung. |
 | K5   | HTML               | **Lenis wird in `<head>` geladen** (hard-coded.html:21, forgetting-dreams.html:15) aber in `archive.html` und `about.html` vor dem jeweiligen Script im `<body>`. Render-blocking Script im Head ist unnötig. |
 | K6   | HTML               | **SplitText wird von einem Drittanbieter-CDN geladen:** `cdn.prod.website-files.com` (Webflow CDN). Dieses CDN ist nicht unter eigener Kontrolle und könnte jederzeit offline gehen oder sich ändern. Alle anderen GSAP-Plugins kommen von `cdnjs.cloudflare.com`. |
-| K7   | HTML               | **`index.html` hat nur 1 Logo-Image** in der Nav (Z.24), alle anderen Seiten haben 2 (top + bottom). Der Split-Logo-Effekt in `nav.js` klont `top` als Workaround, aber `bottom` wird auf `display: none` gesetzt, obwohl es gar nicht existiert auf der Index-Seite. |
 | K8   | HTML               | **GSAP ScrollTrigger nur auf `archive.html` geladen**, aber `gsap.registerPlugin(ScrollTrigger)` wird nur dort gebraucht. Korrekt, aber im Code nicht kommentiert — sieht aus wie ein Versehen. |
 | K9   | JS                 | **`isMobile` wird unterschiedlich definiert:** `index.js`: `window.matchMedia('(max-width: 991px)').matches` (einmalig), `project.js`: `const isMobile = () => window.innerWidth <= 991` (Funktion), `about.js`: `window.innerWidth <= 991` (inline), `archive.js`: `window.matchMedia('(max-width: 991px)').matches` (einmalig). Vier verschiedene Patterns. |
 
@@ -107,6 +106,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | K1   | ✅ Lenis-Versionen vereinheitlicht.     |
 | K2   | ✅ Favicon auf `index.html` hinzugefügt. |
 | K3   | ✅ `view-transition` Meta-Tag ergänzt.  |
+| K7   | ✅ Doppeltes Logo + Split-Swap-Effekt entfernt. Nur 1 Logo auf allen Seiten. |
 
 ## Performance
 

@@ -121,48 +121,6 @@ function applyFontStagger(el) {
   });
 
 
-  // ── Logo image toggle ──
-  const logoLink = document.querySelector('.main-nav .logo-link');
-  if (logoLink) {
-    const top    = logoLink.querySelector('.nav-logo-top');    // Sofia (default visible)
-    const bottom = logoLink.querySelector('.nav-logo-bottom'); // Sybil
-    if (top) {
-      if (bottom) gsap.set(bottom, { display: 'none' });
-
-      // Split logo into two clip-path halves to animate the gap on hover
-      const setupSplit = () => {
-        const w = top.offsetWidth || top.naturalWidth * (20 / top.naturalHeight);
-        const h = 20; // CSS height
-
-        const splitWrap = document.createElement('div');
-        splitWrap.style.cssText = `position:relative;width:${w}px;height:${h}px;display:block;`;
-
-        const leftHalf = top.cloneNode(true);
-        const rightHalf = top.cloneNode(true);
-
-        const baseStyle = `position:absolute;top:0;left:0;height:${h}px;width:auto;display:block;opacity:0.92;`;
-        leftHalf.style.cssText  = baseStyle + 'clip-path:inset(0 60% 0 0);';
-        rightHalf.style.cssText = baseStyle + 'clip-path:inset(0 0 0 30%);';
-
-        top.parentNode.insertBefore(splitWrap, top);
-        splitWrap.appendChild(leftHalf);
-        splitWrap.appendChild(rightHalf);
-        top.style.display = 'none';
-
-        logoLink.addEventListener('mouseenter', () => {
-          gsap.to(leftHalf,  { x: 2.5,   duration: 0.8, ease: 'power3.out' });
-          gsap.to(rightHalf, { x: -2.5, duration: 0.8, ease: 'power3.out' });
-        });
-        logoLink.addEventListener('mouseleave', () => {
-          gsap.to(leftHalf,  { x: 0, duration: 0.7, ease: 'power3.out' });
-          gsap.to(rightHalf, { x: 0, duration: 0.7, ease: 'power3.out' });
-        });
-      };
-
-      if (top.complete) setupSplit();
-      else top.addEventListener('load', setupSplit);
-    }
-  }
 
   // ── Project Dropdown — Quechua-inspired reveal (desktop only) ──
   const dropdownWrap = document.querySelector('.nav-dropdown-wrap');

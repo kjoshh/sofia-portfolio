@@ -1441,15 +1441,6 @@ text-decoration: none;
 
   transform: rotate(-1.5deg);
 }
-.nav-logo-bottom {
-  height: 21.5px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform: rotate(0.75deg);
-  opacity: 1;
-
-}
 
 
 .nav-star-sep {
