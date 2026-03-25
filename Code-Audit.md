@@ -25,7 +25,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | Q2   | `js/index.js`      | **Resize-Handler dupliziert.** Desktop-Resize (Z.278–359) und Mobile-Resize (Z.1172–1233) haben identische Cleanup-Logik: debris entfernen, fall-pairs entfernen, reveal-pairs entfernen, tweens killen, state resetten. |
 | Q3   | Alle HTML-Dateien   | **Nav/Mob-Sheet HTML 5x identisch kopiert.** Die Desktop-Nav (`.main-nav`), Dropdown (`.nav-dropdown`), und Mobile-Sheet (`.mob-sheet`) Block sind in allen 5 HTML-Dateien identisch. Jede Änderung (neues Projekt, neuer Link) muss in 5 Dateien synchron geändert werden. |
 | Q4   | `js/project.js` + `js/archive.js` | ✅ **Lightbox-Code war dupliziert.** Extrahiert nach `js/lightbox.js` als Shared Module mit `initLightbox()` API. |
-| Q5   | CSS                | **Dust/Grain Pseudo-Element dreifach dupliziert.** `.main-nav::before/::after`, `.pro-nav::before/::after`, `.mob-sheet::before/::after`, `.mob-proj-tabs::before/::after` — identisches Styling (dust.jpg + grain.jpg overlays) 4x kopiert. |
+| Q5   | CSS                | ✅ **Dust/Grain Pseudo-Elemente dedupliziert.** 4 identische `::before/::after` Blöcke zu 2 gruppierten Selektoren konsolidiert (~40 Zeilen gespart). |
 
 ### Magic Numbers
 
