@@ -50,20 +50,20 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 
 | #    | Bereich            | Beschreibung                                                                                                                                                   |
 |------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| P1   | `js/index.js`    ✅ (skip)  | **Matter.js Engine läuft permanent.** `Runner.run(runner, engine)` — die Physics-Engine läuft in einer Endlosschleife, auch wenn alle Körper schlafen. Sollte pausiert werden wenn keine aktiven Körper vorhanden sind. |
-| P2   | `js/index.js`     ✅ (skip) | **Dust-Particles Canvas läuft permanent.** 65 Partikel werden jeden Frame gerendert (Desktop), unabhängig davon ob die Landing-Page sichtbar ist. `visibilitychange` pausiert, aber Tab-Wechsel auf andere Pages (about, archive) pausiert nicht — dust canvas existiert nur auf index.html. |
-| P3   | `js/index.js`      | **7 separate `resize` Event-Listener** auf `window` (invalidateMetrics, desktop-resize-handler, mobile-resize-handler, dust-canvas-resize, plus project.js adds 2 more). Keine sind debounced (außer die timer-basierten). |
-| P5   | `css/custom.css`   | **Grain-Overlay: 300% Breite/Höhe Element.** `.grain::after` hat `width: 300%; height: 300%` — ein riesiges Element, das der Browser rendern muss. Auf Retina-Displays sind das 6x viewport-Pixel. |
-| P7   | `js/nav.js`        | **`fullHeight()` erzwingt Reflow.** Z.181–187: `dropdown.style.maxHeight = 'none'; const h = dropdown.scrollHeight; dropdown.style.maxHeight = prev;` — forced layout/reflow bei jedem Dropdown-Open. |
+| P1   | `js/index.js`    ✅ (skip) | **Matter.js Engine läuft permanent.** `Runner.run(runner, engine)` — die Physics-Engine läuft in einer Endlosschleife, auch wenn alle Körper schlafen. Sollte pausiert werden wenn keine aktiven Körper vorhanden sind. |
+| P2   | `js/index.js`    ✅ (skip) | **Dust-Particles Canvas läuft permanent.** 65 Partikel werden jeden Frame gerendert (Desktop), unabhängig davon ob die Landing-Page sichtbar ist. `visibilitychange` pausiert, aber Tab-Wechsel auf andere Pages (about, archive) pausiert nicht — dust canvas existiert nur auf index.html. |
+| P3   | `js/index.js`    ✅ (skip) | **7 separate `resize` Event-Listener** auf `window` (invalidateMetrics, desktop-resize-handler, mobile-resize-handler, dust-canvas-resize, plus project.js adds 2 more). Keine sind debounced (außer die timer-basierten). |
+| P5   | `css/custom.css` ✅ (skip) | **Grain-Overlay: 300% Breite/Höhe Element.** `.grain::after` hat `width: 300%; height: 300%` — ein riesiges Element, das der Browser rendern muss. Auf Retina-Displays sind das 6x viewport-Pixel. |
+| P7   | `js/nav.js`      ✅ (skip) | **`fullHeight()` erzwingt Reflow.** Z.181–187: `dropdown.style.maxHeight = 'none'; const h = dropdown.scrollHeight; dropdown.style.maxHeight = prev;` — forced layout/reflow bei jedem Dropdown-Open. |
 
 ## Accessibility
 
 | #    | Bereich            | Beschreibung                                                                                                                                                   |
 |------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| A1   | Alle HTML           | **Keine `lang`-Attribute auf Content.** Seiten haben `lang="en"`, aber der About-Text ist Englisch und Ausstellungsorte sind Italienisch. Mixed-language content ohne `lang`-Tags auf Absätzen. |
+| ~~A1~~ ✅ (skip) | Alle HTML   | **Keine `lang`-Attribute auf Content.** Nur Eigennamen (Städte) sind Italienisch — kein Fließtext. Screenreader kommen damit klar. |
 | ~~A2~~ ✅ | Alle HTML        | ~~**Kein `<main>` Landmark.**~~ `<main>` auf allen 5 Seiten ergänzt. |
-| A3   | Alle HTML           | **Bilder ohne aussagekräftige `alt`-Texte.** Archive: alle 42 Bilder haben `alt=""`. Projekt-Bilder: alle haben `alt=""`. Frame-Bilder auf Index: `alt=""`. |
-| A4   | Lightbox            | **Keine Keyboard-Trap-Prevention.** Lightbox öffnet sich, aber Focus wird nicht in die Lightbox gesetzt. Tab-Taste navigiert zu unsichtbaren Elementen hinter dem Overlay. |
+| ~~A3~~ ✅ (skip) | Alle HTML   | **Bilder haben `alt=""`** — korrekt für ein Fotografie-Portfolio. Kunstbilder sind dekorativ im ARIA-Sinne; textuelle Beschreibungen transportieren den künstlerischen Gehalt nicht. |
+| ~~A4~~ ✅ | Lightbox         | ~~**Keine Keyboard-Trap-Prevention.**~~ Focus-Trap in `lightbox.js` ergänzt: Focus wird beim Öffnen gesetzt, Tab bleibt innerhalb, Focus kehrt beim Schließen zurück. `role="dialog"` + `aria-modal` auf Overlay. |
 | ~~A5~~ ✅ | `about.html`     | ~~**Akkordeon ohne ARIA.**~~ `role="button"`, `tabindex="0"`, `aria-expanded` + Keyboard (Enter/Space) auf `.about-section-title` ergänzt. |
 | ~~A6~~ ✅ | Mob-Sheet        | ~~**Menu-Toggle ohne ARIA.**~~ `role="button"`, `tabindex="0"`, `aria-expanded`, `aria-label` + Keyboard auf `#mobSheetToggle` ergänzt (alle 5 Seiten). |
 | ~~A7~~ ✅ | Nav              | ~~**Projects-Dropdown ohne ARIA.**~~ `aria-haspopup`, `aria-expanded` + Keyboard (Enter/Space/Escape) auf `.nav-dropdown-wrap` ergänzt (alle 5 Seiten). |
@@ -236,7 +236,7 @@ R10, R11, FD1, HC1, A2, AB1, FD2, HC2, I1, A1, A4, AB3, AB5, I2, I3, I5, AB4, FD
 | Redundanz        | 8     | 0        |
 | Konsistenz       | 6     | 3        |
 | Performance      | 5     | 2        |
-| Accessibility    | 3     | 4        |
+| Accessibility    | 0     | 7        |
 | Sicherheit       | 2     | 2        |
 | HTML-Probleme    | 2     | 3        |
 | CSS-Probleme     | 1     | 8        |

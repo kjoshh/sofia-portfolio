@@ -13,6 +13,12 @@ function initLightbox({ items, getSrc, canOpen }) {
 
   const list = Array.from(items);
   let current = 0;
+  let previousFocus = null;
+
+  /* Focusable elements inside the lightbox for focus-trapping */
+  const focusableEls = overlay.querySelectorAll('button');
+  const firstFocusable = focusableEls[0];
+  const lastFocusable = focusableEls[focusableEls.length - 1];
 
   if (lbCounterTotal) lbCounterTotal.textContent = String(list.length).padStart(2, "0");
 
@@ -31,12 +37,19 @@ function initLightbox({ items, getSrc, canOpen }) {
   function open(index) {
     current = index;
     lbImg.src = getSrc(list[current], current);
+    previousFocus = document.activeElement;
     overlay.classList.add("open");
     if (lbCounterCurrent) lbCounterCurrent.textContent = String(current + 1).padStart(2, "0");
     updateProgress();
+    /* Move focus into lightbox */
+    if (firstFocusable) firstFocusable.focus();
   }
 
-  function close() { overlay.classList.remove("open"); }
+  function close() {
+    overlay.classList.remove("open");
+    /* Restore focus to the element that opened the lightbox */
+    if (previousFocus) { previousFocus.focus(); previousFocus = null; }
+  }
 
   function prev() {
     current = (current - 1 + list.length) % list.length;
@@ -69,6 +82,14 @@ function initLightbox({ items, getSrc, canOpen }) {
     if (e.key === "Escape") close();
     if (e.key === "ArrowLeft") prev();
     if (e.key === "ArrowRight") next();
+    /* Focus trap: keep Tab within lightbox buttons */
+    if (e.key === "Tab" && focusableEls.length) {
+      if (e.shiftKey) {
+        if (document.activeElement === firstFocusable) { e.preventDefault(); lastFocusable.focus(); }
+      } else {
+        if (document.activeElement === lastFocusable) { e.preventDefault(); firstFocusable.focus(); }
+      }
+    }
   });
 
   /* Touch swipe */
