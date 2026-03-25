@@ -193,34 +193,70 @@ function initPositions() {
   }
 }
 
-/* ── Matter.js physics world (desktop only) ── */
-if (!isMobile) {
+/* ══════════════════════════════════════════
+   Matter.js Physics (unified desktop/mobile)
+   ══════════════════════════════════════════ */
+
+const C = isMobile ? {
+  gravity: 1.2, positionIter: 8, velocityIter: 6,
+  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01, rightWallOffset: 0,
+  swapVelXRange: 1.5,
+  rainDelayBase: 45, rainDelayJitter: 30, rainStartYAbsolute: false,
+  rainXJitter: 30, rainRestitution: 0.3, rainFrictionAir: 0.008,
+  rainAngleRange: 0.4, rainVelXRange: 1, rainVelYBase: 1.5, rainVelYJitter: 1,
+  settleIndividual: true,
+  sofiaFloorYOffset: 30, sofiaWallUsePad: false,
+  sofiaFallVelXRange: 0.5, sofiaFallVelYBase: 1.5, sofiaFallVelYJitter: 1,
+  swapDistFallback: 30,
+} : {
+  gravity: 1.5, positionIter: 10, velocityIter: 8,
+  floorPadRatio: 0.05, wallThick: 80, wallInset: 0.007, rightWallOffset: 12,
+  swapVelXRange: 2,
+  rainDelayBase: 55, rainDelayJitter: 35, rainStartYAbsolute: true,
+  rainXJitter: 40, rainRestitution: 0.35, rainFrictionAir: 0.006,
+  rainAngleRange: 0.6, rainVelXRange: 2, rainVelYBase: 2.5, rainVelYJitter: 2,
+  settleIndividual: false,
+  sofiaFloorYOffset: 40, sofiaWallUsePad: true,
+  sofiaFallVelXRange: 0.8, sofiaFallVelYBase: 2, sofiaFallVelYJitter: 1.5,
+  swapDistFallback: 55,
+};
+
 const { Engine, World, Bodies, Body, Runner, Events } = Matter;
 const engine = Engine.create({
-  gravity: { x: 0, y: 1.5 },
+  gravity: { x: 0, y: C.gravity },
   enableSleeping: true,
-  positionIterations: 10,
-  velocityIterations: 8,
+  positionIterations: C.positionIter,
+  velocityIterations: C.velocityIter,
 });
 const world = engine.world;
 const runner = Runner.create();
 Runner.run(runner, engine);
 
+/* ── Physics state ── */
 const debrisPairs = [];
 const sofiaFallPairs = [];
 let flushing = false;
 let swapCount = 0;
+let firstTapDone = false;
+let settledCount = 0;
+const revealPairs = [];
+let loadingPhase = 0;
+let revealRecalced = false;
+let _resizeTimer;
+let _resizeCleaned = false;
+let _resizing = false;
+let _rainGen = 0;
+let breatheTL = null;
 
-const FLOOR_PAD_RATIO = 0.05;
-
+/* ── Build boundary walls ── */
 function buildWalls() {
   const oldStatic = world.bodies.filter(b => b.isStatic && b.label === 'wall');
   World.remove(world, oldStatic);
 
   const fr = frameWrap.getBoundingClientRect();
-  const pad = fr.height * FLOOR_PAD_RATIO;
-  const thick = 80;
-  const inset = fr.width * 0.007;
+  const pad = fr.height * C.floorPadRatio;
+  const thick = C.wallThick;
+  const inset = fr.width * C.wallInset;
   const wallFilter = { category: 0x0004, mask: 0xFFFF };
   // Floor
   World.add(world, Bodies.rectangle(
@@ -234,103 +270,12 @@ function buildWalls() {
   ));
   // Right wall
   World.add(world, Bodies.rectangle(
-    fr.right - pad - inset + thick / 2 + 12, fr.top + fr.height / 2, thick, fr.height * 2,
+    fr.right - pad - inset + thick / 2 + C.rightWallOffset, fr.top + fr.height / 2, thick, fr.height * 2,
     { isStatic: true, label: 'wall', collisionFilter: wallFilter }
   ));
 }
-/* Walls built later: pile walls during reveal, frame walls after reveal completes */
-/* ── Desktop resize: clean up immediately, re-reveal after debounce ── */
-let _resizeTimer;
-let _resizeCleaned = false;
-let _resizing = false;
-let _rainGen = 0;
-window.addEventListener('resize', () => {
-  clearTimeout(_resizeTimer);
-  _resizing = true;
 
-  // On first resize event: immediately wipe everything
-  if (!_resizeCleaned) {
-    _resizeCleaned = true;
-    _rainGen++;        // invalidate pending rain setTimeout callbacks
-    flushing = false;  // cancel any in-progress flush
-
-    // Remove debris clones + physics
-    for (const dp of debrisPairs) {
-      World.remove(world, dp.body);
-      dp.el.remove();
-    }
-    debrisPairs.length = 0;
-
-    // Remove sofia-fall bodies
-    for (const pair of sofiaFallPairs) {
-      if (!pair.settled && world.bodies.includes(pair.body))
-        World.remove(world, pair.body);
-    }
-    sofiaFallPairs.length = 0;
-
-    // Remove reveal bodies
-    for (const pair of revealPairs) {
-      if (!pair.settled && world.bodies.includes(pair.body))
-        World.remove(world, pair.body);
-    }
-    revealPairs.length = 0;
-
-    // Remove flush-specific static bodies (sofiaFloor, sofiaWall)
-    const flushBodies = world.bodies.filter(b => b.isStatic && (b.label === 'sofiaFloor' || b.label === 'sofiaWall'));
-    if (flushBodies.length) World.remove(world, flushBodies);
-
-    // Kill tweens and hide all letters
-    for (const slot of slots) {
-      gsap.killTweensOf(slot.sofiaEl);
-      gsap.killTweensOf(slot.sybilEl);
-      gsap.set(slot.sofiaEl, { opacity: 0 });
-      gsap.set(slot.sybilEl, { opacity: 0 });
-    }
-
-    // Reset state
-    currentName = 'sofia';
-    revealComplete = false;
-    revealStarted = false;
-    revealRecalced = false;
-    swapCount = 0;
-    loadingPhase = 0;
-    firstHoverDone = false;
-
-    // Reset hover visuals
-    gsap.set(bgSybilEl, { opacity: 0, x: 0 });
-    gsap.set(bgHoverEl, { clipPath: 'inset(0 100% 0 0)' });
-    gsap.set(frameBorderEl, { opacity: 0, x: 0 });
-  }
-
-  // After resize stops: just reposition letters, keep frame/nav as-is
-  _resizeTimer = setTimeout(() => {
-    _resizeCleaned = false;
-    _resizing = false;
-    invalidateMetrics();
-    buildWalls();
-    calcPositions();
-    const m = getLetterMetrics();
-    for (const slot of slots) {
-      slot.sofiaEl.style.height = m.letterH + 'px';
-      slot.sybilEl.style.height = m.letterH + 'px';
-      const activeEl = currentName === 'sofia' ? slot.sofiaEl : slot.sybilEl;
-      gsap.set(activeEl, {
-        x: slot.x - m.offsetX,
-        y: slot.y - m.offsetY,
-        rotation: slot.restRot,
-        opacity: 0.9,
-      });
-    }
-    revealComplete = true;
-    revealStarted = true;
-    frameWrap.style.cursor = '';
-  }, 300);
-});
-
-const revealPairs = [];
-let loadingPhase = 0;
-
-/* Fly letters from rain to final positions */
+/* ── Desktop: fly letters from rain pile to final positions ── */
 function flyToFinalPositions(onAllSettled) {
   // Sync GSAP to physics pile positions, then remove physics
   const m = getLetterMetrics();
@@ -381,41 +326,180 @@ function flyToFinalPositions(onAllSettled) {
   });
 }
 
+/* ── Mobile: settle individual letter from physics to final pos ── */
+function settleLetter(pair) {
+  if (pair.settled) return;
+  pair.settled = true;
 
-let revealRecalced = false;
+  const pos = pair.body.position;
+  const ang = pair.body.angle * (180 / Math.PI);
+  const m = getLetterMetrics();
 
+  World.remove(world, pair.body);
+
+  gsap.fromTo(pair.el,
+    { x: pos.x - m.offsetX, y: pos.y - m.offsetY, rotation: ang },
+    {
+      x: pair.slot.x - m.offsetX,
+      y: pair.slot.y - m.offsetY,
+      rotation: pair.slot.restRot,
+      duration: 0.5, ease: 'power2.out',
+      onComplete: () => {
+        settledCount++;
+        if (settledCount >= slots.length) { revealComplete = true; startBreathe(); }
+      }
+    }
+  );
+}
+
+/* ── Mobile: breathe pulse until first tap ── */
+function startBreathe() {
+  breatheTL = gsap.timeline({ repeat: -1, yoyo: true });
+  breatheTL.to(slots.map(s => s.sofiaEl), {
+    scale: 1.1, y: '-=3', duration: 1.4, ease: 'sine.inOut', stagger: 0.05,
+  });
+}
+function stopBreathe() {
+  if (!breatheTL) return;
+  breatheTL.kill();
+  breatheTL = null;
+  for (const slot of slots) {
+    gsap.to(slot.sofiaEl, { scale: 1, y: slot.y - getLetterMetrics().offsetY, duration: 0.3, ease: 'power2.out' });
+  }
+}
+
+/* ── Swap: new letter drops from top, old one becomes physics debris ── */
+function swapTo(name) {
+  if (name === currentName || flushing) return;
+  if (isMobile) stopBreathe();
+  // If this swap would trigger flush, just bump the count and bail
+  if (swapCount + 1 >= 40) {
+    swapCount++;
+    return;
+  }
+
+  currentName = name;
+  calcPositions();
+  swapCount++;
+
+  // Mobile: toggle bg photo on tap
+  if (isMobile) {
+    if (!firstTapDone) {
+      firstTapDone = true;
+      gsap.to(bgSybilEl, { opacity: 1, duration: 0.6, delay: 0.1, ease: 'power2.inOut', overwrite: true });
+    } else {
+      const showSybil = name === 'sybil';
+      gsap.to(bgSybilEl, {
+        opacity: showSybil ? 1 : 0,
+        duration: 0.2, delay: 0, ease: 'power2.inOut', overwrite: true,
+      });
+    }
+  }
+
+  const m = getLetterMetrics();
+
+  slots.forEach((slot, idx) => {
+    const outEl = name === 'sybil' ? slot.sofiaEl : slot.sybilEl;
+    const inEl = name === 'sybil' ? slot.sybilEl : slot.sofiaEl;
+    const baseY = slot.y - m.offsetY;
+    const delay = idx * 0.03 + Math.random() * 0.04;
+
+    // Kill any in-flight tweens and snap to resting position before cloning
+    gsap.killTweensOf(outEl);
+    gsap.killTweensOf(inEl);
+    gsap.set(outEl, { x: slot.x - m.offsetX, y: baseY, rotation: slot.restRot, opacity: 0.9 });
+
+    // Clone the outgoing letter as debris from its correct position
+    const debris = outEl.cloneNode(true);
+    debris.style.pointerEvents = 'none';
+    letterField.appendChild(debris);
+
+    // Mobile: defer hide to next frame for GPU; Desktop: immediate
+    if (isMobile) {
+      requestAnimationFrame(() => {
+        gsap.set(outEl, { opacity: 0, y: baseY - m.swapDist });
+      });
+    } else {
+      gsap.set(outEl, { opacity: 0, y: baseY - m.swapDist });
+    }
+
+    setTimeout(() => {
+      const body = Bodies.rectangle(slot.x, slot.y, m.letterW * 0.7, m.letterH * 0.65, {
+        restitution: 0.35,
+        friction: 0.5,
+        frictionAir: 0.01,
+        angle: slot.restRot * Math.PI / 180,
+        density: 0.002,
+        sleepThreshold: 30,
+      });
+      Body.setVelocity(body, {
+        x: (Math.random() - 0.5) * C.swapVelXRange,
+        y: 0
+      });
+      World.add(world, body);
+      debrisPairs.push({ el: debris, body, born: performance.now() });
+      debris.style.opacity = '0.9';
+    }, delay * 1000);
+
+    gsap.fromTo(inEl,
+      { x: slot.x - m.offsetX, y: baseY - m.swapDist, rotation: slot.restRot, opacity: 0 },
+      { y: baseY, opacity: 0.9, duration: 0.4, delay: delay + 0.06, ease: 'power2.out', overwrite: true }
+    );
+  });
+}
+
+/* ── Physics sync loop ── */
 Events.on(engine, 'afterUpdate', () => {
-  // Sync reveal letters to physics bodies (during pile phase)
+  const m = getLetterMetrics();
+
+  // Sync reveal letters to physics bodies (during pile/rain phase)
+  let needsRecalc = false;
   for (const pair of revealPairs) {
     if (pair.settled) continue;
     const pos = pair.body.position;
     const ang = pair.body.angle * (180 / Math.PI);
-    const m = getLetterMetrics();
     pair.el.style.transform = `translate(${pos.x - m.offsetX}px, ${pos.y - m.offsetY}px) rotate(${ang}deg)`;
+
+    if (C.settleIndividual) {
+      const alive = performance.now() - pair.born;
+      if (alive > 800 && pair.body.speed < 0.4) needsRecalc = true;
+    }
+  }
+
+  // Mobile: settle individually when slow enough
+  if (C.settleIndividual) {
+    if (needsRecalc && !revealRecalced) {
+      revealRecalced = true;
+      calcPositions();
+    }
+    for (const pair of revealPairs) {
+      if (pair.settled) continue;
+      const alive = performance.now() - pair.born;
+      if (alive > 800 && pair.body.speed < 0.4) settleLetter(pair);
+    }
   }
 
   // Sync swap debris
+  const dox = isMobile ? m.offsetX : 17;
+  const doy = isMobile ? m.offsetY : 12;
   for (const pair of debrisPairs) {
     const pos = pair.body.position;
     const ang = pair.body.angle * (180 / Math.PI);
-    pair.el.style.transform = `translate(${pos.x - 17}px, ${pos.y - 12}px) rotate(${ang}deg)`;
+    pair.el.style.transform = `translate(${pos.x - dox}px, ${pos.y - doy}px) rotate(${ang}deg)`;
   }
 
   // Sync sofia fall bodies
-  const sfm = getLetterMetrics();
   for (const pair of sofiaFallPairs) {
     if (pair.settled) continue;
     const pos = pair.body.position;
     const ang = pair.body.angle * (180 / Math.PI);
-    pair.el.style.transform = `translate(${pos.x - sfm.offsetX}px, ${pos.y - sfm.offsetY}px) rotate(${ang}deg)`;
+    pair.el.style.transform = `translate(${pos.x - m.offsetX}px, ${pos.y - m.offsetY}px) rotate(${ang}deg)`;
   }
 
-  // Overflow flush: 35+ swaps OR any debris touches the top of the frame
+  // ── Flush check: 40+ swaps or debris reaches top ──
   if (!flushing && !_resizing && debrisPairs.length > 0) {
     const fr = frameWrap.getBoundingClientRect();
-    const pad = fr.height * FLOOR_PAD_RATIO;
-    const thick = 80;
-    const inset = fr.width * 0.007;
+    const pad = fr.height * C.floorPadRatio;
     const topEdge = fr.top + pad;
     const now = performance.now();
 
@@ -432,13 +516,20 @@ Events.on(engine, 'afterUpdate', () => {
         flushing = true;
         revealComplete = false;
 
-        // Fade out sybil image overlay + border
-        gsap.to(bgSybilEl, { opacity: 0, duration: 0.3, ease: 'power2.out', x: 0, overwrite: true });
-        gsap.to(bgHoverEl, { clipPath: 'inset(0 100% 0 0)', duration: 0.4, ease: 'power2.out', overwrite: true });
-        gsap.to(frameBorderEl, { opacity: 0, x: 0, duration: 0.4, ease: 'power2.out', overwrite: true });
-        firstHoverDone = false;
+        // Reset visuals (desktop resets hover state, mobile resets tap state)
+        if (isMobile) {
+          gsap.to(bgSybilEl, { opacity: 0, duration: 0.3, ease: 'power2.out', overwrite: true });
+          firstTapDone = false;
+        } else {
+          gsap.to(bgSybilEl, { opacity: 0, duration: 0.3, ease: 'power2.out', x: 0, overwrite: true });
+          gsap.to(bgHoverEl, { clipPath: 'inset(0 100% 0 0)', duration: 0.4, ease: 'power2.out', overwrite: true });
+          gsap.to(frameBorderEl, { opacity: 0, x: 0, duration: 0.4, ease: 'power2.out', overwrite: true });
+          firstHoverDone = false;
+        }
 
-        const m = getLetterMetrics();
+        const flushM = getLetterMetrics();
+        const thick = C.wallThick;
+        const inset = fr.width * C.wallInset;
 
         // Kill any in-flight swap tweens and hide ALL slot letters
         for (const slot of slots) {
@@ -448,26 +539,35 @@ Events.on(engine, 'afterUpdate', () => {
           gsap.set(slot.sybilEl, { opacity: 0 });
         }
 
-        // Remove the main floor immediately — debris falls through
+        // Remove the main floor — debris falls through
         const floorBodies = world.bodies.filter(b => b.isStatic && b.label === 'wall');
         const mainFloor = floorBodies.find(b => b.position.y > fr.top + fr.height * 0.5);
         if (mainFloor) World.remove(world, mainFloor);
 
-        // Add a private floor only sofia bodies can collide with
+        // Private floor + walls only sofia bodies can collide with
         const sofiaFloor = Bodies.rectangle(
-          fr.left + fr.width / 2, fr.bottom - fr.height * FLOOR_PAD_RATIO - fr.width * 0.007 + 40, fr.width * 1.4, 80,
+          fr.left + fr.width / 2,
+          fr.bottom - fr.height * C.floorPadRatio - inset + C.sofiaFloorYOffset,
+          fr.width * 1.4, thick,
           { isStatic: true, label: 'sofiaFloor', restitution: 0.3, friction: 0.6,
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
         );
         World.add(world, sofiaFloor);
 
+        const sofiaWallLeftX = C.sofiaWallUsePad
+          ? fr.left + pad + inset - thick / 2
+          : fr.left + inset - thick / 2;
+        const sofiaWallRightX = C.sofiaWallUsePad
+          ? fr.right - pad - inset + thick / 2 + C.rightWallOffset
+          : fr.right - inset + thick / 2;
+
         const sofiaLeftWall = Bodies.rectangle(
-          fr.left + pad + inset - thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
+          sofiaWallLeftX, fr.top + fr.height / 2, thick, fr.height * 2,
           { isStatic: true, label: 'sofiaWall', restitution: 0.3, friction: 0.6,
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
         );
         const sofiaRightWall = Bodies.rectangle(
-          fr.right - pad - inset + thick / 2 + 12, fr.top + fr.height / 2, thick, fr.height * 2,
+          sofiaWallRightX, fr.top + fr.height / 2, thick, fr.height * 2,
           { isStatic: true, label: 'sofiaWall', restitution: 0.3, friction: 0.6,
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
         );
@@ -485,21 +585,24 @@ Events.on(engine, 'afterUpdate', () => {
         // Create sofia physics bodies — collide with sofiaFloor only
         for (const slot of slots) {
           gsap.set(slot.sofiaEl, { opacity: 0.9 });
-          const body = Bodies.rectangle(slot.x, slot.y - 20, m.letterW * 0.7, m.letterH * 0.65, {
+          const body = Bodies.rectangle(slot.x, slot.y - 20, flushM.letterW * 0.7, flushM.letterH * 0.65, {
             restitution: 0.4, friction: 0.8, frictionAir: 0.005,
             angle: (Math.random() - 0.5) * 0.3, density: 0.004, sleepThreshold: 300,
             collisionFilter: { category: 0x0004, mask: 0x0002 },
           });
-          Body.setVelocity(body, { x: (Math.random() - 0.5) * 0.8, y: 2 + Math.random() * 1.5 });
+          Body.setVelocity(body, {
+            x: (Math.random() - 0.5) * C.sofiaFallVelXRange,
+            y: C.sofiaFallVelYBase + Math.random() * C.sofiaFallVelYJitter,
+          });
           World.add(world, body);
           sofiaFallPairs.push({ el: slot.sofiaEl, body, slot, born: performance.now() });
         }
 
         // Wait for sofia to settle, then clean up and rise
         const checkSettle = () => {
-          const now = performance.now();
+          const now2 = performance.now();
           const allSettled = sofiaFallPairs.every(p =>
-            p.settled || (now - p.born > 500 && p.body.speed < 0.5)
+            p.settled || (now2 - p.born > 500 && p.body.speed < 0.5)
           );
           if (!allSettled) { requestAnimationFrame(checkSettle); return; }
 
@@ -518,8 +621,10 @@ Events.on(engine, 'afterUpdate', () => {
 
           // Remove sofia floor and walls
           World.remove(world, sofiaFloor);
-          World.remove(world, sofiaLeftWall);
-          World.remove(world, sofiaRightWall);
+          if (!isMobile) {
+            World.remove(world, sofiaLeftWall);
+            World.remove(world, sofiaRightWall);
+          }
 
           // Clean up debris
           for (const dp of debrisPairs) {
@@ -535,6 +640,8 @@ Events.on(engine, 'afterUpdate', () => {
             currentName = 'sofia';
             revealPairs.length = 0;
             revealStarted = false;
+            revealRecalced = false;
+            if (isMobile) settledCount = 0;
 
             calcPositions();
             const mRise = getLetterMetrics();
@@ -542,7 +649,7 @@ Events.on(engine, 'afterUpdate', () => {
             for (const slot of slots) {
               gsap.set(slot.sybilEl, {
                 x: slot.x - mRise.offsetX,
-                y: slot.y - mRise.offsetY - (mRise.swapDist || 55),
+                y: slot.y - mRise.offsetY - (mRise.swapDist || C.swapDistFallback),
                 rotation: slot.restRot,
                 opacity: 0,
               });
@@ -565,7 +672,7 @@ Events.on(engine, 'afterUpdate', () => {
                     if (completed >= sofiaFallPairs.length) {
                       sofiaFallPairs.length = 0;
                       revealComplete = true;
-                      frameWrap.style.cursor = '';
+                      if (!isMobile) frameWrap.style.cursor = '';
                       flushing = false;
                     }
                   }
@@ -580,179 +687,190 @@ Events.on(engine, 'afterUpdate', () => {
   }
 });
 
-/* ── Swap: new letter drops from top, old one becomes physics debris ── */
-function swapTo(name) {
-  if (name === currentName || flushing) return;
-  // If this swap would trigger flush, just bump the count and bail —
-  // flush will handle the visual transition, no need for swap debris
-  if (swapCount + 1 >= 40) {
-    swapCount++;
-    return;
-  }
-
-  currentName = name;
-  calcPositions();
-  swapCount++;
-
-  const swapSlots = slots;
-
-  const m = getLetterMetrics();
-
-  swapSlots.forEach((slot, idx) => {
-    const outEl = name === 'sybil' ? slot.sofiaEl : slot.sybilEl;
-    const inEl = name === 'sybil' ? slot.sybilEl : slot.sofiaEl;
-    const baseY = slot.y - m.offsetY;
-    const delay = idx * 0.03 + Math.random() * 0.04;
-
-    // Kill any in-flight tweens and snap to resting position before cloning
-    gsap.killTweensOf(outEl);
-    gsap.killTweensOf(inEl);
-    gsap.set(outEl, { x: slot.x - m.offsetX, y: baseY, rotation: slot.restRot, opacity: 0.9 });
-
-    // Clone the outgoing letter as debris from its correct position
-    const debris = outEl.cloneNode(true);
-    debris.style.pointerEvents = 'none';
-    letterField.appendChild(debris);
-
-    gsap.set(outEl, { opacity: 0, y: baseY - m.swapDist });
-
-    setTimeout(() => {
-      const body = Bodies.rectangle(slot.x, slot.y, m.letterW * 0.7, m.letterH * 0.65, {
-        restitution: 0.35,
-        friction: 0.5,
-        frictionAir: 0.01,
-        angle: slot.restRot * Math.PI / 180,
-        density: 0.002,
-        sleepThreshold: 30,
-      });
-      Body.setVelocity(body, {
-        x: (Math.random() - 0.5) * 2,
-        y: 0
-      });
-      World.add(world, body);
-      debrisPairs.push({ el: debris, body, born: performance.now() });
-      debris.style.opacity = '0.9';
-    }, delay * 1000);
-
-    gsap.fromTo(inEl,
-      { x: slot.x - m.offsetX, y: baseY - m.swapDist, rotation: slot.restRot, opacity: 0 },
-      { y: baseY, opacity: 0.9, duration: 0.4, delay: delay + 0.06, ease: 'power2.out', overwrite: true }
-    );
-  });
-}
-
-/* ── Simple letter rain (skip reveal, return visit) ── */
-function startSimpleRain() {
+/* ── Letter rain (reveal animation) ── */
+function startRain() {
+  if (revealStarted) return;
   revealStarted = true;
   const m = getLetterMetrics();
+  const fr = frameWrap.getBoundingClientRect();
   const gen = _rainGen;
 
   slots.forEach((slot, idx) => {
-    const delay = idx * 55 + Math.random() * 35;
+    const delay = idx * C.rainDelayBase + Math.random() * C.rainDelayJitter;
     setTimeout(() => {
       if (_rainGen !== gen) return;
       gsap.set(slot.sofiaEl, { opacity: 0.9 });
 
-      const startX = slot.x + (Math.random() - 0.5) * 40;
-      const startY = -60 - Math.random() * 100;
+      const startX = slot.x + (Math.random() - 0.5) * C.rainXJitter;
+      const startY = C.rainStartYAbsolute
+        ? -60 - Math.random() * 100
+        : fr.top - 40 - Math.random() * 60;
 
       const body = Bodies.rectangle(startX, startY, m.letterW * 0.7, m.letterH * 0.65, {
-        restitution: 0.35, friction: 0.5, frictionAir: 0.006,
-        angle: (Math.random() - 0.5) * 0.6, density: 0.003, sleepThreshold: 60,
+        restitution: C.rainRestitution, friction: 0.5, frictionAir: C.rainFrictionAir,
+        angle: (Math.random() - 0.5) * C.rainAngleRange, density: 0.003, sleepThreshold: 60,
       });
       Body.setVelocity(body, {
-        x: (Math.random() - 0.5) * 2,
-        y: 2.5 + Math.random() * 2,
+        x: (Math.random() - 0.5) * C.rainVelXRange,
+        y: C.rainVelYBase + Math.random() * C.rainVelYJitter,
       });
       World.add(world, body);
       revealPairs.push({ el: slot.sofiaEl, body, slot, settled: false, born: performance.now() });
     }, delay);
   });
 
-  // Settle letters to final positions once they slow down
-  const checkSettled = () => {
-    if (_rainGen !== gen) return;
-    if (revealPairs.length < slots.length) { requestAnimationFrame(checkSettled); return; }
-    const now = performance.now();
-    const allSlow = revealPairs.every(p =>
-      p.settled || (now - p.born > 600 && p.body.speed < 0.6)
-    );
-    if (!allSlow) { requestAnimationFrame(checkSettled); return; }
-    flyToFinalPositions(() => { loadingPhase = 0; });
-  };
-  setTimeout(() => { if (_rainGen !== gen) return; checkSettled(); }, 1200);
+  if (!C.settleIndividual) {
+    // Desktop: wait for all letters to settle, then fly to final positions
+    const checkSettled = () => {
+      if (_rainGen !== gen) return;
+      if (revealPairs.length < slots.length) { requestAnimationFrame(checkSettled); return; }
+      const now = performance.now();
+      const allSlow = revealPairs.every(p =>
+        p.settled || (now - p.born > 600 && p.body.speed < 0.6)
+      );
+      if (!allSlow) { requestAnimationFrame(checkSettled); return; }
+      flyToFinalPositions(() => { loadingPhase = 0; });
+    };
+    setTimeout(() => { if (_rainGen !== gen) return; checkSettled(); }, 1200);
 
-  // Safety timeout
-  setTimeout(() => {
-    if (_rainGen !== gen || revealComplete) return;
-    for (const pair of revealPairs) {
-      if (!pair.settled && world.bodies.includes(pair.body)) World.remove(world, pair.body);
-      pair.settled = true;
-    }
-    flyToFinalPositions(() => { loadingPhase = 0; });
-  }, 5000);
+    // Safety timeout
+    setTimeout(() => {
+      if (_rainGen !== gen || revealComplete) return;
+      for (const pair of revealPairs) {
+        if (!pair.settled && world.bodies.includes(pair.body)) World.remove(world, pair.body);
+        pair.settled = true;
+      }
+      flyToFinalPositions(() => { loadingPhase = 0; });
+    }, 5000);
+  } else {
+    // Mobile: individual settling happens in afterUpdate; safety timeout
+    setTimeout(() => {
+      if (_rainGen !== gen) return;
+      calcPositions();
+      for (const pair of revealPairs) {
+        if (!pair.settled) settleLetter(pair);
+      }
+    }, 4000);
+  }
 }
 
-} // end if (!isMobile) — desktop physics
-
-initPositions();
-
-/* ── Cinematic reveal ── */
-
+/* ── Mobile: tap/click anywhere to swap (except nav) ── */
 if (isMobile) {
-  /* ═══════════════════════════════════════
-     MOBILE: Matter.js physics swap (like desktop)
-     ═══════════════════════════════════════ */
+  let lastTapTime = 0;
+  function handleTap(e) {
+    if (!revealComplete) return;
+    if (e.target.closest('.mob-sheet')) return;
+    const now = Date.now();
+    if (e.type === 'click' && now - lastTapTime < 500) return;
+    if (e.type === 'touchend') lastTapTime = now;
+    swapTo(currentName === 'sofia' ? 'sybil' : 'sofia');
+  }
+  document.addEventListener('touchend', handleTap);
+  document.addEventListener('click', handleTap);
+}
 
-  const { Engine, World, Bodies, Body, Runner, Events } = Matter;
-  const engine = Engine.create({
-    gravity: { x: 0, y: 1.2 },
-    enableSleeping: true,
-    positionIterations: 8,
-    velocityIterations: 6,
-  });
-  const world = engine.world;
-  const runner = Runner.create();
-  Runner.run(runner, engine);
+/* ── Resize handler ── */
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizing = true;
 
-  const debrisPairs = [];
-  const sofiaFallPairs = [];
-  let flushing = false;
-  let swapCount = 0;
-  let firstTapDone = false;
+  // On first resize event: immediately wipe everything
+  if (!_resizeCleaned) {
+    _resizeCleaned = true;
+    _rainGen++;
+    flushing = false;
 
-  const FLOOR_PAD_RATIO = 0.03;
+    // Remove debris clones + physics
+    for (const dp of debrisPairs) {
+      World.remove(world, dp.body);
+      dp.el.remove();
+    }
+    debrisPairs.length = 0;
 
-  function buildWalls() {
-    const oldStatic = world.bodies.filter(b => b.isStatic && b.label === 'wall');
-    World.remove(world, oldStatic);
+    // Remove sofia-fall bodies
+    for (const pair of sofiaFallPairs) {
+      if (!pair.settled && world.bodies.includes(pair.body))
+        World.remove(world, pair.body);
+    }
+    sofiaFallPairs.length = 0;
 
-    const fr = frameWrap.getBoundingClientRect();
-    const pad = fr.height * FLOOR_PAD_RATIO;
-    const thick = 60;
-    const inset = fr.width * 0.01;
-    const wallFilter = { category: 0x0004, mask: 0xFFFF };
+    // Remove reveal bodies
+    for (const pair of revealPairs) {
+      if (!pair.settled && world.bodies.includes(pair.body))
+        World.remove(world, pair.body);
+    }
+    revealPairs.length = 0;
 
-    // Floor
-    World.add(world, Bodies.rectangle(
-      fr.left + fr.width / 2, fr.bottom - pad - inset + thick / 2, fr.width * 1.4, thick,
-      { isStatic: true, label: 'wall', restitution: 0.3, friction: 0.6, collisionFilter: wallFilter }
-    ));
-    // Left wall
-    World.add(world, Bodies.rectangle(
-      fr.left + pad + inset - thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
-      { isStatic: true, label: 'wall', collisionFilter: wallFilter }
-    ));
-    // Right wall
-    World.add(world, Bodies.rectangle(
-      fr.right - pad - inset + thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
-      { isStatic: true, label: 'wall', collisionFilter: wallFilter }
-    ));
+    // Remove flush-specific static bodies (sofiaFloor, sofiaWall)
+    const flushBodies = world.bodies.filter(b => b.isStatic && (b.label === 'sofiaFloor' || b.label === 'sofiaWall'));
+    if (flushBodies.length) World.remove(world, flushBodies);
+
+    // Kill tweens and hide all letters
+    if (isMobile) stopBreathe();
+    for (const slot of slots) {
+      gsap.killTweensOf(slot.sofiaEl);
+      gsap.killTweensOf(slot.sybilEl);
+      gsap.set(slot.sofiaEl, { opacity: 0 });
+      gsap.set(slot.sybilEl, { opacity: 0 });
+    }
+
+    // Reset state
+    currentName = 'sofia';
+    revealComplete = false;
+    revealStarted = false;
+    revealRecalced = false;
+    swapCount = 0;
+
+    if (isMobile) {
+      settledCount = 0;
+      firstTapDone = false;
+      gsap.set(bgSybilEl, { opacity: 0 });
+    } else {
+      loadingPhase = 0;
+      firstHoverDone = false;
+      gsap.set(bgSybilEl, { opacity: 0, x: 0 });
+      gsap.set(bgHoverEl, { clipPath: 'inset(0 100% 0 0)' });
+      gsap.set(frameBorderEl, { opacity: 0, x: 0 });
+    }
   }
 
-  // ── Reveal: scale-up frame + border together + letter rain ──
-  gsap.set(sceneEl, { opacity: 1 });
+  // After resize stops: rebuild
+  _resizeTimer = setTimeout(() => {
+    _resizeCleaned = false;
+    _resizing = false;
+    invalidateMetrics();
+    buildWalls();
 
+    if (isMobile) {
+      initPositions();
+      startRain();
+    } else {
+      calcPositions();
+      const m = getLetterMetrics();
+      for (const slot of slots) {
+        slot.sofiaEl.style.height = m.letterH + 'px';
+        slot.sybilEl.style.height = m.letterH + 'px';
+        const activeEl = currentName === 'sofia' ? slot.sofiaEl : slot.sybilEl;
+        gsap.set(activeEl, {
+          x: slot.x - m.offsetX,
+          y: slot.y - m.offsetY,
+          rotation: slot.restRot,
+          opacity: 0.9,
+        });
+      }
+      revealComplete = true;
+      revealStarted = true;
+      frameWrap.style.cursor = '';
+    }
+  }, 300);
+});
+
+/* ── Init + entrance ── */
+initPositions();
+
+if (isMobile) {
+  /* ── Mobile entrance: scale-up frame + letter rain ── */
+  gsap.set(sceneEl, { opacity: 1 });
   gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
 
   const revealTL = gsap.timeline({ delay: 0.3 });
@@ -765,447 +883,11 @@ if (isMobile) {
   revealTL.call(() => {
     calcPositions();
     buildWalls();
-    startLetterRain();
+    startRain();
   }, null, 1.2);
 
-  /* ── Letter rain reveal (physics-based, like desktop) ── */
-  const revealPairs = [];
-  let settledCount = 0;
-
-  function startLetterRain() {
-    if (revealStarted) return;
-    revealStarted = true;
-    const m = getLetterMetrics();
-    const fr = frameWrap.getBoundingClientRect();
-    const gen = _mobRainGen;
-
-    slots.forEach((slot, idx) => {
-      const delay = idx * 45 + Math.random() * 30;
-
-      setTimeout(() => {
-        if (_mobRainGen !== gen) return;
-
-        gsap.set(slot.sofiaEl, { opacity: 0.9 });
-
-        const startX = slot.x + (Math.random() - 0.5) * 30;
-        const startY = fr.top - 40 - Math.random() * 60;
-
-        const body = Bodies.rectangle(startX, startY, m.letterW * 0.7, m.letterH * 0.65, {
-          restitution: 0.3, friction: 0.5, frictionAir: 0.008,
-          angle: (Math.random() - 0.5) * 0.4, density: 0.003, sleepThreshold: 60,
-        });
-        Body.setVelocity(body, {
-          x: (Math.random() - 0.5) * 1,
-          y: 1.5 + Math.random() * 1,
-        });
-        World.add(world, body);
-
-        revealPairs.push({ el: slot.sofiaEl, body, slot, settled: false, born: performance.now() });
-      }, delay);
-    });
-
-    // Safety timeout
-    setTimeout(() => {
-      if (_mobRainGen !== gen) return;
-      calcPositions();
-      for (const pair of revealPairs) {
-        if (!pair.settled) settleLetter(pair);
-      }
-    }, 4000);
-  }
-
-  function settleLetter(pair) {
-    if (pair.settled) return;
-    pair.settled = true;
-
-    const pos = pair.body.position;
-    const ang = pair.body.angle * (180 / Math.PI);
-    const m = getLetterMetrics();
-
-    World.remove(world, pair.body);
-
-    gsap.fromTo(pair.el,
-      { x: pos.x - m.offsetX, y: pos.y - m.offsetY, rotation: ang },
-      {
-        x: pair.slot.x - m.offsetX,
-        y: pair.slot.y - m.offsetY,
-        rotation: pair.slot.restRot,
-        duration: 0.5, ease: 'power2.out',
-        onComplete: () => {
-          settledCount++;
-          if (settledCount >= slots.length) { revealComplete = true; startBreathe(); }
-        }
-      }
-    );
-  }
-
-  /* ── Breathe pulse until first tap ── */
-  let breatheTL = null;
-  function startBreathe() {
-    breatheTL = gsap.timeline({ repeat: -1, yoyo: true });
-    breatheTL.to(slots.map(s => s.sofiaEl), {
-      scale: 1.1, y: '-=3', duration: 1.4, ease: 'sine.inOut', stagger: 0.05,
-    });
-  }
-  function stopBreathe() {
-    if (!breatheTL) return;
-    breatheTL.kill();
-    breatheTL = null;
-    for (const slot of slots) {
-      gsap.to(slot.sofiaEl, { scale: 1, y: slot.y - getLetterMetrics().offsetY, duration: 0.3, ease: 'power2.out' });
-    }
-  }
-
-  let revealRecalced = false;
-
-  /* ── Swap on tap (like desktop swapTo) ── */
-  function swapTo(name) {
-    if (name === currentName || flushing) return;
-    stopBreathe();
-    if (swapCount + 1 >= 40) { swapCount++; return; }
-
-    currentName = name;
-    calcPositions();
-    swapCount++;
-
-    // First tap: crossfade bg photo
-    if (!firstTapDone) {
-      firstTapDone = true;
-      gsap.to(bgSybilEl, { opacity: 1, duration: 0.6, delay: 0.1, ease: 'power2.inOut', overwrite: true });
-    } else {
-      // Toggle bg
-      const showSybil = name === 'sybil';
-      gsap.to(bgSybilEl, {
-        opacity: showSybil ? 1 : 0,
-        duration: 0.2, delay: 0, ease: 'power2.inOut', overwrite: true,
-      });
-    }
-
-    const m = getLetterMetrics();
-
-    slots.forEach((slot, idx) => {
-      const outEl = name === 'sybil' ? slot.sofiaEl : slot.sybilEl;
-      const inEl = name === 'sybil' ? slot.sybilEl : slot.sofiaEl;
-      const baseY = slot.y - m.offsetY;
-      const delay = idx * 0.03 + Math.random() * 0.04;
-
-      // Kill tweens and snap outgoing to rest position
-      gsap.killTweensOf(outEl);
-      gsap.killTweensOf(inEl);
-      // Snap outgoing to rest position, visible, so clone inherits correct state
-      gsap.set(outEl, { x: slot.x - m.offsetX, y: baseY, rotation: slot.restRot, opacity: 0.9 });
-
-      // Clone as debris — inherits rest position + opacity, seamlessly replaces outEl
-      const debris = outEl.cloneNode(true);
-      debris.style.pointerEvents = 'none';
-      letterField.appendChild(debris);
-
-      // Defer hide to next frame — gives debris clone time to render on mobile GPU
-      requestAnimationFrame(() => {
-        gsap.set(outEl, { opacity: 0, y: baseY - m.swapDist });
-      });
-
-      setTimeout(() => {
-        const body = Bodies.rectangle(slot.x, slot.y, m.letterW * 0.7, m.letterH * 0.65, {
-          restitution: 0.35, friction: 0.5, frictionAir: 0.01,
-          angle: slot.restRot * Math.PI / 180, density: 0.002, sleepThreshold: 30,
-        });
-        Body.setVelocity(body, { x: (Math.random() - 0.5) * 1.5, y: 0 });
-        World.add(world, body);
-        debrisPairs.push({ el: debris, body, born: performance.now() });
-      }, delay * 1000);
-
-      // New letter drops in
-      gsap.fromTo(inEl,
-        { x: slot.x - m.offsetX, y: baseY - m.swapDist, rotation: slot.restRot, opacity: 0 },
-        { y: baseY, opacity: 0.9, duration: 0.4, delay: delay + 0.06, ease: 'power2.out', overwrite: true }
-      );
-    });
-  }
-
-  /* ── Physics sync loop ── */
-  Events.on(engine, 'afterUpdate', () => {
-    const m = getLetterMetrics();
-
-    // Sync reveal letters
-    let needsRecalc = false;
-    for (const pair of revealPairs) {
-      if (pair.settled) continue;
-      const pos = pair.body.position;
-      const ang = pair.body.angle * (180 / Math.PI);
-      pair.el.style.transform = `translate(${pos.x - m.offsetX}px, ${pos.y - m.offsetY}px) rotate(${ang}deg)`;
-
-      const alive = performance.now() - pair.born;
-      if (alive > 800 && pair.body.speed < 0.4) needsRecalc = true;
-    }
-
-    if (needsRecalc && !revealRecalced) {
-      revealRecalced = true;
-      calcPositions();
-    }
-
-    for (const pair of revealPairs) {
-      if (pair.settled) continue;
-      const alive = performance.now() - pair.born;
-      if (alive > 800 && pair.body.speed < 0.4) settleLetter(pair);
-    }
-
-    // Sync swap debris
-    for (const pair of debrisPairs) {
-      const pos = pair.body.position;
-      const ang = pair.body.angle * (180 / Math.PI);
-      pair.el.style.transform = `translate(${pos.x - m.offsetX}px, ${pos.y - m.offsetY}px) rotate(${ang}deg)`;
-    }
-
-    // Sync sofia fall bodies
-    for (const pair of sofiaFallPairs) {
-      if (pair.settled) continue;
-      const pos = pair.body.position;
-      const ang = pair.body.angle * (180 / Math.PI);
-      pair.el.style.transform = `translate(${pos.x - m.offsetX}px, ${pos.y - m.offsetY}px) rotate(${ang}deg)`;
-    }
-
-    // ── Flush check: 40+ swaps or debris reaches top ──
-    if (!flushing && debrisPairs.length > 0) {
-      const fr = frameWrap.getBoundingClientRect();
-      const pad = fr.height * FLOOR_PAD_RATIO;
-      const topEdge = fr.top + pad;
-      const now = performance.now();
-
-      let shouldFlush = swapCount >= 40;
-
-      if (!shouldFlush) {
-        for (const pair of debrisPairs) {
-          if (pair.born && now - pair.born < 500) continue;
-          if (pair.body.position.y <= topEdge) { shouldFlush = true; break; }
-        }
-      }
-
-      if (shouldFlush) {
-        flushing = true;
-        revealComplete = false;
-
-        // Reset bg
-        gsap.to(bgSybilEl, { opacity: 0, duration: 0.3, ease: 'power2.out', overwrite: true });
-        firstTapDone = false;
-
-        // Hide all slot letters
-        for (const slot of slots) {
-          gsap.killTweensOf(slot.sofiaEl);
-          gsap.killTweensOf(slot.sybilEl);
-          gsap.set(slot.sofiaEl, { opacity: 0 });
-          gsap.set(slot.sybilEl, { opacity: 0 });
-        }
-
-        // Remove main floor — debris falls through
-        const fr2 = frameWrap.getBoundingClientRect();
-        const thick = 60;
-        const inset = fr2.width * 0.01;
-        const floorBodies = world.bodies.filter(b => b.isStatic && b.label === 'wall');
-        const mainFloor = floorBodies.find(b => b.position.y > fr2.top + fr2.height * 0.5);
-        if (mainFloor) World.remove(world, mainFloor);
-
-        // Private floor + side walls for sofia re-rain
-        const sofiaFloor = Bodies.rectangle(
-          fr2.left + fr2.width / 2, fr2.bottom - fr2.height * FLOOR_PAD_RATIO - inset + 30, fr2.width * 1.4, thick,
-          { isStatic: true, label: 'sofiaFloor', restitution: 0.3, friction: 0.6,
-            collisionFilter: { category: 0x0002, mask: 0x0004 } }
-        );
-        const sofiaLeftWall = Bodies.rectangle(
-          fr2.left + inset - thick / 2, fr2.top + fr2.height / 2, thick, fr2.height * 2,
-          { isStatic: true, label: 'sofiaWall', restitution: 0.3, friction: 0.6,
-            collisionFilter: { category: 0x0002, mask: 0x0004 } }
-        );
-        const sofiaRightWall = Bodies.rectangle(
-          fr2.right - inset + thick / 2, fr2.top + fr2.height / 2, thick, fr2.height * 2,
-          { isStatic: true, label: 'sofiaWall', restitution: 0.3, friction: 0.6,
-            collisionFilter: { category: 0x0002, mask: 0x0004 } }
-        );
-        World.add(world, [sofiaFloor, sofiaLeftWall, sofiaRightWall]);
-
-        // Wake debris, nudge down
-        for (const dp of debrisPairs) {
-          if (dp.body.isSleeping) Matter.Sleeping.set(dp.body, false);
-          Body.setVelocity(dp.body, { x: dp.body.velocity.x, y: Math.max(dp.body.velocity.y, 3) });
-        }
-
-        // Sofia fall bodies
-        for (const slot of slots) {
-          gsap.set(slot.sofiaEl, { opacity: 0.9 });
-          const body = Bodies.rectangle(slot.x, slot.y - 20, m.letterW * 0.7, m.letterH * 0.65, {
-            restitution: 0.4, friction: 0.8, frictionAir: 0.005,
-            angle: (Math.random() - 0.5) * 0.3, density: 0.004, sleepThreshold: 300,
-            collisionFilter: { category: 0x0004, mask: 0x0002 },
-          });
-          Body.setVelocity(body, { x: (Math.random() - 0.5) * 0.5, y: 1.5 + Math.random() * 1 });
-          World.add(world, body);
-          sofiaFallPairs.push({ el: slot.sofiaEl, body, slot, born: performance.now() });
-        }
-
-        // Wait for settle, then rise
-        const checkSettle = () => {
-          const now2 = performance.now();
-          const allSettled = sofiaFallPairs.every(p =>
-            p.settled || (now2 - p.born > 500 && p.body.speed < 0.5)
-          );
-          if (!allSettled) { requestAnimationFrame(checkSettle); return; }
-
-          const m2 = getLetterMetrics();
-          for (const pair of sofiaFallPairs) {
-            const pos = pair.body.position;
-            const ang = pair.body.angle * (180 / Math.PI);
-            pair.capturedX = pos.x - m2.offsetX;
-            pair.capturedY = pos.y - m2.offsetY;
-            pair.capturedRot = ang;
-            pair.settled = true;
-            World.remove(world, pair.body);
-            gsap.set(pair.el, { x: pair.capturedX, y: pair.capturedY, rotation: pair.capturedRot });
-          }
-
-          World.remove(world, sofiaFloor);
-
-          // Clean up debris
-          for (const dp of debrisPairs) {
-            World.remove(world, dp.body);
-            dp.el.remove();
-          }
-          debrisPairs.length = 0;
-          swapCount = 0;
-
-          // Pause, then rise
-          setTimeout(() => {
-            buildWalls();
-            currentName = 'sofia';
-            revealPairs.length = 0;
-            settledCount = 0;
-            revealStarted = false;
-            revealRecalced = false;
-
-            calcPositions();
-            const mRise = getLetterMetrics();
-
-            for (const slot of slots) {
-              gsap.set(slot.sybilEl, {
-                x: slot.x - mRise.offsetX,
-                y: slot.y - mRise.offsetY - (mRise.swapDist || 30),
-                rotation: slot.restRot, opacity: 0,
-              });
-            }
-
-            // Rise from floor to home
-            let completed = 0;
-            sofiaFallPairs.forEach((pair, idx) => {
-              gsap.fromTo(pair.el,
-                { x: pair.capturedX, y: pair.capturedY, rotation: pair.capturedRot },
-                {
-                  x: pair.slot.x - mRise.offsetX,
-                  y: pair.slot.y - mRise.offsetY,
-                  rotation: pair.slot.restRot,
-                  duration: 0.7, ease: 'power2.out',
-                  delay: idx * 0.045 + Math.random() * 0.03,
-                  onComplete: () => {
-                    completed++;
-                    if (completed >= sofiaFallPairs.length) {
-                      sofiaFallPairs.length = 0;
-                      revealComplete = true;
-                      flushing = false;
-                    }
-                  }
-                }
-              );
-            });
-          }, 400);
-        };
-        setTimeout(checkSettle, 600);
-      }
-    }
-  });
-
-  // ── Tap/swipe/scroll anywhere to swap (except nav) ──
-  let lastTapTime = 0;
-  function handleTap(e) {
-    if (!revealComplete) return;
-    if (e.target.closest('.mob-sheet')) return;
-    const now = Date.now();
-    if (e.type === 'click' && now - lastTapTime < 500) return;
-    if (e.type === 'touchend') lastTapTime = now;
-    swapTo(currentName === 'sofia' ? 'sybil' : 'sofia');
-  }
-  document.addEventListener('touchend', handleTap);
-  document.addEventListener('click', handleTap);
-
-  // ── Mobile resize: clean up + re-rain (mirrors desktop resize handler) ──
-  let _mobResizeTimer;
-  let _mobResizeCleaned = false;
-  let _mobRainGen = 0;
-  window.addEventListener('resize', () => {
-    clearTimeout(_mobResizeTimer);
-
-    if (!_mobResizeCleaned) {
-      _mobResizeCleaned = true;
-      _mobRainGen++;
-      flushing = false;
-
-      // Remove debris clones + physics
-      for (const dp of debrisPairs) {
-        World.remove(world, dp.body);
-        dp.el.remove();
-      }
-      debrisPairs.length = 0;
-
-      // Remove sofia-fall bodies
-      for (const pair of sofiaFallPairs) {
-        if (!pair.settled && world.bodies.includes(pair.body))
-          World.remove(world, pair.body);
-      }
-      sofiaFallPairs.length = 0;
-
-      // Remove reveal bodies
-      for (const pair of revealPairs) {
-        if (!pair.settled && world.bodies.includes(pair.body))
-          World.remove(world, pair.body);
-      }
-      revealPairs.length = 0;
-
-      // Remove flush-specific static bodies
-      const flushBodies = world.bodies.filter(b => b.isStatic && (b.label === 'sofiaFloor' || b.label === 'sofiaWall'));
-      if (flushBodies.length) World.remove(world, flushBodies);
-
-      // Kill tweens and hide all letters
-      stopBreathe();
-      for (const slot of slots) {
-        gsap.killTweensOf(slot.sofiaEl);
-        gsap.killTweensOf(slot.sybilEl);
-        gsap.set(slot.sofiaEl, { opacity: 0 });
-        gsap.set(slot.sybilEl, { opacity: 0 });
-      }
-
-      // Reset state
-      currentName = 'sofia';
-      revealComplete = false;
-      revealStarted = false;
-      revealRecalced = false;
-      settledCount = 0;
-      swapCount = 0;
-      firstTapDone = false;
-
-      // Reset hover visuals
-      gsap.set(bgSybilEl, { opacity: 0 });
-    }
-
-    _mobResizeTimer = setTimeout(() => {
-      _mobResizeCleaned = false;
-      buildWalls();
-      initPositions();
-      startLetterRain();
-    }, 300);
-  });
-
 } else {
-  /* ═══════════════════════════════════════
-     DESKTOP: Animated entrance + letter rain
-     ═══════════════════════════════════════ */
-
+  /* ── Desktop entrance: animated reveal + letter rain ── */
   gsap.set(sceneEl, { opacity: 1 });
   gsap.set(frameWrap, { opacity: 0, scale: 0.92, transformOrigin: '50% 50%' });
   gsap.set(outerBorder, { opacity: 0 });
@@ -1226,9 +908,8 @@ if (isMobile) {
   setTimeout(() => {
     initPositions();
     buildWalls();
-    startSimpleRain();
+    startRain();
   }, 600);
-
 }
 
 /* ── Floating dust particles ── */
