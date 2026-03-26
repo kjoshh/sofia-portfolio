@@ -923,7 +923,7 @@ preloadImages().then(() => {
     const entranceTL = gsap.timeline({ delay: 0.3 });
     entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1, ease: 'power2.out' }, 0);
     entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.4);
-    if (dustOverlayInit) entranceTL.to(dustOverlayInit, { opacity: 0.15, duration: 0.8, ease: 'power2.out' }, 0.3);
+    if (dustOverlayInit) entranceTL.to(dustOverlayInit, { opacity: 0.30, duration: 0.8, ease: 'power2.out' }, 0.3);
     entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
     entranceTL.to('.nav-star-sep', { opacity: 0.55, duration: 0.5 }, 0.5);
 
