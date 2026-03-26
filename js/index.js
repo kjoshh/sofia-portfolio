@@ -267,7 +267,7 @@ function buildWalls() {
   ));
   // Left wall
   World.add(world, Bodies.rectangle(
-    fr.left + pad + inset - thick / 2 + fr.width * 0.009, fr.top + fr.height / 2, thick, fr.height * 2,
+    fr.left + pad + inset - thick / 2 + fr.width * 0.015, fr.top + fr.height / 2, thick, fr.height * 2,
     { isStatic: true, label: 'wall', collisionFilter: wallFilter }
   ));
   // Right wall
@@ -867,52 +867,74 @@ window.addEventListener('resize', () => {
   }, 300);
 });
 
+/* ── Preload critical images before entrance ── */
+function preloadImages() {
+  const mobile = isMobile();
+  const srcs = [
+    'images-neu/heroimg-sofia.jpg',
+    mobile ? 'images-neu/frame-mobile.png' : 'images-neu/frame-desk.png',
+  ];
+
+  const promises = srcs.map(src => new Promise(resolve => {
+    const img = new Image();
+    img.onload = resolve;
+    img.onerror = resolve;   // don't block on failure
+    img.src = src;
+  }));
+
+  // Timeout fallback — never wait longer than 4s
+  const timeout = new Promise(resolve => setTimeout(resolve, 4000));
+  return Promise.race([Promise.all(promises), timeout]);
+}
+
 /* ── Init + entrance ── */
 initPositions();
 
-if (isMobile()) {
-  /* ── Mobile entrance: scale-up frame + letter rain ── */
-  gsap.set(sceneEl, { opacity: 1 });
-  gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
+preloadImages().then(() => {
+  if (isMobile()) {
+    /* ── Mobile entrance: scale-up frame + letter rain ── */
+    gsap.set(sceneEl, { opacity: 1 });
+    gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
 
-  const revealTL = gsap.timeline({ delay: 0.3 });
-  revealTL.to(frameWrap, {
-    scale: 1, opacity: 1, y: 0,
-    duration: 1.4, ease: 'power2.out',
-  });
+    const revealTL = gsap.timeline({ delay: 0.3 });
+    revealTL.to(frameWrap, {
+      scale: 1, opacity: 1, y: 0,
+      duration: 1.4, ease: 'power2.out',
+    });
 
-  // Build walls + start letter rain after frame arrives
-  revealTL.call(() => {
-    calcPositions();
-    buildWalls();
-    startRain();
-  }, null, 1.2);
+    // Build walls + start letter rain after frame arrives
+    revealTL.call(() => {
+      calcPositions();
+      buildWalls();
+      startRain();
+    }, null, 1.2);
 
-} else {
-  /* ── Desktop entrance: animated reveal + letter rain ── */
-  gsap.set(sceneEl, { opacity: 1 });
-  gsap.set(frameWrap, { opacity: 0, scale: 0.92, transformOrigin: '50% 50%' });
-  gsap.set(outerBorder, { opacity: 0 });
-  gsap.set('.main-nav', { opacity: 0, y: -15 });
+  } else {
+    /* ── Desktop entrance: animated reveal + letter rain ── */
+    gsap.set(sceneEl, { opacity: 1 });
+    gsap.set(frameWrap, { opacity: 0, scale: 0.92, transformOrigin: '50% 50%' });
+    gsap.set(outerBorder, { opacity: 0 });
+    gsap.set('.main-nav', { opacity: 0, y: -15 });
 
-  const dustOverlayInit = document.querySelector('.dust');
-  if (dustOverlayInit) gsap.set(dustOverlayInit, { opacity: 0 });
+    const dustOverlayInit = document.querySelector('.dust');
+    if (dustOverlayInit) gsap.set(dustOverlayInit, { opacity: 0 });
 
-  // Animate everything in
-  const entranceTL = gsap.timeline({ delay: 0.3 });
-  entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1, ease: 'power2.out' }, 0);
-  entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.4);
-  if (dustOverlayInit) entranceTL.to(dustOverlayInit, { opacity: 0.15, duration: 0.8, ease: 'power2.out' }, 0.3);
-  entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
-  entranceTL.to('.nav-star-sep', { opacity: 0.55, duration: 0.5 }, 0.5);
+    // Animate everything in
+    const entranceTL = gsap.timeline({ delay: 0.3 });
+    entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1, ease: 'power2.out' }, 0);
+    entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.4);
+    if (dustOverlayInit) entranceTL.to(dustOverlayInit, { opacity: 0.15, duration: 0.8, ease: 'power2.out' }, 0.3);
+    entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
+    entranceTL.to('.nav-star-sep', { opacity: 0.55, duration: 0.5 }, 0.5);
 
-  // Start letter rain once frame is mostly visible
-  setTimeout(() => {
-    initPositions();
-    buildWalls();
-    startRain();
-  }, 600);
-}
+    // Start letter rain once frame is mostly visible
+    setTimeout(() => {
+      initPositions();
+      buildWalls();
+      startRain();
+    }, 600);
+  }
+});
 
 /* ── Floating dust particles ── */
 (function () {
