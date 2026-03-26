@@ -9,9 +9,9 @@
   // Hide cursor during entrance transition
   document.body.classList.add('is-transitioning');
   setTimeout(function () {
-    overlay.style.transition = 'opacity 1500ms cubic-bezier(0.455, 0.03, 0.515, 0.955)';
+    overlay.style.transition = 'opacity 800ms cubic-bezier(0.455, 0.03, 0.515, 0.955)';
     overlay.style.opacity = '0';
-  }, 250);
+  }, 1200);
 
   overlay.addEventListener('transitionend', function handler() {
     if (overlay.style.opacity === '0') {
