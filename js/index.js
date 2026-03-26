@@ -232,7 +232,7 @@ function initPositions() {
 
 const C = isMobile() ? {
   gravity: 1.2, positionIter: 8, velocityIter: 6,
-  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01, rightWallOffset: 0, rightWallInsetExtra: 0.03,
+  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01, rightWallOffset: 0, rightWallInsetExtra: 0.005,
   swapVelXRange: 1.5,
   rainDelayBase: 45, rainDelayJitter: 30, rainStartYAbsolute: false,
   rainXJitter: 30, rainRestitution: 0.3, rainFrictionAir: 0.008,
@@ -243,7 +243,7 @@ const C = isMobile() ? {
   swapDistFallback: 30,
 } : {
   gravity: 1.5, positionIter: 10, velocityIter: 8,
-  floorPadRatio: 0.0225, wallThick: 80, wallInset: 0.015, rightWallOffset: 12, rightWallInsetExtra: 0.03,
+  floorPadRatio: 0.0225, wallThick: 80, wallInset: 0.015, rightWallOffset: 12, rightWallInsetExtra: 0.005,
   swapVelXRange: 2,
   rainDelayBase: 55, rainDelayJitter: 35, rainStartYAbsolute: true,
   rainXJitter: 40, rainRestitution: 0.35, rainFrictionAir: 0.006,
@@ -913,24 +913,14 @@ function preloadImages() {
 initPositions();
 
 preloadImages().then(() => {
-  const grainEl = document.querySelector('.grain');
-  const dustEl = document.querySelector('.dust');
   const mobile = isMobile();
 
-  // Standard resting opacities
-  const dustRest = mobile ? 0.12 : 0.15;
-  const grainRest = mobile ? 0.16 : 0.25;
-
-  // Boosted entrance opacities
-  const dustPeak = mobile ? 0.02 : 0.03;
-  const grainPeak = mobile ? 0.28 : 0.40;
+  // Grain + dust boost/fade handled by CSS via is-transitioning class
+  // (removed from transition.js when overlay finishes fading)
 
   if (mobile) {
     /* ── Mobile entrance: scale-up frame + letter rain ── */
     gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
-
-    // Start dust at boosted opacity
-    if (dustEl) gsap.set(dustEl, { opacity: dustPeak });
 
     const revealTL = gsap.timeline({ delay: 1.4 });
     revealTL.to(sceneEl, { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
@@ -938,11 +928,6 @@ preloadImages().then(() => {
       scale: 1, opacity: 1, y: 0,
       duration: 1.4, ease: 'power2.out',
     }, 0);
-
-    // Smooth grain boost + fade back to standard
-    if (grainEl) revealTL.to(grainEl, { opacity: grainPeak / grainRest, duration: 0.8, ease: 'power2.out' }, 0);
-    if (dustEl) revealTL.to(dustEl, { opacity: dustRest, duration: 1.5, ease: 'power2.inOut' }, 1.4);
-    if (grainEl) revealTL.to(grainEl, { opacity: 1, duration: 1.5, ease: 'power2.inOut' }, 1.4);
 
     // Build walls + start letter rain after frame arrives
     revealTL.call(() => {
@@ -957,8 +942,6 @@ preloadImages().then(() => {
     gsap.set(outerBorder, { opacity: 0 });
     gsap.set('.main-nav', { opacity: 0, y: -15 });
 
-    if (dustEl) gsap.set(dustEl, { opacity: 0 });
-
     // Animate everything in (delay synced with page-transition overlay fade)
     const entranceTL = gsap.timeline({ delay: 1.4 });
     entranceTL.to(sceneEl, { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
@@ -966,18 +949,6 @@ preloadImages().then(() => {
     entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0);
     entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
     entranceTL.to('.nav-star-sep', { opacity: 0.55, duration: 0.5 }, 0.5);
-
-    // Dust fade-in: boost then settle to resting opacity
-    if (dustEl) {
-      entranceTL.to(dustEl, { opacity: dustPeak, duration: 0.8, ease: 'power2.out' }, 0);
-      entranceTL.to(dustEl, { opacity: dustRest, duration: 1.5, ease: 'power2.inOut' }, 1.3);
-    }
-
-    // Smooth grain boost + fade back to standard
-    if (grainEl) {
-      entranceTL.to(grainEl, { opacity: grainPeak / grainRest, duration: 0.8, ease: 'power2.out' }, 0);
-      entranceTL.to(grainEl, { opacity: 1, duration: 1.5, ease: 'power2.inOut' }, 1.3);
-    }
 
     // Start letter rain once frame is mostly visible
     setTimeout(() => {
