@@ -236,7 +236,7 @@ function initPositions() {
 const C = isMobile() ? {
   gravity: 1.2, positionIter: 8, velocityIter: 6,
   floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01,
-  wallLeftInsetX: 0.05, wallRightInsetX: 0.003,
+  wallLeftInsetX: 0.105, wallRightInsetX: 0.005,
   swapVelXRange: 1.5,
   rainDelayBase: 45, rainDelayJitter: 30, rainStartYAbsolute: false,
   rainXJitter: 30, rainRestitution: 0.3, rainFrictionAir: 0.008,
@@ -911,12 +911,18 @@ initPositions();
 preloadImages().then(() => {
   const mobile = isMobile();
 
+  // Start overlays subtle, ramp up with scene to prevent contrast flash
+  gsap.set('.dust',  { opacity: 0.03 });
+  gsap.set('.grain', { opacity: 0.15 });
+
   if (mobile) {
     /* ── Mobile entrance: scale-up frame + letter rain ── */
     gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
 
     const revealTL = gsap.timeline({ delay: 1.4 });
     revealTL.to(sceneEl, { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
+    revealTL.to('.dust',  { opacity: 0.12, duration: 0.8, ease: 'power2.out' }, 0);
+    revealTL.to('.grain', { opacity: 1,    duration: 0.8, ease: 'power2.out' }, 0);
     revealTL.to(frameWrap, {
       scale: 1, opacity: 1, y: 0,
       duration: 1.4, ease: 'power2.out',
@@ -938,6 +944,8 @@ preloadImages().then(() => {
     // Animate everything in (delay synced with page-transition overlay fade)
     const entranceTL = gsap.timeline({ delay: 1.4 });
     entranceTL.to(sceneEl, { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
+    entranceTL.to('.dust',  { opacity: 0.15, duration: 0.8, ease: 'power2.out' }, 0);
+    entranceTL.to('.grain', { opacity: 1,    duration: 0.8, ease: 'power2.out' }, 0);
     entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1.5, ease: 'power2.inOut' }, 0);
     entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0);
     entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
