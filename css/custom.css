@@ -76,7 +76,7 @@ body.is-transitioning * {
   background-image: url("../images-neu/noise.png");
   background-size: 300px 300px;
   background-repeat: repeat;
-  opacity: 0.40;
+  opacity: 0.25;
   animation: grain 2.5s steps(1) infinite;
 }
 
@@ -788,7 +788,7 @@ text-decoration: none;
 
   /* Reduce grain on mobile for battery */
   .grain::after {
-    opacity: 0.28;
+    opacity: 0.16;
     animation-duration: 3s;
   }
 
@@ -1962,7 +1962,7 @@ html:has(body.landing-page) {
   pointer-events: none;
   z-index: var(--z-nav);
   background-image: url("../images-neu/dust.jpg");
-  opacity: 0.30;
+  opacity: 0.15;
 }
 
 /* ── Vignette ── */
@@ -2336,6 +2336,6 @@ html:has(body.landing-page) {
     pointer-events: none;
   }
   body.landing-page .dust {
-    opacity: 0.22;
+    opacity: 0.12;
   }
 }
