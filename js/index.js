@@ -232,7 +232,7 @@ function initPositions() {
 
 const C = isMobile() ? {
   gravity: 1.2, positionIter: 8, velocityIter: 6,
-  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01, rightWallOffset: 0,
+  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01, rightWallOffset: 0, rightWallInsetExtra: 0.03,
   swapVelXRange: 1.5,
   rainDelayBase: 45, rainDelayJitter: 30, rainStartYAbsolute: false,
   rainXJitter: 30, rainRestitution: 0.3, rainFrictionAir: 0.008,
@@ -932,7 +932,7 @@ preloadImages().then(() => {
     // Start dust at boosted opacity
     if (dustEl) gsap.set(dustEl, { opacity: dustPeak });
 
-    const revealTL = gsap.timeline({ delay: 1.0 });
+    const revealTL = gsap.timeline({ delay: 1.4 });
     revealTL.to(sceneEl, { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
     revealTL.to(frameWrap, {
       scale: 1, opacity: 1, y: 0,
@@ -959,13 +959,19 @@ preloadImages().then(() => {
 
     if (dustEl) gsap.set(dustEl, { opacity: 0 });
 
-    // Animate everything in
-    const entranceTL = gsap.timeline({ delay: 0.8 });
+    // Animate everything in (delay synced with page-transition overlay fade)
+    const entranceTL = gsap.timeline({ delay: 1.4 });
     entranceTL.to(sceneEl, { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
     entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1.5, ease: 'power2.inOut' }, 0);
     entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0);
     entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
     entranceTL.to('.nav-star-sep', { opacity: 0.55, duration: 0.5 }, 0.5);
+
+    // Dust fade-in: boost then settle to resting opacity
+    if (dustEl) {
+      entranceTL.to(dustEl, { opacity: dustPeak, duration: 0.8, ease: 'power2.out' }, 0);
+      entranceTL.to(dustEl, { opacity: dustRest, duration: 1.5, ease: 'power2.inOut' }, 1.3);
+    }
 
     // Smooth grain boost + fade back to standard
     if (grainEl) {
@@ -978,7 +984,7 @@ preloadImages().then(() => {
       initPositions();
       buildWalls();
       startRain();
-    }, 1300);
+    }, 1900);
   }
 });
 
