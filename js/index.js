@@ -109,7 +109,7 @@ function _computeMetrics() {
       letterW: fw * 0.052,
       spaceW:  fw * 0.048,
       swapDist: fw * 0.075,
-      offsetX: fw * 0.045,
+      offsetX: fw * 0.06,
       offsetY: fw * 0.04,
     };
   }
@@ -235,7 +235,7 @@ function initPositions() {
 
 const C = isMobile() ? {
   gravity: 1.2, positionIter: 8, velocityIter: 6,
-  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01, rightWallOffset: 0, rightWallInsetExtra: 0.005,
+  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01, rightWallOffset: 0,
   swapVelXRange: 1.5,
   rainDelayBase: 45, rainDelayJitter: 30, rainStartYAbsolute: false,
   rainXJitter: 30, rainRestitution: 0.3, rainFrictionAir: 0.008,
@@ -246,7 +246,7 @@ const C = isMobile() ? {
   swapDistFallback: 30,
 } : {
   gravity: 1.5, positionIter: 10, velocityIter: 8,
-  floorPadRatio: 0.0225, wallThick: 80, wallInset: 0.015, rightWallOffset: 12, rightWallInsetExtra: 0.005,
+  floorPadRatio: 0.0225, wallThick: 80, wallInset: 0.015, rightWallOffset: 12,
   swapVelXRange: 2,
   rainDelayBase: 55, rainDelayJitter: 35, rainStartYAbsolute: true,
   rainXJitter: 40, rainRestitution: 0.35, rainFrictionAir: 0.006,
@@ -310,7 +310,7 @@ function buildWalls() {
   ));
   // Right wall
   World.add(world, Bodies.rectangle(
-    fr.right - pad - inset + thick / 2 + C.rightWallOffset - fr.width * C.rightWallInsetExtra, fr.top + fr.height / 2, thick, fr.height * 2,
+    fr.right - pad - inset + thick / 2 + C.rightWallOffset - fr.width * 0.015, fr.top + fr.height / 2, thick, fr.height * 2,
     { isStatic: true, label: 'wall', collisionFilter: wallFilter }
   ));
 }
@@ -598,7 +598,7 @@ Events.on(engine, 'afterUpdate', () => {
           ? fr.left + pad + inset - thick / 2
           : fr.left + inset - thick / 2;
         const sofiaWallRightX = C.sofiaWallUsePad
-          ? fr.right - pad - inset + thick / 2 + C.rightWallOffset - fr.width * C.rightWallInsetExtra
+          ? fr.right - pad - inset + thick / 2 + C.rightWallOffset - fr.width * 0.015
           : fr.right - inset + thick / 2;
 
         const sofiaLeftWall = Bodies.rectangle(
