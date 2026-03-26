@@ -43,6 +43,10 @@ body.is-transitioning * {
   cursor: wait !important;
 }
 
+body.is-transitioning .grain::after {
+  opacity: 0.25;
+}
+
 
 
 /* ══════════════════════════════════════════
