@@ -905,7 +905,6 @@ preloadImages().then(() => {
 
   if (mobile) {
     /* ── Mobile entrance: scale-up frame + letter rain ── */
-    gsap.set(sceneEl, { opacity: 1 });
     gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
 
     // Start dust + grain at boosted opacity
@@ -913,10 +912,11 @@ preloadImages().then(() => {
     if (grainEl) gsap.set(grainEl, { opacity: grainPeak / grainRest });
 
     const revealTL = gsap.timeline({ delay: 1.0 });
+    revealTL.to(sceneEl, { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
     revealTL.to(frameWrap, {
       scale: 1, opacity: 1, y: 0,
       duration: 1.4, ease: 'power2.out',
-    });
+    }, 0);
 
     // Fade dust + grain back to standard after entrance
     if (dustEl) revealTL.to(dustEl, { opacity: dustRest, duration: 1.5, ease: 'power2.inOut' }, 1.4);
@@ -931,38 +931,26 @@ preloadImages().then(() => {
 
   } else {
     /* ── Desktop entrance: animated reveal + letter rain ── */
-    gsap.set(sceneEl, { opacity: 1 });
-    gsap.set(frameWrap, { opacity: 0, scale: 0.92, transformOrigin: '50% 50%' });
+    gsap.set(frameWrap, { opacity: 0, scale: 0.8, transformOrigin: '50% 100%' });
     gsap.set(outerBorder, { opacity: 0 });
     gsap.set('.main-nav', { opacity: 0, y: -15 });
 
     if (dustEl) gsap.set(dustEl, { opacity: 0 });
 
     // Animate everything in
-    const entranceTL = gsap.timeline({ delay: 1.0 });
-    entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1, ease: 'power2.out' }, 0);
-    entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.4);
+    const entranceTL = gsap.timeline({ delay: 0.8 });
+    entranceTL.to(sceneEl, { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
+    entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1.5, ease: 'power2.inOut' }, 0);
+    entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0);
     entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
     entranceTL.to('.nav-star-sep', { opacity: 0.55, duration: 0.5 }, 0.5);
-
-    // Dust: fade up to boosted peak, then ease back to standard
-    if (dustEl) {
-      entranceTL.to(dustEl, { opacity: dustPeak, duration: 0.8, ease: 'power2.out' }, 0.3);
-      entranceTL.to(dustEl, { opacity: dustRest, duration: 1.5, ease: 'power2.inOut' }, 1.3);
-    }
-
-    // Grain: start boosted, ease back to standard
-    if (grainEl) {
-      gsap.set(grainEl, { opacity: grainPeak / grainRest });
-      entranceTL.to(grainEl, { opacity: 1, duration: 1.5, ease: 'power2.inOut' }, 1.3);
-    }
 
     // Start letter rain once frame is mostly visible
     setTimeout(() => {
       initPositions();
       buildWalls();
       startRain();
-    }, 600);
+    }, 1300);
   }
 });
 
