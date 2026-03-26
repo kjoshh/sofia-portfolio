@@ -243,7 +243,7 @@ const C = isMobile() ? {
   swapDistFallback: 30,
 } : {
   gravity: 1.5, positionIter: 10, velocityIter: 8,
-  floorPadRatio: 0.0225, wallThick: 80, wallInset: 0.015, rightWallOffset: 12,
+  floorPadRatio: 0.0225, wallThick: 80, wallInset: 0.015, rightWallOffset: 12, rightWallInsetExtra: 0.03,
   swapVelXRange: 2,
   rainDelayBase: 55, rainDelayJitter: 35, rainStartYAbsolute: true,
   rainXJitter: 40, rainRestitution: 0.35, rainFrictionAir: 0.006,
@@ -307,7 +307,7 @@ function buildWalls() {
   ));
   // Right wall
   World.add(world, Bodies.rectangle(
-    fr.right - pad - inset + thick / 2 + C.rightWallOffset - fr.width * 0.015, fr.top + fr.height / 2, thick, fr.height * 2,
+    fr.right - pad - inset + thick / 2 + C.rightWallOffset - fr.width * C.rightWallInsetExtra, fr.top + fr.height / 2, thick, fr.height * 2,
     { isStatic: true, label: 'wall', collisionFilter: wallFilter }
   ));
 }
@@ -595,7 +595,7 @@ Events.on(engine, 'afterUpdate', () => {
           ? fr.left + pad + inset - thick / 2
           : fr.left + inset - thick / 2;
         const sofiaWallRightX = C.sofiaWallUsePad
-          ? fr.right - pad - inset + thick / 2 + C.rightWallOffset
+          ? fr.right - pad - inset + thick / 2 + C.rightWallOffset - fr.width * C.rightWallInsetExtra
           : fr.right - inset + thick / 2;
 
         const sofiaLeftWall = Bodies.rectangle(
@@ -922,7 +922,7 @@ preloadImages().then(() => {
   const grainRest = mobile ? 0.16 : 0.25;
 
   // Boosted entrance opacities
-  const dustPeak = mobile ? 0.22 : 0.30;
+  const dustPeak = mobile ? 0.02 : 0.03;
   const grainPeak = mobile ? 0.28 : 0.40;
 
   if (mobile) {
