@@ -772,26 +772,26 @@ function startRain() {
       if (!allSlow) { requestAnimationFrame(checkSettled); return; }
       flyToFinalPositions(() => { loadingPhase = 0; });
     };
-    setTimeout(() => { if (_rainGen !== gen) return; checkSettled(); }, 1200);
+    _rainTimers.push(setTimeout(() => { if (_rainGen !== gen) return; checkSettled(); }, 1200));
 
     // Safety timeout
-    setTimeout(() => {
+    _rainTimers.push(setTimeout(() => {
       if (_rainGen !== gen || revealComplete) return;
       for (const pair of revealPairs) {
         if (!pair.settled && world.bodies.includes(pair.body)) World.remove(world, pair.body);
         pair.settled = true;
       }
       flyToFinalPositions(() => { loadingPhase = 0; });
-    }, 5000);
+    }, 5000));
   } else {
     // Mobile: individual settling happens in afterUpdate; safety timeout
-    setTimeout(() => {
+    _rainTimers.push(setTimeout(() => {
       if (_rainGen !== gen) return;
       calcPositions();
       for (const pair of revealPairs) {
         if (!pair.settled) settleLetter(pair);
       }
-    }, 4000);
+    }, 4000));
   }
 }
 
