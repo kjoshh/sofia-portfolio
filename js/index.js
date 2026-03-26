@@ -109,7 +109,7 @@ function _computeMetrics() {
       letterW: fw * 0.052,
       spaceW:  fw * 0.048,
       swapDist: fw * 0.075,
-      offsetX: fw * 0.02,
+      offsetX: fw * 0.045,
       offsetY: fw * 0.04,
     };
   }
@@ -169,7 +169,8 @@ function calcPositions() {
   const totalW = 14 * m.letterW + m.spaceW;
   const startX = anchorX - totalW / 2;
 
-  const kernAfter = { m: isMobile() ? 0.5 : 0.3 };
+  const kernAfterSybil = { m: isMobile() ? 0.5 : 0.3 };
+  const kernAfterSofia = { u: isMobile() ? 0.45 : 0.3 };
   let kern = 0;
 
   for (const slot of slots) {
@@ -178,8 +179,10 @@ function calcPositions() {
       slot.x = startX + i * m.letterW + m.letterW / 2;
     } else {
       slot.x = startX + 5 * m.letterW + m.spaceW + (i - 6) * m.letterW + m.letterW / 2 + kern;
-      const ch = sybilChars[i];
-      if (kernAfter[ch]) kern += m.letterW * kernAfter[ch];
+      const chS = sybilChars[i];
+      const chC = sofiaChars[i];
+      if (kernAfterSybil[chS]) kern += m.letterW * kernAfterSybil[chS];
+      if (kernAfterSofia[chC]) kern += m.letterW * kernAfterSofia[chC];
     }
     slot.y = anchorY;
   }
