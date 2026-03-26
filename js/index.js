@@ -51,10 +51,45 @@ function hoverOut() {
   gsap.to(sceneEl, { scale: 1, duration: 0.7, ease: 'power2.inOut', overwrite: true });
 }
 
-if (!isMobile()) {
-  frameWrap.addEventListener('mouseenter', hoverIn);
-  frameWrap.addEventListener('mouseleave', hoverOut);
+/* ── Viewport-aware listener binding ── */
+let hoverBound = false;
+let tapBound = false;
+let lastTapTime = 0;
+
+function handleTap(e) {
+  if (!revealComplete) return;
+  if (e.target.closest('.mob-sheet')) return;
+  const now = Date.now();
+  if (e.type === 'click' && now - lastTapTime < 500) return;
+  if (e.type === 'touchend') lastTapTime = now;
+  swapTo(currentName === 'sofia' ? 'sybil' : 'sofia');
 }
+
+function bindListeners() {
+  const mobile = isMobile();
+
+  if (!mobile && !hoverBound) {
+    frameWrap.addEventListener('mouseenter', hoverIn);
+    frameWrap.addEventListener('mouseleave', hoverOut);
+    hoverBound = true;
+  } else if (mobile && hoverBound) {
+    frameWrap.removeEventListener('mouseenter', hoverIn);
+    frameWrap.removeEventListener('mouseleave', hoverOut);
+    hoverBound = false;
+  }
+
+  if (mobile && !tapBound) {
+    document.addEventListener('touchend', handleTap);
+    document.addEventListener('click', handleTap);
+    tapBound = true;
+  } else if (!mobile && tapBound) {
+    document.removeEventListener('touchend', handleTap);
+    document.removeEventListener('click', handleTap);
+    tapBound = false;
+  }
+}
+
+bindListeners();
 
 frameWrap.addEventListener('click', () => {
   if (!revealComplete) return;
@@ -756,21 +791,6 @@ function startRain() {
   }
 }
 
-/* ── Mobile: tap/click anywhere to swap (except nav) ── */
-if (isMobile()) {
-  let lastTapTime = 0;
-  function handleTap(e) {
-    if (!revealComplete) return;
-    if (e.target.closest('.mob-sheet')) return;
-    const now = Date.now();
-    if (e.type === 'click' && now - lastTapTime < 500) return;
-    if (e.type === 'touchend') lastTapTime = now;
-    swapTo(currentName === 'sofia' ? 'sybil' : 'sofia');
-  }
-  document.addEventListener('touchend', handleTap);
-  document.addEventListener('click', handleTap);
-}
-
 /* ── Resize handler ── */
 window.addEventListener('resize', () => {
   clearTimeout(_resizeTimer);
@@ -864,6 +884,8 @@ window.addEventListener('resize', () => {
       revealStarted = true;
       frameWrap.style.cursor = '';
     }
+
+    bindListeners();
   }, 300);
 });
 
