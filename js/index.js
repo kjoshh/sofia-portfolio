@@ -238,29 +238,32 @@ function initPositions() {
    Matter.js Physics (unified desktop/mobile)
    ══════════════════════════════════════════ */
 
-const C = isMobile() ? {
-  gravity: 1.2, positionIter: 8, velocityIter: 6,
-  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01,
-  wallLeftInsetX: 0.1, wallRightInsetX: 0.004,
-  swapVelXRange: 1.5,
-  rainDelayBase: 45, rainDelayJitter: 30, rainStartYAbsolute: false,
-  rainXJitter: 30, rainRestitution: 0.3, rainFrictionAir: 0.008,
-  rainAngleRange: 0.4, rainVelXRange: 1, rainVelYBase: 1.5, rainVelYJitter: 1,
-  settleIndividual: true,
-  sofiaFallVelXRange: 0.5, sofiaFallVelYBase: 1.5, sofiaFallVelYJitter: 1,
-  swapDistFallback: 30,
-} : {
-  gravity: 1.5, positionIter: 10, velocityIter: 8,
-  floorPadRatio: 0.0175, wallThick: 80, wallInset: 0.015,
-  wallLeftInsetX: 0.0475, wallRightInsetX: 0.019,
-  swapVelXRange: 2,
-  rainDelayBase: 55, rainDelayJitter: 35, rainStartYAbsolute: true,
-  rainXJitter: 40, rainRestitution: 0.35, rainFrictionAir: 0.006,
-  rainAngleRange: 0.6, rainVelXRange: 2, rainVelYBase: 2.5, rainVelYJitter: 2,
-  settleIndividual: false,
-  sofiaFallVelXRange: 0.8, sofiaFallVelYBase: 2, sofiaFallVelYJitter: 1.5,
-  swapDistFallback: 55,
-};
+function getConfig() {
+  return isMobile() ? {
+    gravity: 1.2, positionIter: 8, velocityIter: 6,
+    floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01,
+    wallLeftInsetX: 0.1, wallRightInsetX: 0.004,
+    swapVelXRange: 1.5,
+    rainDelayBase: 45, rainDelayJitter: 30, rainStartYAbsolute: false,
+    rainXJitter: 30, rainRestitution: 0.3, rainFrictionAir: 0.008,
+    rainAngleRange: 0.4, rainVelXRange: 1, rainVelYBase: 1.5, rainVelYJitter: 1,
+    settleIndividual: true,
+    sofiaFallVelXRange: 0.5, sofiaFallVelYBase: 1.5, sofiaFallVelYJitter: 1,
+    swapDistFallback: 30,
+  } : {
+    gravity: 1.5, positionIter: 10, velocityIter: 8,
+    floorPadRatio: 0.0175, wallThick: 80, wallInset: 0.015,
+    wallLeftInsetX: 0.0475, wallRightInsetX: 0.019,
+    swapVelXRange: 2,
+    rainDelayBase: 55, rainDelayJitter: 35, rainStartYAbsolute: true,
+    rainXJitter: 40, rainRestitution: 0.35, rainFrictionAir: 0.006,
+    rainAngleRange: 0.6, rainVelXRange: 2, rainVelYBase: 2.5, rainVelYJitter: 2,
+    settleIndividual: false,
+    sofiaFallVelXRange: 0.8, sofiaFallVelYBase: 2, sofiaFallVelYJitter: 1.5,
+    swapDistFallback: 55,
+  };
+}
+let C = getConfig();
 
 const { Engine, World, Bodies, Body, Runner, Events } = Matter;
 const engine = Engine.create({
@@ -853,6 +856,10 @@ window.addEventListener('resize', () => {
   _resizeTimer = setTimeout(() => {
     _resizeCleaned = false;
     _resizing = false;
+    C = getConfig();
+    engine.gravity.y = C.gravity;
+    engine.positionIterations = C.positionIter;
+    engine.velocityIterations = C.velocityIter;
     invalidateMetrics();
     buildWalls();
 
