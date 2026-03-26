@@ -11,6 +11,7 @@ _sabEl.remove();
 
 function updateOverviewCellHeight() {
   const imgCount = document.querySelectorAll(".imgholder").length;
+  if (imgCount === 0) return;
   const grid = document.querySelector(".gall3ry");
 
   if (window.innerWidth <= 991) {

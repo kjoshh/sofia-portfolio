@@ -14,7 +14,7 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | # | Schwere | Datei | Zeile | Beschreibung |
 |---|---------|-------|-------|--------------|
 | B12 | Kritisch | `js/about.js` | 99–247 | **WebGL-Ressourcen werden nie freigegeben.** Shader, Program und Buffer haben keinen Cleanup — `gl.deleteShader()`, `gl.deleteProgram()`, `gl.deleteBuffer()` fehlen komplett. GPU-Speicher bleibt bei wiederholten Seitenbesuchen belegt. Fix: Cleanup-Funktion in `beforeunload` / `visibilitychange`. |
-| B15 | Mittel | `js/project.js` | 26–27 | **Division-by-Zero-Risiko.** `(availH - gap * (rows - 1)) / rows` — wenn `rows` 0 ist (bei `imgCount === 0`), entsteht Division durch Null. Fix: Guard-Clause `if (imgCount === 0) return;`. |
+| ~~B15~~ | ~~Mittel~~ | ~~`js/project.js`~~ | ~~26–27~~ | ~~**Division-by-Zero-Risiko.** Gefixt: Guard-Clause `if (imgCount === 0) return;` eingefügt.~~ ✅ |
 | B16 | Mittel | `js/mob-sheet.js` | 27–99 | **GSAP-Timeline-Cleanup fehlt.** Beim schnellen Öffnen/Schließen des Mobile-Sheets werden neue Timelines erstellt, ohne vorherige komplett zu killen. Kann zu Animation-Glitches führen. Fix: `.kill()` vor neuem Timeline-Start. |
 
 ## Performance
