@@ -12,6 +12,11 @@ let currentName = 'sofia';
 let revealComplete = false;
 let revealStarted = false;
 
+function markRevealComplete() {
+  revealComplete = true;
+  frameWrap.style.cursor = '';
+}
+
 
 
 /* ── Hover triggers ── */
@@ -235,24 +240,24 @@ function initPositions() {
 
 const C = isMobile() ? {
   gravity: 1.2, positionIter: 8, velocityIter: 6,
-  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01, rightWallOffset: 0, rightWallInsetExtra: 0,
+  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01,
+  wallLeftInsetX: 0.1, wallRightInsetX: 0.004,
   swapVelXRange: 1.5,
   rainDelayBase: 45, rainDelayJitter: 30, rainStartYAbsolute: false,
   rainXJitter: 30, rainRestitution: 0.3, rainFrictionAir: 0.008,
   rainAngleRange: 0.4, rainVelXRange: 1, rainVelYBase: 1.5, rainVelYJitter: 1,
   settleIndividual: true,
-  sofiaWallUsePad: false,
   sofiaFallVelXRange: 0.5, sofiaFallVelYBase: 1.5, sofiaFallVelYJitter: 1,
   swapDistFallback: 30,
 } : {
   gravity: 1.5, positionIter: 10, velocityIter: 8,
-  floorPadRatio: 0.0225, wallThick: 80, wallInset: 0.015, rightWallOffset: 12, rightWallInsetExtra: 0.015,
+  floorPadRatio: 0.0175, wallThick: 80, wallInset: 0.015,
+  wallLeftInsetX: 0.0475, wallRightInsetX: 0.019,
   swapVelXRange: 2,
   rainDelayBase: 55, rainDelayJitter: 35, rainStartYAbsolute: true,
   rainXJitter: 40, rainRestitution: 0.35, rainFrictionAir: 0.006,
   rainAngleRange: 0.6, rainVelXRange: 2, rainVelYBase: 2.5, rainVelYJitter: 2,
   settleIndividual: false,
-  sofiaWallUsePad: true,
   sofiaFallVelXRange: 0.8, sofiaFallVelYBase: 2, sofiaFallVelYJitter: 1.5,
   swapDistFallback: 55,
 };
@@ -294,23 +299,22 @@ function buildWalls() {
   if (curScale !== 1) gsap.set(frameWrap, { scale: 1 });
   const fr = frameWrap.getBoundingClientRect();
   if (curScale !== 1) gsap.set(frameWrap, { scale: curScale });
-  const pad = fr.height * C.floorPadRatio;
   const thick = C.wallThick;
-  const inset = fr.width * C.wallInset;
+  const floorPad = fr.height * C.floorPadRatio + fr.width * C.wallInset;
   const wallFilter = { category: 0x0004, mask: 0xFFFF };
   // Floor
   World.add(world, Bodies.rectangle(
-    fr.left + fr.width / 2, fr.bottom - pad - inset + thick / 2, fr.width * 1.4, thick,
+    fr.left + fr.width / 2, fr.bottom - floorPad + thick / 2, fr.width * 1.4, thick,
     { isStatic: true, label: 'wall', restitution: 0.3, friction: 0.6, collisionFilter: wallFilter }
   ));
-  // Left wall
+  // Left wall — inner face at fr.left + wallLeftInsetX * width
   World.add(world, Bodies.rectangle(
-    fr.left + pad + inset - thick / 2 + fr.width * 0.015, fr.top + fr.height / 2, thick, fr.height * 2,
+    fr.left + fr.width * C.wallLeftInsetX - thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
     { isStatic: true, label: 'wall', collisionFilter: wallFilter }
   ));
-  // Right wall
+  // Right wall — inner face at fr.right - wallRightInsetX * width
   World.add(world, Bodies.rectangle(
-    fr.right - pad - inset + thick / 2 + C.rightWallOffset - fr.width * C.rightWallInsetExtra, fr.top + fr.height / 2, thick, fr.height * 2,
+    fr.right - fr.width * C.wallRightInsetX + thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
     { isStatic: true, label: 'wall', collisionFilter: wallFilter }
   ));
 }
@@ -357,7 +361,7 @@ function flyToFinalPositions(onAllSettled) {
         completed++;
         if (completed >= slots.length) {
           buildWalls();
-          revealComplete = true;
+          markRevealComplete();
           frameWrap.style.cursor = '';
           if (onAllSettled) onAllSettled();
         }
@@ -386,7 +390,7 @@ function settleLetter(pair) {
       duration: 0.5, ease: 'power2.out',
       onComplete: () => {
         settledCount++;
-        if (settledCount >= slots.length) { revealComplete = true; startBreathe(); }
+        if (settledCount >= slots.length) { markRevealComplete(); startBreathe(); }
       }
     }
   );
@@ -569,7 +573,7 @@ Events.on(engine, 'afterUpdate', () => {
 
         const flushM = getLetterMetrics();
         const thick = C.wallThick;
-        const inset = fr.width * C.wallInset;
+        const floorPad = fr.height * C.floorPadRatio + fr.width * C.wallInset;
 
         // Kill any in-flight swap tweens and hide ALL slot letters
         for (const slot of slots) {
@@ -587,27 +591,21 @@ Events.on(engine, 'afterUpdate', () => {
         // Private floor + walls only sofia bodies can collide with
         const sofiaFloor = Bodies.rectangle(
           fr.left + fr.width / 2,
-          fr.bottom - fr.height * C.floorPadRatio - inset + thick / 2,
+          fr.bottom - floorPad + thick / 2,
           fr.width * 1.4, thick,
           { isStatic: true, label: 'sofiaFloor', restitution: 0.3, friction: 0.6,
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
         );
         World.add(world, sofiaFloor);
 
-        const sofiaWallLeftX = C.sofiaWallUsePad
-          ? fr.left + pad + inset - thick / 2
-          : fr.left + inset - thick / 2;
-        const sofiaWallRightX = C.sofiaWallUsePad
-          ? fr.right - pad - inset + thick / 2 + C.rightWallOffset - fr.width * C.rightWallInsetExtra
-          : fr.right - inset + thick / 2;
-
+        // Sofia walls use same ratios as main walls
         const sofiaLeftWall = Bodies.rectangle(
-          sofiaWallLeftX, fr.top + fr.height / 2, thick, fr.height * 2,
+          fr.left + fr.width * C.wallLeftInsetX - thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
           { isStatic: true, label: 'sofiaWall', restitution: 0.3, friction: 0.6,
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
         );
         const sofiaRightWall = Bodies.rectangle(
-          sofiaWallRightX, fr.top + fr.height / 2, thick, fr.height * 2,
+          fr.right - fr.width * C.wallRightInsetX + thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
           { isStatic: true, label: 'sofiaWall', restitution: 0.3, friction: 0.6,
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
         );
@@ -639,12 +637,16 @@ Events.on(engine, 'afterUpdate', () => {
         }
 
         // Wait for sofia to settle, then clean up and rise
+        const floorY = fr.bottom - fr.height * C.floorPadRatio - inset;
+        const settleStarted = performance.now();
         const checkSettle = () => {
           const now2 = performance.now();
           const allSettled = sofiaFallPairs.every(p =>
-            p.settled || (now2 - p.born > 500 && p.body.speed < 0.5)
+            p.settled || (now2 - p.born > 800 && p.body.speed < 0.5
+              && p.body.position.y > floorY - flushM.letterH * 2)
           );
-          if (!allSettled) { requestAnimationFrame(checkSettle); return; }
+          const timedOut = now2 - settleStarted > 4000;
+          if (!allSettled && !timedOut) { requestAnimationFrame(checkSettle); return; }
 
           // Capture positions and remove physics
           const m2 = getLetterMetrics();
@@ -711,7 +713,7 @@ Events.on(engine, 'afterUpdate', () => {
                     completed++;
                     if (completed >= sofiaFallPairs.length) {
                       sofiaFallPairs.length = 0;
-                      revealComplete = true;
+                      markRevealComplete();
                       if (!isMobile()) frameWrap.style.cursor = '';
                       flushing = false;
                     }
@@ -883,7 +885,7 @@ window.addEventListener('resize', () => {
           opacity: 0.9,
         });
       }
-      revealComplete = true;
+      markRevealComplete();
       revealStarted = true;
       frameWrap.style.cursor = '';
     }
@@ -918,8 +920,8 @@ initPositions();
 preloadImages().then(() => {
   const mobile = isMobile();
 
-  // Grain + dust boost/fade handled by CSS via is-transitioning class
-  // (removed from transition.js when overlay finishes fading)
+  // Show wait cursor on frame until letter rain finishes
+  frameWrap.style.cursor = 'wait';
 
   if (mobile) {
     /* ── Mobile entrance: scale-up frame + letter rain ── */
