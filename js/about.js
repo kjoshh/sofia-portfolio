@@ -1,6 +1,5 @@
 /* ── Lenis smooth scroll (mobile only) ── */
-const isMobileAbout = window.matchMedia('(max-width: 991px)').matches;
-if (isMobileAbout) {
+if (isMobile()) {
   const lenis = new Lenis();
   gsap.ticker.add((time) => { lenis.raf(time * 1000); });
   gsap.ticker.lagSmoothing(0);
@@ -330,7 +329,7 @@ document.querySelectorAll(".about-section-title").forEach(title => {
 
 /* ── Entrance reveal animation ── */
 (function entranceReveal() {
-  const isMobile = window.innerWidth <= 991;
+  const mob = isMobile();
   const aboutBg = document.querySelector(".about-bg");
   const greeting = document.querySelector(".about-greeting");
   const scrollHint = document.querySelector(".about-scroll-hint");
@@ -398,7 +397,7 @@ document.querySelectorAll(".about-section-title").forEach(title => {
     greetEnd - 0.2
   );
 
-  if (!isMobile) {
+  if (!mob) {
     // Desktop: nav fades in
     tl.fromTo(mainNav,
       { opacity: 0 },
@@ -435,7 +434,7 @@ document.querySelectorAll(".about-section-title").forEach(title => {
   );
 
   // Mobile contact rows
-  if (isMobile) {
+  if (mob) {
     tl.to(".contact-row, .contact-footnote", {
       opacity: 1, y: 0, duration: 0.55,
       stagger: 0.07, ease: "power2.out",

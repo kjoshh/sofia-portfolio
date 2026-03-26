@@ -1,6 +1,5 @@
 /* ── Lenis smooth scroll ── */
-const isMobile = window.matchMedia('(max-width: 991px)').matches;
-const lenis = new Lenis(isMobile ? { wrapper: document.body } : {});
+const lenis = new Lenis(isMobile() ? { wrapper: document.body } : {});
 (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(0);
 
 

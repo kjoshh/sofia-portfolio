@@ -4,10 +4,7 @@ const letterField = document.getElementById('letterField');
 const frameWrap = document.getElementById('frameWrap');
 const sceneEl = document.getElementById('scene');
 
-/* ── Mobile detection ── */
-const isMobile = window.matchMedia('(max-width: 991px)').matches;
-const mobileQuery = window.matchMedia('(max-width: 991px)');
-// Breakpoint changes are handled by CSS; no forced reload needed
+/* ── Mobile detection — provided by utils.js ── */
 
 /* ── State ── */
 let currentName = 'sofia';
@@ -53,7 +50,7 @@ function hoverOut() {
   gsap.to(sceneEl, { scale: 1, duration: 0.7, ease: 'power2.inOut', overwrite: true });
 }
 
-if (!isMobile) {
+if (!isMobile()) {
   frameWrap.addEventListener('mouseenter', hoverIn);
   frameWrap.addEventListener('mouseleave', hoverOut);
 }
@@ -70,7 +67,7 @@ const sybilChars = 'sybil sometimes'.split('');
 let _metricsCache = null;
 function _computeMetrics() {
   const fw = frameWrap.getBoundingClientRect().width;
-  if (isMobile) {
+  if (isMobile()) {
     return {
       letterH: fw * 0.065,
       letterW: fw * 0.056,
@@ -136,7 +133,7 @@ function calcPositions() {
   const totalW = 14 * m.letterW + m.spaceW;
   const startX = anchorX - totalW / 2;
 
-  const kernAfter = { m: isMobile ? 0.5 : 0.3 };
+  const kernAfter = { m: isMobile() ? 0.5 : 0.3 };
   let kern = 0;
 
   for (const slot of slots) {
@@ -197,7 +194,7 @@ function initPositions() {
    Matter.js Physics (unified desktop/mobile)
    ══════════════════════════════════════════ */
 
-const C = isMobile ? {
+const C = isMobile() ? {
   gravity: 1.2, positionIter: 8, velocityIter: 6,
   floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01, rightWallOffset: 0,
   swapVelXRange: 1.5,
@@ -371,7 +368,7 @@ function stopBreathe() {
 /* ── Swap: new letter drops from top, old one becomes physics debris ── */
 function swapTo(name) {
   if (name === currentName || flushing) return;
-  if (isMobile) stopBreathe();
+  if (isMobile()) stopBreathe();
   // If this swap would trigger flush, just bump the count and bail
   if (swapCount + 1 >= 40) {
     swapCount++;
@@ -383,7 +380,7 @@ function swapTo(name) {
   swapCount++;
 
   // Mobile: toggle bg photo on tap
-  if (isMobile) {
+  if (isMobile()) {
     if (!firstTapDone) {
       firstTapDone = true;
       gsap.to(bgSybilEl, { opacity: 1, duration: 0.6, delay: 0.1, ease: 'power2.inOut', overwrite: true });
@@ -415,7 +412,7 @@ function swapTo(name) {
     letterField.appendChild(debris);
 
     // Mobile: defer hide to next frame for GPU; Desktop: immediate
-    if (isMobile) {
+    if (isMobile()) {
       requestAnimationFrame(() => {
         gsap.set(outEl, { opacity: 0, y: baseY - m.swapDist });
       });
@@ -480,8 +477,8 @@ Events.on(engine, 'afterUpdate', () => {
   }
 
   // Sync swap debris
-  const dox = isMobile ? m.offsetX : 17;
-  const doy = isMobile ? m.offsetY : 12;
+  const dox = isMobile() ? m.offsetX : 17;
+  const doy = isMobile() ? m.offsetY : 12;
   for (const pair of debrisPairs) {
     const pos = pair.body.position;
     const ang = pair.body.angle * (180 / Math.PI);
@@ -517,7 +514,7 @@ Events.on(engine, 'afterUpdate', () => {
         revealComplete = false;
 
         // Reset visuals (desktop resets hover state, mobile resets tap state)
-        if (isMobile) {
+        if (isMobile()) {
           gsap.to(bgSybilEl, { opacity: 0, duration: 0.3, ease: 'power2.out', overwrite: true });
           firstTapDone = false;
         } else {
@@ -621,7 +618,7 @@ Events.on(engine, 'afterUpdate', () => {
 
           // Remove sofia floor and walls
           World.remove(world, sofiaFloor);
-          if (!isMobile) {
+          if (!isMobile()) {
             World.remove(world, sofiaLeftWall);
             World.remove(world, sofiaRightWall);
           }
@@ -641,7 +638,7 @@ Events.on(engine, 'afterUpdate', () => {
             revealPairs.length = 0;
             revealStarted = false;
             revealRecalced = false;
-            if (isMobile) settledCount = 0;
+            if (isMobile()) settledCount = 0;
 
             calcPositions();
             const mRise = getLetterMetrics();
@@ -672,7 +669,7 @@ Events.on(engine, 'afterUpdate', () => {
                     if (completed >= sofiaFallPairs.length) {
                       sofiaFallPairs.length = 0;
                       revealComplete = true;
-                      if (!isMobile) frameWrap.style.cursor = '';
+                      if (!isMobile()) frameWrap.style.cursor = '';
                       flushing = false;
                     }
                   }
@@ -755,7 +752,7 @@ function startRain() {
 }
 
 /* ── Mobile: tap/click anywhere to swap (except nav) ── */
-if (isMobile) {
+if (isMobile()) {
   let lastTapTime = 0;
   function handleTap(e) {
     if (!revealComplete) return;
@@ -806,7 +803,7 @@ window.addEventListener('resize', () => {
     if (flushBodies.length) World.remove(world, flushBodies);
 
     // Kill tweens and hide all letters
-    if (isMobile) stopBreathe();
+    if (isMobile()) stopBreathe();
     for (const slot of slots) {
       gsap.killTweensOf(slot.sofiaEl);
       gsap.killTweensOf(slot.sybilEl);
@@ -821,7 +818,7 @@ window.addEventListener('resize', () => {
     revealRecalced = false;
     swapCount = 0;
 
-    if (isMobile) {
+    if (isMobile()) {
       settledCount = 0;
       firstTapDone = false;
       gsap.set(bgSybilEl, { opacity: 0 });
@@ -841,7 +838,7 @@ window.addEventListener('resize', () => {
     invalidateMetrics();
     buildWalls();
 
-    if (isMobile) {
+    if (isMobile()) {
       initPositions();
       startRain();
     } else {
@@ -868,7 +865,7 @@ window.addEventListener('resize', () => {
 /* ── Init + entrance ── */
 initPositions();
 
-if (isMobile) {
+if (isMobile()) {
   /* ── Mobile entrance: scale-up frame + letter rain ── */
   gsap.set(sceneEl, { opacity: 1 });
   gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
@@ -925,7 +922,7 @@ if (isMobile) {
   resize();
   window.addEventListener('resize', resize);
 
-  const NUM = isMobile ? 30 : 65;
+  const NUM = isMobile() ? 30 : 65;
   const particles = [];
 
   for (let i = 0; i < NUM; i++) {

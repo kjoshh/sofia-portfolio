@@ -55,8 +55,7 @@ if (cursor) {
 
 
 /* ── Lenis smooth scroll ── */
-const _mobileMediaLenis = window.matchMedia('(max-width: 991px)');
-const lenis = new Lenis(_mobileMediaLenis.matches ? { wrapper: document.body } : {});
+const lenis = new Lenis(isMobile() ? { wrapper: document.body } : {});
 function raf(time) {
   lenis.raf(time);
   requestAnimationFrame(raf);
@@ -94,7 +93,7 @@ gsap.set(infoLines, { opacity: 0, y: 10 });
 textContainer.style.display = "none";
 textContainer.style.visibility = "";
 
-const isMobile = () => window.innerWidth <= 991;
+/* isMobile() provided by utils.js */
 
 // Compute nav Y offset for layout-0: position nav just below the centered image cluster
 function getLayout0NavY() {
