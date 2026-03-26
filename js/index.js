@@ -636,18 +636,8 @@ Events.on(engine, 'afterUpdate', () => {
           sofiaFallPairs.push({ el: slot.sofiaEl, body, slot, born: performance.now() });
         }
 
-        // Wait for sofia to settle, then clean up and rise
-        const floorY = fr.bottom - fr.height * C.floorPadRatio - inset;
-        const settleStarted = performance.now();
-        const checkSettle = () => {
-          const now2 = performance.now();
-          const allSettled = sofiaFallPairs.every(p =>
-            p.settled || (now2 - p.born > 800 && p.body.speed < 0.5
-              && p.body.position.y > floorY - flushM.letterH * 2)
-          );
-          const timedOut = now2 - settleStarted > 4000;
-          if (!allSettled && !timedOut) { requestAnimationFrame(checkSettle); return; }
-
+        // Fixed delay: let sofia letters fall for 750ms, then clean up and rise
+        setTimeout(() => {
           // Capture positions and remove physics
           const m2 = getLetterMetrics();
           for (const pair of sofiaFallPairs) {
@@ -722,9 +712,7 @@ Events.on(engine, 'afterUpdate', () => {
               );
             });
           }, 400);
-        };
-        // Start checking after a minimum fall time
-        setTimeout(checkSettle, 600);
+        }, 750);
     }
   }
 });
