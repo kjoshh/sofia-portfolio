@@ -203,18 +203,18 @@ const C = isMobile() ? {
   rainXJitter: 30, rainRestitution: 0.3, rainFrictionAir: 0.008,
   rainAngleRange: 0.4, rainVelXRange: 1, rainVelYBase: 1.5, rainVelYJitter: 1,
   settleIndividual: true,
-  sofiaFloorYOffset: 30, sofiaWallUsePad: false,
+  sofiaWallUsePad: false,
   sofiaFallVelXRange: 0.5, sofiaFallVelYBase: 1.5, sofiaFallVelYJitter: 1,
   swapDistFallback: 30,
 } : {
   gravity: 1.5, positionIter: 10, velocityIter: 8,
-  floorPadRatio: 0.02, wallThick: 80, wallInset: 0.007, rightWallOffset: 12,
+  floorPadRatio: 0.0225, wallThick: 80, wallInset: 0.015, rightWallOffset: 12,
   swapVelXRange: 2,
   rainDelayBase: 55, rainDelayJitter: 35, rainStartYAbsolute: true,
   rainXJitter: 40, rainRestitution: 0.35, rainFrictionAir: 0.006,
   rainAngleRange: 0.6, rainVelXRange: 2, rainVelYBase: 2.5, rainVelYJitter: 2,
   settleIndividual: false,
-  sofiaFloorYOffset: 40, sofiaWallUsePad: true,
+  sofiaWallUsePad: true,
   sofiaFallVelXRange: 0.8, sofiaFallVelYBase: 2, sofiaFallVelYJitter: 1.5,
   swapDistFallback: 55,
 };
@@ -251,7 +251,11 @@ function buildWalls() {
   const oldStatic = world.bodies.filter(b => b.isStatic && b.label === 'wall');
   World.remove(world, oldStatic);
 
+  // Measure at scale 1 so floor position is consistent during entrance animation
+  const curScale = gsap.getProperty(frameWrap, 'scale') || 1;
+  if (curScale !== 1) gsap.set(frameWrap, { scale: 1 });
   const fr = frameWrap.getBoundingClientRect();
+  if (curScale !== 1) gsap.set(frameWrap, { scale: curScale });
   const pad = fr.height * C.floorPadRatio;
   const thick = C.wallThick;
   const inset = fr.width * C.wallInset;
@@ -263,7 +267,7 @@ function buildWalls() {
   ));
   // Left wall
   World.add(world, Bodies.rectangle(
-    fr.left + pad + inset - thick / 2, fr.top + fr.height / 2, thick, fr.height * 2,
+    fr.left + pad + inset - thick / 2 + fr.width * 0.009, fr.top + fr.height / 2, thick, fr.height * 2,
     { isStatic: true, label: 'wall', collisionFilter: wallFilter }
   ));
   // Right wall
@@ -478,8 +482,8 @@ Events.on(engine, 'afterUpdate', () => {
   }
 
   // Sync swap debris
-  const dox = isMobile() ? m.offsetX : 17;
-  const doy = isMobile() ? m.offsetY : 12;
+  const dox = m.offsetX;
+  const doy = m.offsetY;
   for (const pair of debrisPairs) {
     const pos = pair.body.position;
     const ang = pair.body.angle * (180 / Math.PI);
@@ -545,7 +549,7 @@ Events.on(engine, 'afterUpdate', () => {
         // Private floor + walls only sofia bodies can collide with
         const sofiaFloor = Bodies.rectangle(
           fr.left + fr.width / 2,
-          fr.bottom - fr.height * C.floorPadRatio - inset + C.sofiaFloorYOffset,
+          fr.bottom - fr.height * C.floorPadRatio - inset + thick / 2,
           fr.width * 1.4, thick,
           { isStatic: true, label: 'sofiaFloor', restitution: 0.3, friction: 0.6,
             collisionFilter: { category: 0x0002, mask: 0x0004 } }
