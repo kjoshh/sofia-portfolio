@@ -47,7 +47,7 @@ body.is-transitioning .grain::after {
   opacity: 0.35;
 }
 body.is-transitioning .dust {
-  opacity: 0.30;
+  opacity: 0.1;
 }
 
 /* ══════════════════════════════════════════
@@ -933,7 +933,7 @@ text-decoration: none;
     height: 21px;
     object-fit: contain;
     display: block;
-    filter: invert(1) saturate(0) brightness(3);
+    filter: invert(0) saturate(0) brightness(3);
     mix-blend-mode: screen;
     opacity: 0.55;
     transition: opacity 0.2s ease;
@@ -1919,11 +1919,11 @@ html:has(body.landing-page) {
 }
 .frame-bg-hover {
   position: absolute;
-  inset: 0% 0%;
-  width: 96%;
+  inset: 3% 0%;
+  width: 93%;
   margin-left: 4%;
   z-index: 1;
-  background: url("../images-neu/paint-stroke.png") center / contain no-repeat;
+  background: url("../images-neu/paint-stroke.png") center / 100% 100% no-repeat;
   clip-path: inset(0 100% 0 0);
 }
 
@@ -2322,12 +2322,12 @@ html:has(body.landing-page) {
   
   }
   body.landing-page .frame-photo {
-    inset: 4% 3%;
+    inset: 3% 4%;
     background-size: cover;
     background-position: center 30%;
   }
   body.landing-page .frame-photo-sybil {
-    inset: 4% 3%;
+    inset: 3% 4%;
     margin: 0;
     background-size: cover;
     background-position: center;
@@ -2342,7 +2342,7 @@ html:has(body.landing-page) {
     width: 100%;
     height: 100%;
     object-fit: fill;
-    opacity: 0.85;
+    opacity: 1;
   }
   body.landing-page .frame-border-hover,
   body.landing-page .frame-bg-hover {

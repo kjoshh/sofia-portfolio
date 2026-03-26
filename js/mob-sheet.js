@@ -83,7 +83,7 @@
       // Links fade out immediately
       gsap.to(linkItems, { opacity: 0, x: -6, duration: 0.18, ease: 'power2.in', stagger: 0.05 });
       // Restore logo
-      gsap.to(logo, { opacity: 0.92, x: 0, duration: 0.3, ease: 'power2.out', delay: 0.15 });
+      gsap.to(logo, { opacity: 0.92, x: 0, duration: 0.3, ease: 'power2.out', delay: 0.35 });
       // Star+label slide back to the right; star spins back
       gsap.to(iconWrap, { x: 0, duration: 0.5, ease: 'power3.inOut', delay: 0.12 });
       gsap.to(icon, { rotation: 0, duration: 0.5, ease: 'power3.inOut', delay: 0.12 });

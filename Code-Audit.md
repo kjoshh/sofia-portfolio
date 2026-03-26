@@ -6,47 +6,6 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 **Geprüft:** 5 HTML-Dateien, 9 JS-Dateien, 1 CSS-Datei (2668 Zeilen), ~3661 Zeilen JS
 
 ---
-
-# OFFEN
-
-## Redundanz & Code-Qualität
-
-### Massive Code-Duplikation
-
-| #    | Datei              | Beschreibung                                                                                                                                                   |
-|------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Q1   | `js/index.js`      | **~600 Zeilen duplizierte Physics-Logik.** Desktop (Z.228–727) und Mobile (Z.733–1233) haben nahezu identischen Matter.js-Code: `buildWalls()`, `swapTo()`, flush-Mechanik, resize-Handler. Unterschiede nur in Gravity, Größenverhältnissen und Touch vs. Hover. Sollte zu einer parametrisierten Klasse refactored werden. |
-| Q2   | `js/index.js`      | **Resize-Handler dupliziert.** Desktop-Resize (Z.278–359) und Mobile-Resize (Z.1172–1233) haben identische Cleanup-Logik: debris entfernen, fall-pairs entfernen, reveal-pairs entfernen, tweens killen, state resetten. |
-
-### Magic Numbers
-
-| #    | Datei              | Zeilen       | Beschreibung                                                                                             |
-|------|--------------------|--------------|---------------------------------------------------------------------------------------------------------|
-| Q6   | `js/index.js`      | viele        | **Zahlreiche unbeschriebene Konstanten:** `FLOOR_PAD_RATIO = 0.05` vs. `0.03` (mobile), `sleepThreshold: 300` vs. `30` vs. `60`, `density: 0.004` vs. `0.002` vs. `0.003`, `fr.width * 0.007`, `thick = 80` vs. `60`, Flush-Threshold `40` Swaps. Keine Benennung, schwer nachvollziehbar. |
-| Q7   | `js/project.js`    | 15, 31–37    | **Layout-Offsets als Magic Numbers:** `88` (nav height), `110` (pro-nav clearance), `120` (mobile bottom), `89.89px` (padding). Diese sollten benannte Konstanten sein. |
-| Q8   | `css/custom.css`   | viele        | ✅ **z-index Scale eingeführt.** 9 CSS Custom Properties auf `:root` definiert (`--z-content` bis `--z-grain`). 19 globale z-index-Werte ersetzt, 36 lokale (komponenten-interne) als rohe Zahlen belassen. Siehe E5. |
-
-## Konsistenz-Probleme
-
-| #    | Bereich            | Beschreibung                                                                                                                                                   |
-|------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| K4   | HTML               | **Body-Klasse inkonsistent.** `index.html` hat `class="landing-page"`, `about.html` hat `class="body about-page"`, `archive.html` hat `class="body archive-page"`, Projektseiten nur `class="body"`. Inkonsistente Benennung. |
-| K5   | HTML               | **Lenis wird in `<head>` geladen** (hard-coded.html:21, forgetting-dreams.html:15) aber in `archive.html` und `about.html` vor dem jeweiligen Script im `<body>`. Render-blocking Script im Head ist unnötig. |
-| K6   | HTML               | **SplitText wird von einem Drittanbieter-CDN geladen:** `cdn.prod.website-files.com` (Webflow CDN). Dieses CDN ist nicht unter eigener Kontrolle und könnte jederzeit offline gehen oder sich ändern. Alle anderen GSAP-Plugins kommen von `cdnjs.cloudflare.com`. |
-| K8   | HTML               | **GSAP ScrollTrigger nur auf `archive.html` geladen**, aber `gsap.registerPlugin(ScrollTrigger)` wird nur dort gebraucht. Korrekt, aber im Code nicht kommentiert — sieht aus wie ein Versehen. |
-| K9   | JS                 | **`isMobile` wird unterschiedlich definiert:** `index.js`: `window.matchMedia('(max-width: 991px)').matches` (einmalig), `project.js`: `const isMobile = () => window.innerWidth <= 991` (Funktion), `about.js`: `window.innerWidth <= 991` (inline), `archive.js`: `window.matchMedia('(max-width: 991px)').matches` (einmalig). Vier verschiedene Patterns. |
-
-## Architektur-Empfehlungen
-
-| #    | Priorität  | Beschreibung                                                                                                                                                   |
-|------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| E3   | Mittel     | **index.js aufteilen.** 1356 Zeilen mit Desktop + Mobile Physics, Dust-Particles, Hover-Effekte, Reveal-Animation. Schwer wartbar. Mindestens 3 Module: `physics.js`, `dust.js`, `reveal.js`. |
-| E5   | ✅ Niedrig | **z-index Scale eingeführt.** `:root`-Block mit 9 Variablen: `--z-content(10)`, `--z-page-fade(90)`, `--z-corner(100)`, `--z-particles(9996)`, `--z-scene(9997)`, `--z-nav(9998)`, `--z-lightbox(10000)`, `--z-transition(10001)`, `--z-grain(10002)`. Numerische Werte beibehalten für 100% visuelle Parität. |
-| E6   | Niedrig    | **CDN-Dependencies lokal bundlen oder SRI-Hashes hinzufügen.** GSAP, Matter.js, Lenis, SplitText — 4 externe Dependencies ohne Integrity-Checks. |
-
-
----
-
 # ERLEDIGT
 
 ## Bugs & Fehler
@@ -64,6 +23,10 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | B9   | `css/custom.css`        | 2017     | ✅ `transition: all 200ms ease` auf `.mob-proj-title` — gefixt.              |
 | B10  | `js/nav.js`             | 326      | ✅ Navigation delay 1000ms ist zu lang.                                       |
 | B11  | `js/about.js`           | 85–89    | ✅ WebGL Shader ohne Fehlerprüfung.                                           |
+| Q2   | `js/index.js`   ✅   | **Resize-Handler dupliziert.** Desktop-Resize (Z.278–359) und Mobile-Resize (Z.1172–1233) haben identische Cleanup-Logik: debris entfernen, fall-pairs entfernen, reveal-pairs entfernen, tweens killen, state resetten. |
+| K4   | HTML           ✅    | **Body-Klasse inkonsistent.** `index.html` hat `class="landing-page"`, `about.html` hat `class="body about-page"`, `archive.html` hat `class="body archive-page"`, Projektseiten nur `class="body"`. Inkonsistente Benennung. |
+| K9   | JS              ✅    | **`isMobile` wird unterschiedlich definiert:** `index.js`: `window.matchMedia('(max-width: 991px)').matches` (einmalig), `project.js`: `const isMobile = () => window.innerWidth <= 991` (Funktion), `about.js`: `window.innerWidth <= 991` (inline), `archive.js`: `window.matchMedia('(max-width: 991px)').matches` (einmalig). Vier verschiedene Patterns. |
+
 
 ## Redundanz & Code-Qualität
 
@@ -71,6 +34,12 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 |------|--------------------|------------------------------------------------------------------------------|
 | Q4   | `js/project.js` + `js/archive.js` | ✅ Lightbox-Code extrahiert nach `js/lightbox.js` als Shared Module.  |
 | Q5   | CSS                | ✅ Dust/Grain Pseudo-Elemente dedupliziert (~40 Zeilen gespart).              |
+| Q1   | `js/index.js`    ✅  | **~600 Zeilen duplizierte Physics-Logik.** Desktop (Z.228–727) und Mobile (Z.733–1233) haben nahezu identischen Matter.js-Code: `buildWalls()`, `swapTo()`, flush-Mechanik, resize-Handler. Unterschiede nur in Gravity, Größenverhältnissen und Touch vs. Hover. Sollte zu einer parametrisierten Klasse refactored werden. |
+| K5   | HTML       ✅        | **Lenis wird in `<head>` geladen** (hard-coded.html:21, forgetting-dreams.html:15) aber in `archive.html` und `about.html` vor dem jeweiligen Script im `<body>`. Render-blocking Script im Head ist unnötig. |
+| K8   | HTML      ✅ skip weil nicht wichtig         | **GSAP ScrollTrigger nur auf `archive.html` geladen**, aber `gsap.registerPlugin(ScrollTrigger)` wird nur dort gebraucht. Korrekt, aber im Code nicht kommentiert — sieht aus wie ein Versehen. |
+| E3   | Mittel   ✅ skip for now weil later webflow  | **index.js aufteilen.** 1356 Zeilen mit Desktop + Mobile Physics, Dust-Particles, Hover-Effekte, Reveal-Animation. Schwer wartbar. Mindestens 3 Module: `physics.js`, `dust.js`, `reveal.js`. |
+| E6   | Niedrig  ✅ nicht geeignet für webflow(bundlen)  | **CDN-Dependencies lokal bundlen oder SRI-Hashes hinzufügen.** GSAP, Matter.js, Lenis, SplitText — 4 externe Dependencies ohne Integrity-Checks. |
+
 
 ## Toter / Ungenutzter Code
 
@@ -107,7 +76,13 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | K2   | ✅ Favicon auf `index.html` hinzugefügt. |
 | K3   | ✅ `view-transition` Meta-Tag ergänzt.  |
 | K5   | ✅ Lenis aus `<head>` in `<body>` verschoben (hard-coded.html, forgetting-dreams.html). |
+| K6   | ✅ (skip) SplitText von Webflow-CDN — wird beim Webflow-Umzug automatisch gelöst. |
 | K7   | ✅ Doppeltes Logo + Split-Swap-Effekt entfernt. Nur 1 Logo auf allen Seiten. |
+| E5   | ✅ Niedrig | **z-index Scale eingeführt.** `:root`-Block mit 9 Variablen: `--z-content(10)`, `--z-page-fade(90)`, `--z-corner(100)`, `--z-particles(9996)`, `--z-scene(9997)`, `--z-nav(9998)`, `--z-lightbox(10000)`, `--z-transition(10001)`, `--z-grain(10002)`. Numerische Werte beibehalten für 100% visuelle Parität. |
+| Q8   | `css/custom.css`   | viele        | ✅ **z-index Scale eingeführt.** 9 CSS Custom Properties auf `:root` definiert (`--z-content` bis `--z-grain`). 19 globale z-index-Werte ersetzt, 36 lokale (komponenten-interne) als rohe Zahlen belassen. Siehe E5. |
+
+
+
 
 ## Performance
 
@@ -165,6 +140,18 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | C8   | ✅ `.main-nav.mobile-open` Block entfernt. |
 | C9   | ✅ Lenis CSS-Overrides — won't fix, ~300 Bytes. |
 
+
+
+### Magic Numbers
+
+| #    | Datei              | Zeilen       | Beschreibung                                                                                             |
+|------|--------------------|--------------|---------------------------------------------------------------------------------------------------------|
+| Q6   | `js/index.js`    ✅ skip weil gerade nicht wichtig  | viele        | **Zahlreiche unbeschriebene Konstanten:** `FLOOR_PAD_RATIO = 0.05` vs. `0.03` (mobile), `sleepThreshold: 300` vs. `30` vs. `60`, `density: 0.004` vs. `0.002` vs. `0.003`, `fr.width * 0.007`, `thick = 80` vs. `60`, Flush-Threshold `40` Swaps. Keine Benennung, schwer nachvollziehbar. |
+| Q7   | `js/project.js`  ✅ skip weil gerade nicht wichtig  | 15, 31–37    | **Layout-Offsets als Magic Numbers:** `88` (nav height), `110` (pro-nav clearance), `120` (mobile bottom), `89.89px` (padding). Diese sollten benannte Konstanten sein. |
+
+
+
+
 ## Architektur-Empfehlungen
 
 | #    | Beschreibung                          |
@@ -178,38 +165,3 @@ R10, R11, FD1, HC1, A2, AB1, FD2, HC2, I1, A1, A4, AB3, AB5, I2, I3, I5, AB4, FD
 
 ---
 
-## ZUSAMMENFASSUNG
-
-| Kategorie        | Offen | Erledigt |
-|------------------|-------|----------|
-| Bugs & Fehler    | 0     | 11       |
-| Toter Code       | 0     | 22       |
-| Redundanz        | 5     | 2        |
-| Konsistenz       | 6     | 3        |
-| Performance      | 0     | 7        |
-| Accessibility    | 0     | 7        |
-| Sicherheit       | 0     | 3        |
-| HTML-Probleme    | 0     | 5        |
-| CSS-Probleme     | 0     | 9        |
-| Architektur      | 3     | 2        |
-| Vorherige Issues | 3     | 40+      |
-| **Gesamt**       | **~17** | **~111+** |
-
-## LIVE-TEST ERGEBNISSE (Screenshots)
-
-### Desktop (1440x900)
-
-| Seite          | Status | Anmerkungen                                                                                     |
-|----------------|--------|-------------------------------------------------------------------------------------------------|
-| Landing        | OK     | Frame + Letters rendern korrekt. Nav-Pill sichtbar. Dust-Partikel sichtbar.                      |
-| About          | OK     | Hero-Bild + Greeting + Bio laden. WebGL-Effekt nicht getestet (braucht Mouse-Interaction).       |
-| Archive        | OK     | 6-Spalten Grid. Bilder laden lazy. Einige Spalten rechts initial leer (lazy-loading sichtbar).   |
-| Hard-Coded     | OK     | Film-Roll centered, Bilder clustered. Pro-Nav transparent. Entrance-Reveal funktioniert.          |
-
-### Visuelle Auffälligkeiten
-
-| #    | Seite    | Beschreibung                                                                                     |
-|------|----------|--------------------------------------------------------------------------------------------------|
-| V1   | Landing  | Letters "CAR" sichtbar oberhalb des Frames — partieller Rain-State im Screenshot (normal, da zeitabhängig). |
-| V2   | Archive  | Rechte Spalte hat Lücken — normal bei Masonry-Layout mit unterschiedlichen Bildhöhen.            |
-| V3   | Project  | Pro-Nav ist im Screenshot transparent (layout-0 state) — korrekt.                                |
