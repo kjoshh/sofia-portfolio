@@ -2,9 +2,9 @@
    SHARED — Base Overrides
    ══════════════════════════════════════════ */
 
-/* Hide info paragraphs until Webflow IX3 interactions are ready (prevents FOUC on project pages) */
-html.w-mod-js:not(.w-mod-ix3) :is(.info-para) {
-  visibility: hidden !important;
+/* Hide info paragraphs until JS reveals them (prevents FOUC on project pages) */
+.info-para {
+  visibility: hidden;
 }
 
 body {
