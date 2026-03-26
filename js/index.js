@@ -272,7 +272,7 @@ function buildWalls() {
   ));
   // Right wall
   World.add(world, Bodies.rectangle(
-    fr.right - pad - inset + thick / 2 + C.rightWallOffset, fr.top + fr.height / 2, thick, fr.height * 2,
+    fr.right - pad - inset + thick / 2 + C.rightWallOffset - fr.width * 0.015, fr.top + fr.height / 2, thick, fr.height * 2,
     { isStatic: true, label: 'wall', collisionFilter: wallFilter }
   ));
 }
