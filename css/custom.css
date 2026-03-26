@@ -1884,6 +1884,7 @@ html:has(body.landing-page) {
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;           /* hidden until JS entrance animation */
 }
 
 /* ── Framed photo ── */
