@@ -290,6 +290,11 @@ let _resizeTimer;
 let _resizeCleaned = false;
 let _resizing = false;
 let _rainGen = 0;
+const _rainTimers = [];
+function clearRainTimers() {
+  for (const tid of _rainTimers) clearTimeout(tid);
+  _rainTimers.length = 0;
+}
 let breatheTL = null;
 
 /* ── Build boundary walls ── */
@@ -673,6 +678,7 @@ Events.on(engine, 'afterUpdate', () => {
           setTimeout(() => {
             buildWalls();
             currentName = 'sofia';
+            clearRainTimers();
             revealPairs.length = 0;
             revealStarted = false;
             revealRecalced = false;
@@ -728,9 +734,10 @@ function startRain() {
   const fr = frameWrap.getBoundingClientRect();
   const gen = _rainGen;
 
+  clearRainTimers();
   slots.forEach((slot, idx) => {
     const delay = idx * C.rainDelayBase + Math.random() * C.rainDelayJitter;
-    setTimeout(() => {
+    const tid = setTimeout(() => {
       if (_rainGen !== gen) return;
       gsap.set(slot.sofiaEl, { opacity: 0.9 });
 
@@ -750,6 +757,7 @@ function startRain() {
       World.add(world, body);
       revealPairs.push({ el: slot.sofiaEl, body, slot, settled: false, born: performance.now() });
     }, delay);
+    _rainTimers.push(tid);
   });
 
   if (!C.settleIndividual) {
@@ -796,6 +804,7 @@ window.addEventListener('resize', () => {
   if (!_resizeCleaned) {
     _resizeCleaned = true;
     _rainGen++;
+    clearRainTimers();
     flushing = false;
 
     // Remove debris clones + physics

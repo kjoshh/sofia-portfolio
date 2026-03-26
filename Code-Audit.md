@@ -2,10 +2,53 @@
 
 Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: Bugs, toter Code, Redundanzen, Performance, Wartbarkeit, Konsistenz, Accessibility, Sicherheit.
 
-**Datum:** 2026-03-24
+**Datum:** 2026-03-24 (Update: 2026-03-26)
 **Geprüft:** 5 HTML-Dateien, 9 JS-Dateien, 1 CSS-Datei (2668 Zeilen), ~3661 Zeilen JS
 
 ---
+
+# OFFEN
+
+## Bugs & Memory Leaks
+
+| # | Schwere | Datei | Zeile | Beschreibung |
+|---|---------|-------|-------|--------------|
+| B12 | Kritisch | `js/about.js` | 99–247 | **WebGL-Ressourcen werden nie freigegeben.** Shader, Program und Buffer haben keinen Cleanup — `gl.deleteShader()`, `gl.deleteProgram()`, `gl.deleteBuffer()` fehlen komplett. GPU-Speicher bleibt bei wiederholten Seitenbesuchen belegt. Fix: Cleanup-Funktion in `beforeunload` / `visibilitychange`. |
+| B15 | Mittel | `js/project.js` | 26–27 | **Division-by-Zero-Risiko.** `(availH - gap * (rows - 1)) / rows` — wenn `rows` 0 ist (bei `imgCount === 0`), entsteht Division durch Null. Fix: Guard-Clause `if (imgCount === 0) return;`. |
+| B16 | Mittel | `js/mob-sheet.js` | 27–99 | **GSAP-Timeline-Cleanup fehlt.** Beim schnellen Öffnen/Schließen des Mobile-Sheets werden neue Timelines erstellt, ohne vorherige komplett zu killen. Kann zu Animation-Glitches führen. Fix: `.kill()` vor neuem Timeline-Start. |
+
+## Performance
+
+| # | Schwere | Datei | Beschreibung |
+|---|---------|-------|--------------|
+| P8 | Mittel | `css/custom.css` | **Kein `prefers-reduced-motion`.** Grain-Animation (`grain 2.5s steps(1) infinite`), `mobile-pill-breathe` und `aboutHintPulse` laufen auch für User die reduzierte Bewegung bevorzugen. Fix: `@media (prefers-reduced-motion: reduce) { .grain::after, .mob-pill, .about-hint { animation: none; } }` |
+| P9 | Niedrig | `js/index.js` | 968–973 | **Canvas-Resize löst doppelten Reflow aus.** `canvas.width` und `canvas.height` werden sequentiell gesetzt — zwei synchrone Reflows statt einem. Fix: In `requestAnimationFrame` wrappen oder Werte erst sammeln. |
+| P10 | Niedrig | `js/index.js` | 900–905 | **Image-Preload ignoriert Fehler still.** `img.onerror = resolve` — bei fehlgeschlagenem Hero-Image startet Animation mit gebrochenem Layout. Fix: Mindestens loggen, optional Fallback-Bild. |
+
+## CSS-Qualität
+
+| # | Schwere | Datei | Beschreibung |
+|---|---------|-------|--------------|
+| C10 | Mittel | `css/custom.css` | **25+ `!important`-Deklarationen.** Zeilen 7, 43, 428, 452, 468–470, 474, 497, 559–560, 573, 794, 854, 1128–1129, 1151, 1310–1313 u.a. Führt zu Specificity-Wars und erschwert Wartung. Fix: Schrittweise durch höhere Spezifität oder bessere Selektoren ersetzen. |
+
+## SEO & Meta
+
+| # | Schwere | Datei | Beschreibung |
+|---|---------|-------|--------------|
+| M1 | Hoch | alle HTML | **Fehlende `<meta name="description">`.** Keine der 5 Seiten hat eine Meta-Description. Google zeigt keinen sinnvollen Snippet-Text an. Fix: Individuelle Description pro Seite. |
+| M2 | Mittel | alle HTML | **Fehlende Open-Graph- und Twitter-Card-Tags.** Kein `og:title`, `og:description`, `og:image`, `og:url`. Social-Media-Shares zeigen keine Rich-Previews. Fix: OG + Twitter-Card Meta-Tags pro Seite. |
+| M3 | Niedrig | alle HTML | **Fehlender Manifest-Link.** `/favicon/site.webmanifest` existiert, ist aber in keiner Seite verlinkt. Fix: `<link rel="manifest" href="favicon/site.webmanifest">` in alle `<head>`-Bereiche. |
+
+## HTML-Struktur
+
+| # | Schwere | Datei | Beschreibung |
+|---|---------|-------|--------------|
+| H6 | Niedrig | alle HTML | **Scripts ohne `defer`.** Externe Skripte (GSAP, Matter.js, eigene JS) laden synchron und blockieren Rendering. Fix: `defer` auf alle Script-Tags (nicht `async` wegen Abhängigkeiten). |
+| H7 | Niedrig | `about.html` | 138 | **Fehlender Mailto-Fallback.** E-Mail nur per JS-Copy (`data-copy`) nutzbar. Ohne JavaScript keine Interaktion möglich. Fix: `<a href="mailto:...">` als Fallback. |
+| H8 | Niedrig | diverse HTML | **Inkonsistente Nav-Struktur.** `index.html` hat flache Nav, `hard-coded.html` und `forgetting-dreams.html` haben extra `<div class="header">`-Wrapper + `pro-nav`-Klasse. Unterschiedliche DOM-Tiefe erschwert CSS-Wartung. |
+
+---
+
 # ERLEDIGT
 
 ## Bugs & Fehler
@@ -23,6 +66,8 @@ Vollständiger Code-Audit aller HTML-Seiten, JS-Dateien und CSS. Geprüft auf: B
 | B9   | `css/custom.css`        | 2017     | ✅ `transition: all 200ms ease` auf `.mob-proj-title` — gefixt.              |
 | B10  | `js/nav.js`             | 326      | ✅ Navigation delay 1000ms ist zu lang.                                       |
 | B11  | `js/about.js`           | 85–89    | ✅ WebGL Shader ohne Fehlerprüfung.                                           |
+| B13  | `js/index.js`           | 729–752  | ✅ Race Condition im Rain-Generator — Timer-Handles gespeichert + clearRainTimers() bei Resize/Flush. |
+| B14  | `js/index.js`           | 731–752  | ✅ setTimeout in Loop ohne Referenz — mit B13 zusammen gefixt.                |
 | Q2   | `js/index.js`   ✅   | **Resize-Handler dupliziert.** Desktop-Resize (Z.278–359) und Mobile-Resize (Z.1172–1233) haben identische Cleanup-Logik: debris entfernen, fall-pairs entfernen, reveal-pairs entfernen, tweens killen, state resetten. |
 | K4   | HTML           ✅    | **Body-Klasse inkonsistent.** `index.html` hat `class="landing-page"`, `about.html` hat `class="body about-page"`, `archive.html` hat `class="body archive-page"`, Projektseiten nur `class="body"`. Inkonsistente Benennung. |
 | K9   | JS              ✅    | **`isMobile` wird unterschiedlich definiert:** `index.js`: `window.matchMedia('(max-width: 991px)').matches` (einmalig), `project.js`: `const isMobile = () => window.innerWidth <= 991` (Funktion), `about.js`: `window.innerWidth <= 991` (inline), `archive.js`: `window.matchMedia('(max-width: 991px)').matches` (einmalig). Vier verschiedene Patterns. |
