@@ -796,6 +796,14 @@ text-decoration: none;
     animation-duration: 3s;
   }
 
+  /* Softer transition boost on mobile */
+  body.is-transitioning .grain::after {
+    opacity: 0.22;
+  }
+  body.is-transitioning .dusti {
+    opacity: 0.03;
+  }
+
   /* ── Nav: move to bottom, full-width pill ── */
 
 
