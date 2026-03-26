@@ -8,7 +8,7 @@ html.w-mod-js:not(.w-mod-ix3) :is(.info-para) {
 }
 
 body {
-  background-color: #1e1e1b;
+  background-color: #292823;
 }
 
 /* ── z-index scale ──
@@ -1482,10 +1482,6 @@ text-decoration: none;
 
 
 
-.body {
-  background-color: #292823;
-  overflow-x: clip;
-}
 
 
 
@@ -1869,14 +1865,14 @@ html {
 
 body.landing-page {
   font-family: 'Alegreya', Georgia, serif;
-  background: #1e1e1b;
+  background: #292823;
   height: 100%;
   overflow: hidden;
 }
 html:has(body.landing-page) {
   height: 100%;
   overflow: hidden;
-  background: #1e1e1b;
+  background: #292823;
 }
 
 /* ── Scene ── */
@@ -1917,13 +1913,13 @@ html:has(body.landing-page) {
   inset: 4% 3%;
   z-index: 0;
 
-  background: #1e1e1b url("../images-neu/heroimg-sofia.jpg") center / cover no-repeat;
+  background: #292823 url("../images-neu/heroimg-sofia.jpg") center / cover no-repeat;
 }
 .frame-photo-sybil {
   position: absolute;
   inset: 24% 24%;
   z-index: 1;
-  background: #1e1e1b url("../images-neu/heroimg-sybil.jpg") center / cover no-repeat;
+  background: #292823 url("../images-neu/heroimg-sybil.jpg") center / cover no-repeat;
   opacity: 0;
   margin-right: 2%;
   margin-bottom: 5%;
