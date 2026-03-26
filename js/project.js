@@ -94,6 +94,7 @@ infoParas.forEach(p => {
   infoLines.push(...split.lines);
 });
 gsap.set(infoLines, { opacity: 0, y: 10 });
+infoParas.forEach(p => { p.style.visibility = "visible"; });
 textContainer.style.display = "none";
 textContainer.style.visibility = "";
 
