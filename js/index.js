@@ -912,7 +912,7 @@ preloadImages().then(() => {
     if (dustEl) gsap.set(dustEl, { opacity: dustPeak });
     if (grainEl) gsap.set(grainEl, { opacity: grainPeak / grainRest });
 
-    const revealTL = gsap.timeline({ delay: 0.3 });
+    const revealTL = gsap.timeline({ delay: 1.0 });
     revealTL.to(frameWrap, {
       scale: 1, opacity: 1, y: 0,
       duration: 1.4, ease: 'power2.out',
@@ -939,7 +939,7 @@ preloadImages().then(() => {
     if (dustEl) gsap.set(dustEl, { opacity: 0 });
 
     // Animate everything in
-    const entranceTL = gsap.timeline({ delay: 0.3 });
+    const entranceTL = gsap.timeline({ delay: 1.0 });
     entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1, ease: 'power2.out' }, 0);
     entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.4);
     entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
