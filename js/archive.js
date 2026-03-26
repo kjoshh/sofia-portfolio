@@ -1,3 +1,6 @@
+/* ── Mobile detection ── */
+const isMobile = () => window.matchMedia('(max-width: 991px)').matches;
+
 /* ── Lenis smooth scroll ── */
 const lenis = new Lenis(isMobile() ? { wrapper: document.body } : {});
 (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(0);

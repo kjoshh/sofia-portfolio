@@ -4,7 +4,8 @@ const letterField = document.getElementById('letterField');
 const frameWrap = document.getElementById('frameWrap');
 const sceneEl = document.getElementById('scene');
 
-/* ── Mobile detection — provided by utils.js ── */
+/* ── Mobile detection ── */
+const isMobile = () => window.matchMedia('(max-width: 991px)').matches;
 
 /* ── State ── */
 let currentName = 'sofia';
@@ -207,7 +208,7 @@ const C = isMobile() ? {
   swapDistFallback: 30,
 } : {
   gravity: 1.5, positionIter: 10, velocityIter: 8,
-  floorPadRatio: 0.05, wallThick: 80, wallInset: 0.007, rightWallOffset: 12,
+  floorPadRatio: 0.02, wallThick: 80, wallInset: 0.007, rightWallOffset: 12,
   swapVelXRange: 2,
   rainDelayBase: 55, rainDelayJitter: 35, rainStartYAbsolute: true,
   rainXJitter: 40, rainRestitution: 0.35, rainFrictionAir: 0.006,

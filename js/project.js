@@ -1,3 +1,6 @@
+/* ── Mobile detection ── */
+const isMobile = () => window.matchMedia('(max-width: 991px)').matches;
+
 /* ── Overview cell height: all images fit in viewport ── */
 // Measure safe-area-inset-bottom for viewport calculations
 const _sabEl = document.createElement('div');
@@ -92,8 +95,6 @@ infoParas.forEach(p => {
 gsap.set(infoLines, { opacity: 0, y: 10 });
 textContainer.style.display = "none";
 textContainer.style.visibility = "";
-
-/* isMobile() provided by utils.js */
 
 // Compute nav Y offset for layout-0: position nav just below the centered image cluster
 function getLayout0NavY() {
