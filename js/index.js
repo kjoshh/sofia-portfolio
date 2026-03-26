@@ -911,9 +911,9 @@ initPositions();
 preloadImages().then(() => {
   const mobile = isMobile();
 
-  // Hide overlays so they fade in together with the scene (prevents flash)
-  gsap.set('.dust',  { opacity: 0 });
-  gsap.set('.grain', { opacity: 0 });
+  // Start overlays subtle, ramp up with scene to prevent contrast flash
+  gsap.set('.dust',  { opacity: 0.03 });
+  gsap.set('.grain', { opacity: 0.15 });
 
   if (mobile) {
     /* ── Mobile entrance: scale-up frame + letter rain ── */
