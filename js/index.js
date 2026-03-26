@@ -106,8 +106,8 @@ function _computeMetrics() {
   if (isMobile()) {
     return {
       letterH: fw * 0.065,
-      letterW: fw * 0.056,
-      spaceW:  fw * 0.052,
+      letterW: fw * 0.052,
+      spaceW:  fw * 0.048,
       swapDist: fw * 0.075,
       offsetX: fw * 0.02,
       offsetY: fw * 0.04,
@@ -232,7 +232,7 @@ function initPositions() {
 
 const C = isMobile() ? {
   gravity: 1.2, positionIter: 8, velocityIter: 6,
-  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01, rightWallOffset: 0, rightWallInsetExtra: 0.045,
+  floorPadRatio: 0.03, wallThick: 60, wallInset: 0.01, rightWallOffset: 0, rightWallInsetExtra: 0.005,
   swapVelXRange: 1.5,
   rainDelayBase: 45, rainDelayJitter: 30, rainStartYAbsolute: false,
   rainXJitter: 30, rainRestitution: 0.3, rainFrictionAir: 0.008,
