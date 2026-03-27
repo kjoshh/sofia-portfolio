@@ -16,7 +16,7 @@
     overlay.style.opacity = '0';
     overlay.addEventListener('transitionend', function handler() {
       if (overlay.style.opacity === '0') {
-        overlay.style.display = 'none';
+        overlay.style.visibility = 'hidden';
         document.body.classList.remove('is-transitioning');
         overlay.removeEventListener('transitionend', handler);
       }
@@ -83,7 +83,7 @@
     if (e.persisted) {
       overlay.style.transition = 'none';
       overlay.style.opacity = '0';
-      overlay.style.display = 'none';
+      overlay.style.visibility = 'hidden';
       document.body.classList.remove('is-transitioning');
       fading = true;
     }
@@ -102,7 +102,7 @@
         e.preventDefault();
         var href = a.getAttribute('href');
         document.body.classList.add('is-transitioning');
-        overlay.style.display = 'flex';
+        overlay.style.visibility = 'visible';
         overlay.style.transition = 'none';
         overlay.style.opacity = '0';
         // Force reflow
