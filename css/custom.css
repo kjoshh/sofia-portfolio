@@ -95,7 +95,7 @@ body {
   height: 400%;
   background: url('../images/noise.png') repeat;
   background-size: 300px 300px;
-  opacity: 0.2;
+  opacity: 0.4;
   animation: grain 2.5s steps(1) infinite;
 }
 
@@ -886,7 +886,7 @@ text-decoration: none;
 
   /* Loader: lighter grain on mobile */
   .loader-grain {
-    opacity: 0.14;
+    opacity: 0.25;
     animation-duration: 3s;
   }
 
