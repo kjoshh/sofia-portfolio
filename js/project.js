@@ -1,3 +1,18 @@
+/* ── Cloudinary responsive upgrade ── */
+function upgradeCloudinaryImages(selector, targetWidth) {
+  document.querySelectorAll(selector).forEach(img => {
+    const src = img.getAttribute('src');
+    if (!src || !src.includes('res.cloudinary.com')) return;
+    const upgraded = src.replace(/\/w_\d+,/, `/w_${targetWidth},`);
+    if (upgraded !== src) {
+      img.setAttribute('src', upgraded);
+      // Also update srcset entries
+      const srcset = img.getAttribute('srcset');
+      if (srcset) img.removeAttribute('srcset');
+    }
+  });
+}
+
 /* ── Mobile detection ── */
 const isMobile = () => window.matchMedia('(max-width: 991px)').matches;
 
@@ -308,6 +323,11 @@ function switchLayoutHandler(newLayout) {
   const previousLayout = activeLayout;
   activeLayout = newLayout;
   const imgholders = Array.from(gall3ry.querySelectorAll(".imgholder"));
+
+  // Upgrade image resolution when entering larger layouts
+  if (newLayout !== "layout-0-gall3ry" && previousLayout === "layout-0-gall3ry") {
+    upgradeCloudinaryImages('.imgholder img', 1200);
+  }
 
   // Sequence counter: show/hide based on layout
   if (window._seqCounter) {
