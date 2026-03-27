@@ -1383,11 +1383,15 @@ text-decoration: none;
   }
 }
 
-/* ── Firefox: put grain BEHIND loader so it pre-renders while loader is visible ── */
+/* ── Firefox: force grain to pre-render behind opaque loader ── */
 @supports (-moz-appearance: none) {
+  .page-transition {
+    background-color: rgba(41, 40, 35, 0.99);  /* not fully opaque → Firefox can't skip layers behind it */
+  }
   .grain,
+  .grain::after,
   .dusti {
-    z-index: calc(var(--z-loader) - 1);
+    transform: translateZ(0);                    /* force GPU compositing */
   }
 }
 
