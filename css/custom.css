@@ -144,6 +144,7 @@ body.is-transitioning .grain::after {
   z-index: var(--z-grain);
   background-image: url("../images/dust.jpg");
   transition: opacity 0.6s ease;
+  will-change: opacity;             /* force Firefox to composite early */
 }
 
 .grain {
@@ -152,6 +153,7 @@ body.is-transitioning .grain::after {
   pointer-events: none;
   z-index: var(--z-grain);
   overflow: hidden;
+  will-change: transform;          /* force Firefox to composite early — prevents flash on loader fadeout */
 }
 
 .grain::after {
@@ -167,6 +169,7 @@ body.is-transitioning .grain::after {
   opacity: 0.25;
   animation: grain 2.5s steps(1) infinite;
   transition: opacity 0.6s ease;
+  will-change: background-position; /* keep grain animation on GPU layer in Firefox */
 }
 
 @keyframes grain {
