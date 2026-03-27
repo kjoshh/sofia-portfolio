@@ -88,7 +88,7 @@ const revealed = new Set();
 let staggerQueue = [];
 let staggerTimer = null;
 const STAGGER_DELAY = 0.06;
-let BATCH_WINDOW = 750;        // longer initial window for CDN images
+let BATCH_WINDOW = 1000;        // longer initial window for CDN images
 let firstFlushDone = false;
 
 function flushStaggerQueue() {
@@ -127,6 +127,16 @@ function enqueueReveal(item) {
   }
 }
 
+/* ---- Debounced Lenis resize after images load ---- */
+let resizeTimer = null;
+function debouncedResize() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    lenis.resize();
+    ScrollTrigger.refresh();
+  }, 200);
+}
+
 /* ---- Image load tracking ---- */
 items.forEach(item => {
   const img = item.querySelector("img");
@@ -138,6 +148,7 @@ items.forEach(item => {
     function onReady() {
       loaded.add(item);
       enqueueReveal(item);
+      debouncedResize();
     }
     img.addEventListener("load", onReady, { once: true });
     img.addEventListener("error", onReady, { once: true });
