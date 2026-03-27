@@ -88,7 +88,8 @@ const revealed = new Set();
 let staggerQueue = [];
 let staggerTimer = null;
 const STAGGER_DELAY = 0.06;
-const BATCH_WINDOW  = 120;
+let BATCH_WINDOW = 500;        // longer initial window for CDN images
+let firstFlushDone = false;
 
 function flushStaggerQueue() {
   staggerTimer = null;
@@ -111,6 +112,10 @@ function flushStaggerQueue() {
   });
 
   staggerQueue = [];
+  if (!firstFlushDone) {
+    firstFlushDone = true;
+    BATCH_WINDOW = 120;          // after first reveal, use snappy window for scroll
+  }
 }
 
 function enqueueReveal(item) {
