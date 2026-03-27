@@ -32,6 +32,9 @@ Interaktionen bleiben 1:1 erhalten.
 
 ## Phase 1: Cloudinary Setup
 
+
+////gitignore besser anlegen. und ungenutzte sachen aus project löschen
+
 ### 1.1 Account erstellen
 - Cloudinary Free Account unter cloudinary.com
 - "Cloud Name" notieren (z.B. `sofia-portfolio`)

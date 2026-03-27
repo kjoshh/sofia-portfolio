@@ -898,31 +898,43 @@ window.addEventListener('resize', () => {
   }, 300);
 });
 
-/* ── Preload critical images before entrance ── */
-function preloadImages() {
+/* ── Preload all critical assets before entrance ── */
+function preloadAssets() {
   const mobile = isMobile();
-  const srcs = [
+
+  // Hero + frame images (new Image() to trigger fetch)
+  const imgSrcs = [
     'images-neu/heroimg-sofia.jpg',
     mobile ? 'images-neu/frame-mobile.png' : 'images-neu/frame-desk.png',
   ];
-
-  const promises = srcs.map(src => new Promise(resolve => {
+  const imgPromises = imgSrcs.map(src => new Promise(resolve => {
     const img = new Image();
     img.onload = resolve;
-    img.onerror = resolve;   // don't block on failure
+    img.onerror = resolve;
     img.src = src;
   }));
 
-  // Timeout fallback — never wait longer than 4s
-  const timeout = new Promise(resolve => setTimeout(resolve, 4000));
-  return Promise.race([Promise.all(promises), timeout]);
+  // Letter PNGs — already in DOM (created at line ~145), wait for their load
+  const letterPromises = slots.map(slot => {
+    const imgs = [slot.sofiaEl, slot.sybilEl];
+    return Promise.all(imgs.map(img =>
+      img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
+    ));
+  });
+
+  const allAssets = Promise.all([...imgPromises, ...letterPromises]);
+  const timeout = new Promise(resolve => setTimeout(resolve, 8000));
+  return Promise.race([allAssets, timeout]);
 }
 
 /* ── Init + entrance ── */
 initPositions();
 
-preloadImages().then(() => {
+preloadAssets().then(() => {
   const mobile = isMobile();
+
+  // Trigger overlay fade — transition.js waits for this on landing page
+  if (window.__revealOverlay) window.__revealOverlay();
 
   // Show wait cursor on frame until letter rain finishes
   frameWrap.style.cursor = 'wait';
@@ -931,7 +943,7 @@ preloadImages().then(() => {
     /* ── Mobile entrance: scale-up frame + letter rain ── */
     gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
 
-    const revealTL = gsap.timeline({ delay: 1.4 });
+    const revealTL = gsap.timeline({ delay: 0.3 });
     revealTL.to(sceneEl, { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
     revealTL.to(frameWrap, {
       scale: 1, opacity: 1, y: 0,
@@ -951,8 +963,8 @@ preloadImages().then(() => {
     gsap.set(outerBorder, { opacity: 0 });
     gsap.set('.main-nav', { opacity: 0, y: -15 });
 
-    // Animate everything in (delay synced with page-transition overlay fade)
-    const entranceTL = gsap.timeline({ delay: 1.4 });
+    // Animate in — short delay after overlay starts fading
+    const entranceTL = gsap.timeline({ delay: 0.3 });
     entranceTL.to(sceneEl, { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
     entranceTL.to(frameWrap, { opacity: 1, scale: 1, duration: 1.5, ease: 'power2.inOut' }, 0);
     entranceTL.to(outerBorder, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0);

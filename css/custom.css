@@ -46,9 +46,6 @@ body.is-transitioning * {
 body.is-transitioning .grain::after {
   opacity: 0.35;
 }
-body.is-transitioning .dust {
-  opacity: 0.1;
-}
 
 /* ══════════════════════════════════════════
    SHARED — Dust / Noise overlays
@@ -801,9 +798,6 @@ text-decoration: none;
 
   /* Softer transition boost on mobile */
   body.is-transitioning .grain::after {
-    opacity: 0.22;
-  }
-  body.is-transitioning .dust {
     opacity: 0.22;
   }
   body.is-transitioning .dusti {
@@ -1974,17 +1968,6 @@ html:has(body.landing-page) {
   mix-blend-mode: multiply;
 }
 
-/* ── Dust overlay (index-specific) ── */
-.dust {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: var(--z-nav);
-  background-image: url("../images-neu/dust.jpg");
-  opacity: 0.15;
-  transition: opacity 0.6s ease;
-}
-
 /* ── Vignette ── */
 .vignette {
   position: fixed;
@@ -2354,8 +2337,5 @@ html:has(body.landing-page) {
   }
   body.landing-page .letter-el {
     pointer-events: none;
-  }
-  body.landing-page .dust {
-    opacity: 0.12;
   }
 }

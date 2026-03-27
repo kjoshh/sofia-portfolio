@@ -6,20 +6,29 @@
 
   // --- Transition In (page just loaded) ---
   // Overlay starts visible (inline style: display:block; opacity:1)
-  // Hide cursor during entrance transition
   document.body.classList.add('is-transitioning');
-  setTimeout(function () {
+
+  var isLanding = document.body.classList.contains('landing-page');
+
+  function fadeOverlay() {
     overlay.style.transition = 'opacity 1500ms ease-out';
     overlay.style.opacity = '0';
-  }, 250);
+    overlay.addEventListener('transitionend', function handler() {
+      if (overlay.style.opacity === '0') {
+        overlay.style.display = 'none';
+        document.body.classList.remove('is-transitioning');
+        overlay.removeEventListener('transitionend', handler);
+      }
+    });
+  }
 
-  overlay.addEventListener('transitionend', function handler() {
-    if (overlay.style.opacity === '0') {
-      overlay.style.display = 'none';
-      document.body.classList.remove('is-transitioning');
-      overlay.removeEventListener('transitionend', handler);
-    }
-  });
+  if (isLanding) {
+    // Landing page controls its own reveal — expose trigger on window
+    window.__revealOverlay = fadeOverlay;
+  } else {
+    // All other pages: fade automatically after 250ms
+    setTimeout(fadeOverlay, 250);
+  }
 
   // --- Transition Out (link clicked) ---
   function isInternal(link) {
