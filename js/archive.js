@@ -84,19 +84,6 @@ const entered  = new Set();
 const loaded   = new Set();
 const revealed = new Set();
 
-/* ---- Archive loader ---- */
-const archiveLoader = document.getElementById("archive-loader");
-let loaderDismissed = false;
-
-function dismissLoader() {
-  if (loaderDismissed || !archiveLoader) return;
-  loaderDismissed = true;
-  archiveLoader.classList.add("is-hidden");
-  archiveLoader.addEventListener("transitionend", () => {
-    archiveLoader.remove();
-  }, { once: true });
-}
-
 /* ---- Batched stagger queue ---- */
 let staggerQueue = [];
 let staggerTimer = null;
@@ -110,9 +97,6 @@ function flushStaggerQueue() {
   staggerQueue.sort((a, b) =>
     a.getBoundingClientRect().left - b.getBoundingClientRect().left
   );
-
-  /* Hide loader on first reveal flush */
-  dismissLoader();
 
   staggerQueue.forEach((item, i) => {
     if (revealed.has(item)) return;
@@ -154,9 +138,6 @@ items.forEach(item => {
     img.addEventListener("error", onReady, { once: true });
   }
 });
-
-/* ---- Loader safety timeout (max 4s) ---- */
-setTimeout(dismissLoader, 4000);
 
 /* ---- Scroll entry tracking ---- */
 ScrollTrigger.batch(items, {
