@@ -326,7 +326,7 @@ function switchLayoutHandler(newLayout) {
 
   // Upgrade image resolution when entering larger layouts
   if (newLayout !== "layout-0-gall3ry" && previousLayout === "layout-0-gall3ry") {
-    upgradeCloudinaryImages('.imgholder img', 1200);
+    upgradeCloudinaryImages('.imgholder img', 1600);
   }
 
   // Sequence counter: show/hide based on layout
