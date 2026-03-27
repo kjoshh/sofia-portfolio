@@ -144,13 +144,13 @@ for (let i = 0; i < sofiaChars.length; i++) {
 
   const sofiaEl = document.createElement('img');
   sofiaEl.className = 'letter-el';
-  sofiaEl.src = `images-neu/${sc}.png`;
+  sofiaEl.src = `images/${sc}.png`;
   sofiaEl.alt = sc;
   letterField.appendChild(sofiaEl);
 
   const sybilEl = document.createElement('img');
   sybilEl.className = 'letter-el';
-  sybilEl.src = `images-neu/${yc}.png`;
+  sybilEl.src = `images/${yc}.png`;
   sybilEl.alt = yc;
   letterField.appendChild(sybilEl);
 
@@ -904,8 +904,8 @@ function preloadAssets() {
 
   // Hero + frame images (new Image() to trigger fetch)
   const imgSrcs = [
-    'images-neu/heroimg-sofia.jpg',
-    mobile ? 'images-neu/frame-mobile.png' : 'images-neu/frame-desk.png',
+    'images/heroimg-sofia.jpg',
+    mobile ? 'images/frame-mobile.png' : 'images/frame-desk.png',
   ];
   const imgPromises = imgSrcs.map(src => new Promise(resolve => {
     const img = new Image();
