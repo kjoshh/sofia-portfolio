@@ -1383,13 +1383,6 @@ text-decoration: none;
   }
 }
 
-/* ── Firefox: grain behind loader so it's pre-rendered ── */
-@supports (-moz-appearance: none) {
-  .grain,
-  .dusti {
-    z-index: var(--z-nav);
-  }
-}
 
 /* ══════════════════════════════════════════
    TABLET — 768px–991px (index page)
