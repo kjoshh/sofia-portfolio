@@ -59,26 +59,20 @@ if (cursor) {
 
 
 /* ── Lenis smooth scroll ── */
-let lenis = null;
-if (typeof Lenis !== 'undefined') {
-  lenis = new Lenis(isMobile() ? { wrapper: document.body } : {});
-  function raf(time) {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  }
+const lenis = new Lenis(isMobile() ? { wrapper: document.body } : {});
+function raf(time) {
+  lenis.raf(time);
   requestAnimationFrame(raf);
 }
+requestAnimationFrame(raf);
 
 
 /* ── GSAP setup ── */
-const plugins = [typeof Flip !== 'undefined' && Flip, typeof CustomEase !== 'undefined' && CustomEase, typeof ScrollToPlugin !== 'undefined' && ScrollToPlugin].filter(Boolean);
-if (plugins.length) gsap.registerPlugin(...plugins);
-if (typeof CustomEase !== 'undefined') {
-  CustomEase.create(
-    "hop",
-    "M0,0 C0.028,0.528 0.129,0.74 0.27,0.852 0.415,0.967 0.499,1 1,1"
-  );
-}
+gsap.registerPlugin(Flip, CustomEase, ScrollToPlugin);
+CustomEase.create(
+  "hop",
+  "M0,0 C0.028,0.528 0.129,0.74 0.27,0.852 0.415,0.967 0.499,1 1,1"
+);
 
 
 /* ── Layout switching ── */
@@ -87,28 +81,20 @@ const gall3ry = document.querySelector(".gall3ry");
 const gall3ryContainer = document.querySelector(".gall3ry-container");
 const img100 = document.getElementById("img100");
 const textContainer = document.querySelector(".text-container");
+const infoParas = document.querySelectorAll(".info-para");
 const proNav = document.querySelector(".pro-nav");
 
-// Webflow CMS Rich Text: add .info-para class to all <p> inside .text-container
-if (textContainer) {
-  textContainer.querySelectorAll("p:not(.info-para)").forEach(p => p.classList.add("info-para"));
-}
-const infoParas = document.querySelectorAll(".info-para");
-
 // Temporarily show container so SplitText can measure rendered lines
+textContainer.style.visibility = "hidden";
+textContainer.style.display = "block";
 const infoLines = [];
-if (textContainer && typeof SplitText !== 'undefined') {
-  textContainer.style.visibility = "hidden";
-  textContainer.style.display = "block";
-  infoParas.forEach(p => {
-    const split = new SplitText(p, { type: "lines" });
-    p.style.maxWidth = "";
-    infoLines.push(...split.lines);
-  });
-  gsap.set(infoLines, { opacity: 0, y: 10 });
-  infoParas.forEach(p => { p.style.visibility = "visible"; });
-  textContainer.style.display = "none";
-}
+infoParas.forEach(p => {
+  const split = new SplitText(p, { type: "lines" });
+  p.style.maxWidth = "";
+  infoLines.push(...split.lines);
+});
+gsap.set(infoLines, { opacity: 0, y: 10 });
+textContainer.style.display = "none";
 textContainer.style.visibility = "";
 
 // Compute nav Y offset for layout-0: position nav just below the centered image cluster
@@ -297,13 +283,13 @@ window.addEventListener("resize", () => {
 
 function switchLayout(newLayout) {
   if (newLayout === activeLayout) return;
-  if (activeLayout === "layout-2-gall3ry" && lenis && lenis.scroll > 0) {
+  if (activeLayout === "layout-2-gall3ry" && lenis.scroll > 0) {
     lenis.scrollTo(0, {
       duration: 0.6,
       easing: t => 1 - Math.pow(1 - t, 3),
       onComplete: () => switchLayoutHandler(newLayout),
     });
-  } else if (isMobile() && newLayout === "layout-2-gall3ry" && lenis && lenis.scroll > 0) {
+  } else if (isMobile() && newLayout === "layout-2-gall3ry" && lenis.scroll > 0) {
     // Entering sequence on mobile with scroll > 0: reset instantly before transition
     lenis.scrollTo(0, { immediate: true });
     switchLayoutHandler(newLayout);
@@ -335,7 +321,7 @@ function switchLayoutHandler(newLayout) {
   const container = document.querySelector(".gall3ry-container");
   const isMob = isMobile();
   if (isMob) {
-    if (lenis) lenis.start();
+    lenis.start();
     container.style.height = "";
     container.style.overflow = "";
   }
@@ -361,7 +347,7 @@ function switchLayoutHandler(newLayout) {
       proNav.classList.remove("transparent");
       gsap.fromTo(imgholders,
         { opacity: 0 },
-        { opacity: 1, duration: 0.6, stagger: 0.03, ease: "power2.out", onComplete: () => { if (lenis) lenis.resize(); } }
+        { opacity: 1, duration: 0.6, stagger: 0.03, ease: "power2.out", onComplete: () => { lenis.resize(); } }
       );
     }, 350);
     return;
@@ -403,7 +389,7 @@ function switchLayoutHandler(newLayout) {
             { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, ease: "power2.out" }
           );
         }
-        if (lenis) lenis.resize();
+        lenis.resize();
       }
     });
     return;
@@ -447,7 +433,7 @@ function switchLayoutHandler(newLayout) {
     : "hop";
 
   // Stop Lenis during Flip on mobile to prevent scroll jitter
-  if (isMob && lenis) lenis.stop();
+  if (isMob) lenis.stop();
 
   Flip.from(state, {
     duration: 1.75,
@@ -462,7 +448,7 @@ function switchLayoutHandler(newLayout) {
           container.style.overflow = "";
         }
         if (isMob) lenis.start();
-        if (lenis) lenis.resize();
+        lenis.resize();
       });
     }
   });
@@ -607,19 +593,6 @@ function updateProNavActive(activeEl) {
   });
 })();
 
-
-/* ── Webflow CMS: copy project title to mob-proj-title ── */
-(function () {
-  const titleSrc = document.querySelector(".nav-link.project");
-  const titleDst = document.querySelector(".mob-proj-title");
-  if (titleSrc && titleDst && !titleDst.textContent.trim()) {
-    // Read only .char-top spans if font stagger has been applied (avoids doubled chars)
-    const tops = titleSrc.querySelectorAll(".char-top");
-    titleDst.textContent = tops.length
-      ? Array.from(tops).map(s => s.textContent).join("")
-      : titleSrc.textContent.trim();
-  }
-})();
 
 /* ── Lightbox (overview layout) ── */
 initLightbox({

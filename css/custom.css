@@ -2,9 +2,9 @@
    SHARED — Base Overrides
    ══════════════════════════════════════════ */
 
-/* Hide info paragraphs until JS reveals them (prevents FOUC on project pages) */
-.info-para {
-  visibility: hidden;
+/* Hide info paragraphs until Webflow IX3 interactions are ready (prevents FOUC on project pages) */
+html.w-mod-js:not(.w-mod-ix3) :is(.info-para) {
+  visibility: hidden !important;
 }
 
 body {
@@ -60,7 +60,7 @@ body.is-transitioning .dust {
   pointer-events: none;
   opacity: 0.05;
   z-index: var(--z-grain);
-  background-image: url("https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/dust.jpg");
+  background-image: url("../images-neu/dust.jpg");
   transition: opacity 0.6s ease;
 }
 
@@ -79,7 +79,7 @@ body.is-transitioning .dust {
   height: 300%;
   inset: -150% 0% 0% -150%;
   max-width: none;
-  background-image: url("https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/noise.png");
+  background-image: url("../images-neu/noise.png");
   background-size: 300px 300px;
   background-repeat: repeat;
   opacity: 0.25;
@@ -216,20 +216,6 @@ body.is-transitioning .dust {
   columns: 6;
   column-gap: 0;
   padding: 0;
-}
-
-/* Webflow CMS wraps items in .w-dyn-list > .w-dyn-items — inherit column layout */
-.archive-grid .w-dyn-list,
-.archive-grid .w-dyn-items {
-  columns: inherit;
-  column-gap: inherit;
-}
-
-/* Webflow CMS wrappers in gallery — pass layout through to .imgholder children */
-.gall3ry .w-dyn-list,
-.gall3ry .w-dyn-items,
-.gall3ry .w-dyn-item {
-  display: contents;
 }
 
 @media (max-width: 1200px) {
@@ -712,7 +698,7 @@ body.about-page {
   top: 0.4em;
   width: 0.8em;
   height: 0.8em;
-  background: url('https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/star.png') center/contain no-repeat;
+  background: url('../images-neu/star.png') center/contain no-repeat;
   opacity: 0.7;
 }
 
@@ -768,7 +754,7 @@ text-decoration: none;
   width: 16px;
   height: 16px;
   margin: 0 25px;
-  background: url('https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/star.png') center/contain no-repeat;
+  background: url('../images-neu/star.png') center/contain no-repeat;
   opacity: 0.7;
   vertical-align: middle;
   transition: transform 0.3s ease;
@@ -901,7 +887,7 @@ text-decoration: none;
     content: '';
     position: absolute;
     inset: 0;
-    background-image: url('https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/dust.jpg');
+    background-image: url('../images-neu/dust.jpg');
     background-size: cover;
     opacity: 0.14;
     mix-blend-mode: screen;
@@ -914,7 +900,7 @@ text-decoration: none;
     content: '';
     position: absolute;
     inset: 0;
-    background-image: url('https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/grain.jpg');
+    background-image: url('../images-neu/grain.jpg');
     background-size: 200px 200px;
     opacity: 0.06;
     mix-blend-mode: overlay;
@@ -1038,11 +1024,6 @@ text-decoration: none;
 
   .mob-sheet-grid::-webkit-scrollbar {
     display: none;
-  }
-  /* Webflow CMS wraps items in .w-dyn-list > .w-dyn-items — pass flex through */
-  .mob-sheet-grid .w-dyn-list,
-  .mob-sheet-grid .w-dyn-items {
-    display: contents;
   }
 
   .mob-sheet-grid.is-dragging {
@@ -1349,7 +1330,7 @@ text-decoration: none;
 
 @font-face {
   font-family: Post;
-  src: url('https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/fonts/Post.woff2') format("woff2");
+  src: url('../fonts/Post.otf') format("opentype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -1385,7 +1366,7 @@ text-decoration: none;
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/dust.jpg');
+  background-image: url('../images-neu/dust.jpg');
   background-size: cover;
   opacity: 0.14;
   mix-blend-mode: screen;
@@ -1398,7 +1379,7 @@ text-decoration: none;
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/grain.jpg');
+  background-image: url('../images-neu/grain.jpg');
   background-size: 200px 200px;
   opacity: 0.06;
   mix-blend-mode: overlay;
@@ -1635,11 +1616,6 @@ text-decoration: none;
   display: flex;
   gap: 5px;
   padding: 5px 8px 8px;
-}
-/* Webflow CMS wraps items in .w-dyn-list > .w-dyn-items — pass flex through */
-.desk-nav-grid .w-dyn-list,
-.desk-nav-grid .w-dyn-items {
-  display: contents;
 }
 
 .desk-nav-cell {
@@ -1947,7 +1923,7 @@ html:has(body.landing-page) {
   width: 93%;
   margin-left: 4%;
   z-index: 1;
-  background: url("https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/paint-stroke.png") center / 100% 100% no-repeat;
+  background: url("../images-neu/paint-stroke.png") center / 100% 100% no-repeat;
   clip-path: inset(0 100% 0 0);
 }
 
@@ -1956,13 +1932,13 @@ html:has(body.landing-page) {
   inset: 4% 3%;
   z-index: 0;
 
-  background: #292823 url("https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/heroimg-sofia.jpg") center / cover no-repeat;
+  background: #292823 url("../images-neu/heroimg-sofia.jpg") center / cover no-repeat;
 }
 .frame-photo-sybil {
   position: absolute;
   inset: 24% 24%;
   z-index: 1;
-  background: #292823 url("https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/heroimg-sybil.jpg") center / cover no-repeat;
+  background: #292823 url("../images-neu/heroimg-sybil.jpg") center / cover no-repeat;
   opacity: 0;
   margin-right: 2%;
   margin-bottom: 5%;
@@ -2004,7 +1980,7 @@ html:has(body.landing-page) {
   inset: 0;
   pointer-events: none;
   z-index: var(--z-nav);
-  background-image: url("https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/dust.jpg");
+  background-image: url("../images-neu/dust.jpg");
   opacity: 0.15;
   transition: opacity 0.6s ease;
 }
@@ -2090,7 +2066,7 @@ html:has(body.landing-page) {
   content: '';
   position: absolute;
   inset: -6px -10px;
-  background-image: url('https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/grain.jpg');
+  background-image: url('../images-neu/grain.jpg');
   background-size: 200px 200px;
   opacity: 0.06;
   mix-blend-mode: overlay;

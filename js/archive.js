@@ -2,20 +2,9 @@
 const isMobile = () => window.matchMedia('(max-width: 991px)').matches;
 
 /* ── Lenis smooth scroll ── */
-if (typeof Lenis !== 'undefined') {
-  const lenis = new Lenis(isMobile() ? { wrapper: document.body } : {});
-  (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(0);
-}
+const lenis = new Lenis(isMobile() ? { wrapper: document.body } : {});
+(function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(0);
 
-
-/* ── Webflow CMS: apply .bw class via conditional-visibility flag element ── */
-document.querySelectorAll('.archive-grid-item').forEach(item => {
-  const flag = item.querySelector('.bw-flag');
-  if (flag) {
-    item.classList.add('bw');
-    flag.remove(); // clean up, no longer needed in DOM
-  }
-});
 
 /* ── Film-negative wipe: bottom → top on hover ── */
 (function () {
@@ -81,59 +70,57 @@ document.querySelectorAll('.archive-grid-item').forEach(item => {
 /* ── Lightbox ── */
 initLightbox({
   items: document.querySelectorAll(".archive-grid-item"),
-  getSrc: (item) => { const img = item.querySelector("img"); return img ? img.src : ""; }
+  getSrc: (item) => item.dataset.full
 });
 
 
 /* ── Scale + fade reveal with ScrollTrigger.batch ── */
-if (typeof ScrollTrigger !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger);
 
-  const items = document.querySelectorAll(".archive-grid-item");
-  gsap.set(items, { y: 24, opacity: 0 });
+const items = document.querySelectorAll(".archive-grid-item");
+gsap.set(items, { y: 24, opacity: 0 });
 
-  /* Gate reveal on both viewport entry AND image loaded */
-  const entered = new Set();
-  const loaded  = new Set();
+/* Gate reveal on both viewport entry AND image loaded */
+const entered = new Set();
+const loaded  = new Set();
 
-  function revealItem(item, delay) {
-    if (entered.has(item) && loaded.has(item)) {
-      gsap.to(item, {
-        y: 0,
-        opacity: 1,
-        duration: 0.7,
-        delay: delay || 0,
-        ease: "power3.out",
-      });
-    }
+function revealItem(item, delay) {
+  if (entered.has(item) && loaded.has(item)) {
+    gsap.to(item, {
+      y: 0,
+      opacity: 1,
+      duration: 0.7,
+      delay: delay || 0,
+      ease: "power3.out",
+    });
   }
-
-  items.forEach(item => {
-    const img = item.querySelector("img");
-    if (!img) return;
-    if (img.complete && img.naturalHeight > 0) {
-      loaded.add(item);
-    } else {
-      img.addEventListener("load", () => {
-        loaded.add(item);
-        revealItem(item, 0);
-      }, { once: true });
-    }
-  });
-
-  ScrollTrigger.batch(items, {
-    onEnter: (batch) => {
-      batch.sort((a, b) =>
-        a.getBoundingClientRect().left - b.getBoundingClientRect().left
-      );
-      batch.forEach((item, i) => {
-        entered.add(item);
-        const staggerDelay = i * 0.06;
-        /* store delay so the load callback can use it */
-        item._revealDelay = staggerDelay;
-        gsap.delayedCall(staggerDelay, () => revealItem(item, 0));
-      });
-    },
-    once: true,
-  });
 }
+
+items.forEach(item => {
+  const img = item.querySelector("img");
+  if (!img) return;
+  if (img.complete && img.naturalHeight > 0) {
+    loaded.add(item);
+  } else {
+    img.addEventListener("load", () => {
+      loaded.add(item);
+      revealItem(item, 0);
+    }, { once: true });
+  }
+});
+
+ScrollTrigger.batch(items, {
+  onEnter: (batch) => {
+    batch.sort((a, b) =>
+      a.getBoundingClientRect().left - b.getBoundingClientRect().left
+    );
+    batch.forEach((item, i) => {
+      entered.add(item);
+      const staggerDelay = i * 0.06;
+      /* store delay so the load callback can use it */
+      item._revealDelay = staggerDelay;
+      gsap.delayedCall(staggerDelay, () => revealItem(item, 0));
+    });
+  },
+  once: true,
+});
