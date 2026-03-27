@@ -209,6 +209,64 @@ body.is-transitioning .grain::after {
    ARCHIVE PAGE
    ══════════════════════════════════════════ */
 
+/* ── Archive loader ── */
+.archive-loader {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #292823;
+  transition: opacity 0.8s ease;
+}
+
+.archive-loader.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.archive-loader-grain {
+  position: absolute;
+  inset: -200%;
+  width: 400%;
+  height: 400%;
+  background: url('../images-neu/noise.png') repeat;
+  background-size: 300px 300px;
+  opacity: 0.2;
+  animation: grain 2.5s steps(1) infinite;
+}
+
+.archive-loader-star {
+  width: 32px;
+  height: 32px;
+  opacity: 0.6;
+  animation: loader-spin 3s linear infinite;
+  filter: brightness(1.2);
+}
+
+@keyframes loader-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@media (max-width: 991px) {
+  .archive-loader-grain {
+    opacity: 0.14;
+    animation-duration: 3s;
+  }
+  .archive-loader-star {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+@media (max-width: 479px) {
+  .archive-loader-grain {
+    animation: none;
+  }
+}
+
 .archive-grid {
   columns: 6;
   column-gap: 0;
