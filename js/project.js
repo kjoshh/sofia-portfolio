@@ -1,21 +1,3 @@
-/* ── Webflow CMS: restructure multi-image gallery into .imgholder elements ── */
-(function () {
-  const gall3ry = document.querySelector(".gall3ry");
-  if (!gall3ry) return;
-  // Find all imgs inside multi-image wrapper that aren't already in .imgholder
-  const multiImgs = gall3ry.querySelectorAll("img:not(.pro-img):not([id])");
-  multiImgs.forEach((img, i) => {
-    // Skip the film roll image (#img100)
-    if (img.closest("#img100")) return;
-    img.classList.add("pro-img", "hovv");
-    img.loading = "lazy";
-    const holder = document.createElement("div");
-    holder.className = "imgholder hovv";
-    img.parentNode.insertBefore(holder, img);
-    holder.appendChild(img);
-  });
-})();
-
 /* ── Mobile detection ── */
 const isMobile = () => window.matchMedia('(max-width: 991px)').matches;
 
