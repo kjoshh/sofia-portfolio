@@ -1,16 +1,17 @@
-// Page transition — based on T.RICKS technique
+// Page transition — spinning star loader with smart page-ready detection
 // Replicates Webflow IX2 behavior for later porting
 (function () {
   var overlay = document.querySelector('.page-transition');
   if (!overlay) return;
 
   // --- Transition In (page just loaded) ---
-  // Overlay starts visible (inline style: display:block; opacity:1)
   document.body.classList.add('is-transitioning');
 
-  var isLanding = document.body.classList.contains('landing-page');
+  var fading = false;
 
   function fadeOverlay() {
+    if (fading) return;
+    fading = true;
     overlay.style.transition = 'opacity 1500ms ease-out';
     overlay.style.opacity = '0';
     overlay.addEventListener('transitionend', function handler() {
@@ -22,13 +23,71 @@
     });
   }
 
-  if (isLanding) {
-    // Landing page controls its own reveal — expose trigger on window
-    window.__revealOverlay = fadeOverlay;
-  } else {
-    // All other pages: fade automatically after 250ms
-    setTimeout(fadeOverlay, 250);
+  // Safety timeout — never wait longer than 4s
+  var safetyTimer = setTimeout(fadeOverlay, 4000);
+
+  function readyFade() {
+    clearTimeout(safetyTimer);
+    fadeOverlay();
   }
+
+  // --- Per-page ready detection ---
+
+  var isLanding = document.body.classList.contains('landing-page');
+  var isArchive = document.body.classList.contains('archive-page');
+  var isAbout   = document.body.classList.contains('about-page');
+  var heroWrap  = document.getElementById('img100');
+
+  if (isLanding) {
+    // Landing page controls its own reveal via index.js
+    window.__revealOverlay = readyFade;
+
+  } else if (isArchive) {
+    // Archive: poll until first grid item has been revealed (opacity > 0)
+    var archivePoll = setInterval(function () {
+      var items = document.querySelectorAll('.archive-grid-item');
+      for (var i = 0; i < items.length; i++) {
+        if (getComputedStyle(items[i]).opacity > 0) {
+          clearInterval(archivePoll);
+          readyFade();
+          return;
+        }
+      }
+    }, 100);
+
+  } else if (heroWrap) {
+    // Project pages: wait for hero image to load
+    var heroImg = heroWrap.querySelector('img');
+    if (heroImg && heroImg.complete && heroImg.naturalHeight > 0) {
+      readyFade();
+    } else if (heroImg) {
+      heroImg.addEventListener('load', readyFade, { once: true });
+      heroImg.addEventListener('error', readyFade, { once: true });
+    } else {
+      readyFade();
+    }
+
+  } else if (isAbout) {
+    // About page: wait for fonts + short delay for layout
+    document.fonts.ready.then(function () {
+      setTimeout(readyFade, 150);
+    });
+
+  } else {
+    // Unknown page type: fade after a brief paint delay
+    setTimeout(readyFade, 300);
+  }
+
+  // --- Firefox bfcache handling ---
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) {
+      overlay.style.transition = 'none';
+      overlay.style.opacity = '0';
+      overlay.style.display = 'none';
+      document.body.classList.remove('is-transitioning');
+      fading = true;
+    }
+  });
 
   // --- Transition Out (link clicked) ---
   function isInternal(link) {
@@ -43,7 +102,7 @@
         e.preventDefault();
         var href = a.getAttribute('href');
         document.body.classList.add('is-transitioning');
-        overlay.style.display = 'block';
+        overlay.style.display = 'flex';
         overlay.style.transition = 'none';
         overlay.style.opacity = '0';
         // Force reflow

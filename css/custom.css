@@ -44,8 +44,9 @@ body {
   --z-scene:       9997;     /* scene overlays: vignette, seq-counter                  */
   --z-nav:         9998;     /* navigation bars + landing dust texture                 */
   --z-lightbox:   10000;     /* lightbox overlay                                       */
-  --z-transition: 10001;     /* page transition                                        */
+  --z-transition: 10001;     /* page transition (legacy)                               */
   --z-grain:      10002;     /* dust + grain texture (topmost)                         */
+  --z-loader:     10003;     /* loader overlay — above grain to prevent flash          */
 }
 
 /* ══════════════════════════════════════════
@@ -55,9 +56,40 @@ body {
 .page-transition {
   position: fixed;
   inset: 0;
-  z-index: var(--z-transition);
+  z-index: var(--z-loader);
   background-color: #292823;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ── Loader grain (inside transition overlay) ── */
+.loader-grain {
+  position: absolute;
+  inset: -200%;
+  width: 400%;
+  height: 400%;
+  background: url('../images-neu/noise.png') repeat;
+  background-size: 300px 300px;
+  opacity: 0.2;
+  animation: grain 2.5s steps(1) infinite;
+}
+
+/* ── Loader spinning star ── */
+.loader-star {
+  width: 36px;
+  height: 36px;
+  opacity: 0.55;
+  animation: spin-star 3s linear infinite;
+  filter: brightness(1.2);
+  position: relative;
+}
+
+@keyframes spin-star {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 body.is-transitioning,
@@ -824,6 +856,16 @@ text-decoration: none;
   }
   body.is-transitioning .dusti {
     opacity: 0.01;
+  }
+
+  /* Loader: smaller star, lighter grain on mobile */
+  .loader-star {
+    width: 28px;
+    height: 28px;
+  }
+  .loader-grain {
+    opacity: 0.14;
+    animation-duration: 3s;
   }
 
   /* ── Nav: move to bottom, full-width pill ── */

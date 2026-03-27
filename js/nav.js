@@ -312,7 +312,7 @@ function applyFontStagger(el) {
           // Trigger page-transition overlay (same as transition.js)
           if (transitionOverlay) {
             document.body.classList.add('is-transitioning');
-            transitionOverlay.style.display = 'block';
+            transitionOverlay.style.display = 'flex';
             transitionOverlay.style.transition = 'none';
             transitionOverlay.style.opacity = '0';
             void transitionOverlay.offsetWidth;

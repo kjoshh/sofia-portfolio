@@ -18,9 +18,13 @@
   <link href="favicon/apple-touch-icon.png" rel="apple-touch-icon">
   <link href="css/custom.css" rel="stylesheet" type="text/css">
   <meta name="view-transition" content="same-origin">
+  <link rel="preload" href="images-neu/star.png" as="image">
 </head>
 <body>
-  <div class="page-transition" style="display: block; opacity: 1;"></div>
+  <div class="page-transition" style="display: flex; opacity: 1;">
+    <div class="loader-grain"></div>
+    <img src="images-neu/star.png" class="loader-star" alt="" width="40" height="40">
+  </div>
   <div class="dusti"></div>
   <div class="grain"></div>
   <div class="header">
