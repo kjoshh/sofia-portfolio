@@ -119,6 +119,9 @@
       a.addEventListener('click', function (e) {
         e.preventDefault();
         var href = a.getAttribute('href');
+        // Hide the star during exit — it only shows on the NEW page
+        var star = overlay.querySelector('.loader-star');
+        if (star) star.style.display = 'none';
         document.body.classList.add('is-transitioning');
         overlay.style.display = 'flex';
         overlay.style.transition = 'none';

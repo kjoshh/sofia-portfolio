@@ -311,6 +311,9 @@ function applyFontStagger(el) {
           closeDropdown();
           // Trigger page-transition overlay (same as transition.js)
           if (transitionOverlay) {
+            // Hide star during exit — only shows on the NEW page
+            const star = transitionOverlay.querySelector('.loader-star');
+            if (star) star.style.display = 'none';
             document.body.classList.add('is-transitioning');
             transitionOverlay.style.display = 'flex';
             transitionOverlay.style.transition = 'none';
