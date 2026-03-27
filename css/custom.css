@@ -225,6 +225,13 @@ body.is-transitioning .dust {
   column-gap: inherit;
 }
 
+/* Webflow CMS wrappers in gallery — pass layout through to .imgholder children */
+.gall3ry .w-dyn-list,
+.gall3ry .w-dyn-items,
+.gall3ry .w-dyn-item {
+  display: contents;
+}
+
 @media (max-width: 1200px) {
   .archive-grid {
     columns: 4;
