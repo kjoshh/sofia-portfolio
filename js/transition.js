@@ -8,9 +8,16 @@
   document.body.classList.add('is-transitioning');
 
   var fading = false;
+  var startTime = Date.now();
+  var MIN_DISPLAY = 800; // minimum ms the loader stays visible
 
   function fadeOverlay() {
     if (fading) return;
+    var elapsed = Date.now() - startTime;
+    if (elapsed < MIN_DISPLAY) {
+      setTimeout(fadeOverlay, MIN_DISPLAY - elapsed);
+      return;
+    }
     fading = true;
     overlay.style.transition = 'opacity 1500ms ease-out';
     overlay.style.opacity = '0';
@@ -56,15 +63,26 @@
     }, 100);
 
   } else if (heroWrap) {
-    // Project pages: wait for hero image to load
-    var heroImg = heroWrap.querySelector('img');
-    if (heroImg && heroImg.complete && heroImg.naturalHeight > 0) {
+    // Project pages: wait for first visible project images to load
+    var projectImgs = document.querySelectorAll('.imgholder img');
+    var imgCount = Math.min(projectImgs.length, 3); // wait for first 3 images max
+
+    if (imgCount === 0) {
       readyFade();
-    } else if (heroImg) {
-      heroImg.addEventListener('load', readyFade, { once: true });
-      heroImg.addEventListener('error', readyFade, { once: true });
     } else {
-      readyFade();
+      var loaded = 0;
+      function onImgReady() {
+        loaded++;
+        if (loaded >= imgCount) readyFade();
+      }
+      for (var i = 0; i < imgCount; i++) {
+        if (projectImgs[i].complete && projectImgs[i].naturalHeight > 0) {
+          onImgReady();
+        } else {
+          projectImgs[i].addEventListener('load', onImgReady, { once: true });
+          projectImgs[i].addEventListener('error', onImgReady, { once: true });
+        }
+      }
     }
 
   } else if (isAbout) {
