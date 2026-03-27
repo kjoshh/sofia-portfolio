@@ -99,20 +99,6 @@ body {
   animation: grain 2.5s steps(1) infinite;
 }
 
-/* ── Loader spinning star ── */
-.loader-star {
-  width: 36px;
-  height: 36px;
-  opacity: 0.55;
-  animation: spin-star 3s linear infinite;
-  filter: brightness(1.2);
-  position: relative;
-}
-
-@keyframes spin-star {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
 
 body.is-transitioning,
 body.is-transitioning * {
@@ -880,11 +866,7 @@ text-decoration: none;
     opacity: 0.01;
   }
 
-  /* Loader: smaller star, lighter grain on mobile */
-  .loader-star {
-    width: 28px;
-    height: 28px;
-  }
+  /* Loader: lighter grain on mobile */
   .loader-grain {
     opacity: 0.14;
     animation-duration: 3s;
