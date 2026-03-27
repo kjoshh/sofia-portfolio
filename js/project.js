@@ -613,7 +613,11 @@ function updateProNavActive(activeEl) {
   const titleSrc = document.querySelector(".nav-link.project");
   const titleDst = document.querySelector(".mob-proj-title");
   if (titleSrc && titleDst && !titleDst.textContent.trim()) {
-    titleDst.textContent = titleSrc.textContent.trim();
+    // Read only .char-top spans if font stagger has been applied (avoids doubled chars)
+    const tops = titleSrc.querySelectorAll(".char-top");
+    titleDst.textContent = tops.length
+      ? Array.from(tops).map(s => s.textContent).join("")
+      : titleSrc.textContent.trim();
   }
 })();
 
