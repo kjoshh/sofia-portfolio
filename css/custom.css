@@ -99,6 +99,13 @@ body {
   animation: grain 2.5s steps(1) infinite;
 }
 
+/* Firefox: hide loader grain to prevent flash during page transition */
+@supports (-moz-appearance: none) {
+  .loader-grain {
+    display: none;
+  }
+}
+
 /* ── Spinning star loader ── */
 .loader-star {
   position: absolute;
