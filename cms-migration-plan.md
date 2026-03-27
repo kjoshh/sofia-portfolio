@@ -43,7 +43,7 @@ Interaktionen bleiben 1:1 erhalten.
 - Alle 103 Bilder aus `images/` (59MB) nach Cloudinary hochladen
 
 
-### 1.3 Responsive Bilder
+### 1.3 Responsive Bilder ---- done
 Cloudinary generiert automatisch responsive Varianten ueber URL-Transformation:
 ```html
 <!-- Vorher (lokal, keine responsive Varianten): -->
