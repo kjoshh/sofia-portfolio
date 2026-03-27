@@ -27,35 +27,21 @@ Interaktionen bleiben 1:1 erhalten.
 | Archivbilder | Hinzufuegen/entfernen, BW-Flag setzen, Reihenfolge aendern |
 | About-Seite | Greeting-Text bearbeiten |
 | Index-Bilder | Die beiden Hauptbilder tauschen |
+- sort order von projects im nav dropdown
 
 ---
 
 ## Phase 1: Cloudinary Setup
+                                  
 
 
-////gitignore besser anlegen. und ungenutzte sachen aus project löschen
-
-### 1.1 Account erstellen
+### 1.1 Account erstellen ---- done
 - Cloudinary Free Account unter cloudinary.com
 - "Cloud Name" notieren (z.B. `sofia-portfolio`)
 
-### 1.2 Bilder hochladen
-- Alle 103 Bilder aus `images-neu/` (59MB) nach Cloudinary hochladen
-- Ordnerstruktur beibehalten:
-  ```
-  sofia-portfolio/
-    projects/
-      hard-coded/
-        1.jpg ... 19.jpg
-        thumbnail.jpg
-      forgetting-dreams/
-        1.jpg ... 10.jpg
-        thumbnail.jpg
-    archive/
-      1.jpg ... 42.jpg
-    site/
-      logo.png, star.png, rolle.png, heroimg-about.jpg, ...
-  ```
+### 1.2 Bilder hochladen ---- done
+- Alle 103 Bilder aus `images/` (59MB) nach Cloudinary hochladen
+
 
 ### 1.3 Responsive Bilder
 Cloudinary generiert automatisch responsive Varianten ueber URL-Transformation:

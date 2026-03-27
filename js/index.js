@@ -1,3 +1,19 @@
+/* ── Cloudinary image mapping ── */
+const CLOUD_BASE = 'https://res.cloudinary.com/dnvwadmaj/image/upload';
+const cloudImg = {
+  a: 'a_slhax2', b: 'b_ak9wbn', c: 'c_hxtn08', e: 'e_rxsl0p',
+  f: 'f_s9dqff', i: 'i_yxfz2z', l: 'l_cf6bbl', m: 'm_erhdis',
+  o: 'o_qnqb2s', r: 'r_gkqi6b', s: 's_dlbel6', t: 't_knfwzb',
+  u: 'u_evs3to', y: 'y_kdidv6',
+  'heroimg-sofia': 'heroimg-sofia_mnrhrb',
+  'heroimg-sybil': 'heroimg-sybil_zfmylo',
+  'frame-desk': 'frame-desk_tygjtz',
+  'frame-mobile': 'frame-mobile_cb4fun',
+};
+function cloudUrl(key, ext = 'png', transforms = 'f_auto,q_auto') {
+  return `${CLOUD_BASE}/${transforms}/${cloudImg[key]}.${ext}`;
+}
+
 /* ── Refs ── */
 
 const letterField = document.getElementById('letterField');
@@ -144,13 +160,13 @@ for (let i = 0; i < sofiaChars.length; i++) {
 
   const sofiaEl = document.createElement('img');
   sofiaEl.className = 'letter-el';
-  sofiaEl.src = `images/${sc}.png`;
+  sofiaEl.src = cloudUrl(sc);
   sofiaEl.alt = sc;
   letterField.appendChild(sofiaEl);
 
   const sybilEl = document.createElement('img');
   sybilEl.className = 'letter-el';
-  sybilEl.src = `images/${yc}.png`;
+  sybilEl.src = cloudUrl(yc);
   sybilEl.alt = yc;
   letterField.appendChild(sybilEl);
 
@@ -904,8 +920,8 @@ function preloadAssets() {
 
   // Hero + frame images (new Image() to trigger fetch)
   const imgSrcs = [
-    'images/heroimg-sofia.jpg',
-    mobile ? 'images/frame-mobile.png' : 'images/frame-desk.png',
+    cloudUrl('heroimg-sofia', 'jpg'),
+    mobile ? cloudUrl('frame-mobile') : cloudUrl('frame-desk'),
   ];
   const imgPromises = imgSrcs.map(src => new Promise(resolve => {
     const img = new Image();
