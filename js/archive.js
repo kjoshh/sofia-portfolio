@@ -6,9 +6,13 @@ const lenis = new Lenis(isMobile() ? { wrapper: document.body } : {});
 (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(0);
 
 
-/* ── Webflow CMS: apply .bw class from data attribute ── */
-document.querySelectorAll('.archive-grid-item[data-bw="true"]').forEach(item => {
-  item.classList.add('bw');
+/* ── Webflow CMS: apply .bw class via conditional-visibility flag element ── */
+document.querySelectorAll('.archive-grid-item').forEach(item => {
+  const flag = item.querySelector('.bw-flag');
+  if (flag) {
+    item.classList.add('bw');
+    flag.remove(); // clean up, no longer needed in DOM
+  }
 });
 
 /* ── Film-negative wipe: bottom → top on hover ── */
@@ -75,7 +79,7 @@ document.querySelectorAll('.archive-grid-item[data-bw="true"]').forEach(item => 
 /* ── Lightbox ── */
 initLightbox({
   items: document.querySelectorAll(".archive-grid-item"),
-  getSrc: (item) => item.dataset.full
+  getSrc: (item) => { const img = item.querySelector("img"); return img ? img.src : ""; }
 });
 
 
