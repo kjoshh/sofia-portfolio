@@ -7,6 +7,7 @@
 function initLightbox({ items, getSrc, canOpen }) {
   const overlay = document.getElementById("lb-overlay");
   const lbImg = document.getElementById("lb-img");
+  const lbSpinner = document.getElementById("lb-spinner");
   const lbCounterCurrent = document.querySelector(".lb-counter-current");
   const lbCounterTotal = document.querySelector(".lb-counter-total");
   if (!overlay || !lbImg) return;
@@ -14,6 +15,7 @@ function initLightbox({ items, getSrc, canOpen }) {
   const list = Array.from(items);
   let current = 0;
   let previousFocus = null;
+  const preloadCache = new Map();
 
   /* Focusable elements inside the lightbox for focus-trapping */
   const focusableEls = overlay.querySelectorAll('button');
@@ -34,9 +36,47 @@ function initLightbox({ items, getSrc, canOpen }) {
     }
   }
 
+  /* ── Loading state ── */
+  function showLoading() {
+    lbImg.classList.add("loading");
+    if (lbSpinner) lbSpinner.classList.add("visible");
+  }
+
+  function hideLoading() {
+    lbImg.classList.remove("loading");
+    if (lbSpinner) lbSpinner.classList.remove("visible");
+  }
+
+  /* ── Preload adjacent images ── */
+  function preloadAdjacent(index) {
+    [-2, -1, 1, 2].forEach(offset => {
+      const i = (index + offset + list.length) % list.length;
+      const src = getSrc(list[i], i);
+      if (!preloadCache.has(src)) {
+        const img = new Image();
+        img.src = src;
+        preloadCache.set(src, img);
+      }
+    });
+  }
+
+  /* ── Show image with loading handling ── */
+  function showImage(index) {
+    const src = getSrc(list[index], index);
+    showLoading();
+    lbImg.onload = () => {
+      hideLoading();
+      lbImg.onload = null;
+    };
+    lbImg.src = src;
+    // If already cached, onload fires synchronously or instantly
+    if (lbImg.complete) hideLoading();
+    preloadAdjacent(index);
+  }
+
   function open(index) {
     current = index;
-    lbImg.src = getSrc(list[current], current);
+    showImage(current);
     previousFocus = document.activeElement;
     overlay.classList.add("open");
     if (lbCounterCurrent) lbCounterCurrent.textContent = String(current + 1).padStart(2, "0");
@@ -47,19 +87,20 @@ function initLightbox({ items, getSrc, canOpen }) {
 
   function close() {
     overlay.classList.remove("open");
+    hideLoading();
     /* Restore focus to the element that opened the lightbox */
     if (previousFocus) { previousFocus.focus(); previousFocus = null; }
   }
 
   function prev() {
     current = (current - 1 + list.length) % list.length;
-    lbImg.src = getSrc(list[current], current);
+    showImage(current);
     updateProgress();
   }
 
   function next() {
     current = (current + 1) % list.length;
-    lbImg.src = getSrc(list[current], current);
+    showImage(current);
     updateProgress();
   }
 
