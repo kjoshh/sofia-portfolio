@@ -1,6 +1,12 @@
 /* ── Mobile detection ── */
 const isMobile = () => window.matchMedia('(max-width: 991px)').matches;
 
+/* ── Debounce utility ── */
+function debounce(fn, ms) {
+  let t;
+  return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
 /* ── Overview cell height: all images fit in viewport ── */
 // Measure safe-area-inset-bottom for viewport calculations
 const _sabEl = document.createElement('div');
@@ -41,7 +47,7 @@ function updateOverviewCellHeight() {
   }
 }
 updateOverviewCellHeight();
-window.addEventListener("resize", updateOverviewCellHeight);
+window.addEventListener("resize", debounce(updateOverviewCellHeight, 150));
 
 
 /* ── Imgholder cursor grow (overview layout only) ── */
@@ -134,11 +140,11 @@ if (!isMobile()) {
 let activeLayout = "layout-0-gall3ry";
 
 // Reposition nav on resize when in layout-0
-window.addEventListener("resize", () => {
+window.addEventListener("resize", debounce(() => {
   if (activeLayout === "layout-0-gall3ry" && !isMobile()) {
     gsap.set(proNav, { y: getLayout0NavY() });
   }
-});
+}, 150));
 
 
 /* ── Entrance reveal animation ── */
