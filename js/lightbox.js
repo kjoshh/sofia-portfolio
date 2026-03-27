@@ -16,6 +16,7 @@ function initLightbox({ items, getSrc, canOpen }) {
   let current = 0;
   let previousFocus = null;
   const preloadCache = new Map();
+  let spinnerTimer = null;
 
   /* Focusable elements inside the lightbox for focus-trapping */
   const focusableEls = overlay.querySelectorAll('button');
@@ -39,12 +40,18 @@ function initLightbox({ items, getSrc, canOpen }) {
   /* ── Loading state ── */
   function showLoading() {
     lbImg.classList.add("loading");
-    if (lbSpinner) lbSpinner.classList.add("visible");
+    if (lbSpinner) {
+      clearTimeout(spinnerTimer);
+      spinnerTimer = setTimeout(() => lbSpinner.classList.add("visible"), 150);
+    }
   }
 
   function hideLoading() {
     lbImg.classList.remove("loading");
-    if (lbSpinner) lbSpinner.classList.remove("visible");
+    if (lbSpinner) {
+      clearTimeout(spinnerTimer);
+      lbSpinner.classList.remove("visible");
+    }
   }
 
   /* ── Preload adjacent images ── */
