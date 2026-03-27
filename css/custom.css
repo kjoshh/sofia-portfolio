@@ -8,6 +8,8 @@
 
 html {
   height: 100%;
+  background-color: #292823;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -23,6 +25,26 @@ img {
   max-width: 100%;
   vertical-align: middle;
   display: inline-block;
+  border: 0;
+}
+
+button {
+  overflow: visible;
+  text-transform: none;
+  -webkit-appearance: button;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  margin: 0;
+}
+
+button::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+button[disabled] {
+  cursor: default;
 }
 
 /* ══════════════════════════════════════════
