@@ -9,7 +9,7 @@
 
   var fading = false;
   var startTime = Date.now();
-  var MIN_DISPLAY = 800; // minimum ms the loader stays visible
+  var MIN_DISPLAY = 300; // minimum ms the loader stays visible
 
   function fadeOverlay() {
     if (fading) return;
@@ -19,7 +19,7 @@
       return;
     }
     fading = true;
-    overlay.style.transition = 'opacity 1500ms ease-out';
+    overlay.style.transition = 'opacity 800ms ease-out';
     overlay.style.opacity = '0';
     overlay.addEventListener('transitionend', function handler() {
       if (overlay.style.opacity === '0') {
