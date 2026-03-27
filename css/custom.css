@@ -213,7 +213,7 @@ body.is-transitioning .grain::after {
 .archive-loader {
   position: fixed;
   inset: 0;
-  z-index: var(--z-transition);
+  z-index: 10003;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -224,6 +224,11 @@ body.is-transitioning .grain::after {
 .archive-loader.is-hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+/* Hide items until JS reveal (prevents flash before GSAP runs) */
+.archive-page .archive-grid-item {
+  opacity: 0;
 }
 
 .archive-loader-grain {
@@ -1382,7 +1387,8 @@ text-decoration: none;
 
 @font-face {
   font-family: Post;
-  src: url('../fonts/Post.otf') format("opentype");
+  src: url('../fonts/Post.woff2') format("woff2"),
+       url('../fonts/Post.otf') format("opentype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
