@@ -135,10 +135,6 @@ body.is-transitioning * {
   cursor: wait !important;
 }
 
-body.is-transitioning .grain::after {
-  opacity: 0.35;
-}
-
 /* ══════════════════════════════════════════
    SHARED — Dust / Noise overlays
    ══════════════════════════════════════════ */
@@ -886,14 +882,6 @@ text-decoration: none;
   .grain::after {
     opacity: 0.16;
     animation-duration: 3s;
-  }
-
-  /* Softer transition boost on mobile */
-  body.is-transitioning .grain::after {
-    opacity: 0.22;
-  }
-  body.is-transitioning .dusti {
-    opacity: 0.01;
   }
 
   /* Loader: lighter grain on mobile */
