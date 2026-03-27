@@ -1025,6 +1025,11 @@ text-decoration: none;
   .mob-sheet-grid::-webkit-scrollbar {
     display: none;
   }
+  /* Webflow CMS wraps items in .w-dyn-list > .w-dyn-items — pass flex through */
+  .mob-sheet-grid .w-dyn-list,
+  .mob-sheet-grid .w-dyn-items {
+    display: contents;
+  }
 
   .mob-sheet-grid.is-dragging {
     cursor: grabbing;
@@ -1616,6 +1621,11 @@ text-decoration: none;
   display: flex;
   gap: 5px;
   padding: 5px 8px 8px;
+}
+/* Webflow CMS wraps items in .w-dyn-list > .w-dyn-items — pass flex through */
+.desk-nav-grid .w-dyn-list,
+.desk-nav-grid .w-dyn-items {
+  display: contents;
 }
 
 .desk-nav-cell {
