@@ -354,12 +354,14 @@ document.querySelectorAll(".about-section-title").forEach(title => {
 (function entranceReveal() {
   const mob = isMobile();
   const aboutBg = document.querySelector(".about-bg");
+  const heroImg = aboutBg ? aboutBg.querySelector("img") : null;
   const greeting = document.querySelector(".about-greeting");
   const scrollHint = document.querySelector(".about-scroll-hint");
   const mainNav = document.querySelector(".main-nav");
   const contentSection = document.querySelector(".about-content-mobile");
   const mobSheet = document.getElementById("mobSheet");
 
+  function startReveal() {
   const tl = gsap.timeline({ delay: 0.25 });
 
   // Step 1: Hero image fades in with gentle scale
@@ -489,6 +491,17 @@ document.querySelectorAll(".about-section-title").forEach(title => {
       }
     }
   });
+  } // end startReveal
+
+  // Wait for hero image before starting entrance
+  if (heroImg && heroImg.complete && heroImg.naturalWidth) {
+    startReveal();
+  } else if (heroImg) {
+    heroImg.addEventListener("load", startReveal, { once: true });
+    heroImg.addEventListener("error", startReveal, { once: true });
+  } else {
+    startReveal();
+  }
 })();
 
 
