@@ -1383,11 +1383,11 @@ text-decoration: none;
   }
 }
 
-/* ── Firefox: render grain behind loader to prevent flash on fadeout ── */
+/* ── Firefox: put grain BEHIND loader so it pre-renders while loader is visible ── */
 @supports (-moz-appearance: none) {
   .grain,
   .dusti {
-    z-index: calc(var(--z-loader) + 1);
+    z-index: calc(var(--z-loader) - 1);
   }
 }
 
