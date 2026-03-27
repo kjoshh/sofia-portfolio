@@ -2093,6 +2093,7 @@ html:has(body.landing-page) {
   position: absolute;
   width: auto;
   height: 46px; /* fallback; JS sets actual value from frame width */
+  opacity: 0; /* hidden until JS animates in — prevents flash on cached reload */
   will-change: transform, opacity;
   user-select: none;
   -webkit-user-drag: none;
