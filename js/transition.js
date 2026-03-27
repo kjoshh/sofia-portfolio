@@ -4,12 +4,6 @@
   var overlay = document.querySelector('.page-transition');
   if (!overlay) return;
 
-  // Firefox: make overlay not fully opaque so it can't skip rendering layers behind it
-  var isFirefox = CSS.supports('-moz-appearance', 'none');
-  if (isFirefox) {
-    overlay.style.backgroundColor = 'rgba(41, 40, 35, 0.99)';
-  }
-
   // --- Transition In (page just loaded) ---
   document.body.classList.add('is-transitioning');
 
