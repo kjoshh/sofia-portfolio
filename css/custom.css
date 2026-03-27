@@ -218,6 +218,13 @@ body.is-transitioning .dust {
   padding: 0;
 }
 
+/* Webflow CMS wraps items in .w-dyn-list > .w-dyn-items — inherit column layout */
+.archive-grid .w-dyn-list,
+.archive-grid .w-dyn-items {
+  columns: inherit;
+  column-gap: inherit;
+}
+
 @media (max-width: 1200px) {
   .archive-grid {
     columns: 4;

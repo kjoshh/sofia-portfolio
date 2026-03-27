@@ -6,6 +6,11 @@ const lenis = new Lenis(isMobile() ? { wrapper: document.body } : {});
 (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(0);
 
 
+/* ── Webflow CMS: apply .bw class from data attribute ── */
+document.querySelectorAll('.archive-grid-item[data-bw="true"]').forEach(item => {
+  item.classList.add('bw');
+});
+
 /* ── Film-negative wipe: bottom → top on hover ── */
 (function () {
   document.querySelectorAll(".archive-grid-item").forEach(item => {
