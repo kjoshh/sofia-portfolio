@@ -603,7 +603,11 @@ function updateProNavActive(activeEl) {
 /* ── Lightbox (overview layout) ── */
 initLightbox({
   items: document.querySelectorAll(".imgholder"),
-  getSrc: (holder) => holder.querySelector("img").src,
+  getSrc: (holder) => {
+    const src = holder.querySelector("img").src;
+    // Swap Cloudinary w_800 for w_2400 in lightbox for full-res
+    return src.replace(/\/w_\d+,/, '/w_2400,');
+  },
   canOpen: () => activeLayout === "layout-1-gall3ry"
 });
 
