@@ -76,13 +76,6 @@ function applyFontStagger(el) {
 
 
 (function () {
-  // Set Webflow modifier classes expected by webflow.css
-  const html = document.documentElement;
-  html.classList.add('w-mod-js');
-  if ('ontouchstart' in window) html.classList.add('w-mod-touch');
-  // w-mod-ix3 tells forgetting-dreams.html that interactions are handled, making .info-para visible
-  html.classList.add('w-mod-ix3');
-
   // Mark active nav link based on current URL
   const path = window.location.pathname.split('/').pop() || 'index.html';
 

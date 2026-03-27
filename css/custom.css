@@ -1,11 +1,33 @@
 /* ══════════════════════════════════════════
-   SHARED — Base Overrides
+   SHARED — Base Resets
    ══════════════════════════════════════════ */
 
-/* Hide info paragraphs until Webflow IX3 interactions are ready (prevents FOUC on project pages) */
-html.w-mod-js:not(.w-mod-ix3) :is(.info-para) {
-  visibility: hidden !important;
+* {
+  box-sizing: border-box;
 }
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #333;
+}
+
+img {
+  max-width: 100%;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+/* ══════════════════════════════════════════
+   SHARED — Base Overrides
+   ══════════════════════════════════════════ */
 
 body {
   background-color: #292823;
