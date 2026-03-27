@@ -88,7 +88,7 @@ const revealed = new Set();
 let staggerQueue = [];
 let staggerTimer = null;
 const STAGGER_DELAY = 0.06;
-let BATCH_WINDOW = 500;        // longer initial window for CDN images
+let BATCH_WINDOW = 750;        // longer initial window for CDN images
 let firstFlushDone = false;
 
 function flushStaggerQueue() {
