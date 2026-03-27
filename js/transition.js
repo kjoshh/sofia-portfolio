@@ -19,7 +19,7 @@
       return;
     }
     fading = true;
-    overlay.style.transition = 'opacity 800ms ease-out';
+    overlay.style.transition = 'opacity 1200ms ease-out';
     overlay.style.opacity = '0';
     overlay.addEventListener('transitionend', function handler() {
       if (overlay.style.opacity === '0') {

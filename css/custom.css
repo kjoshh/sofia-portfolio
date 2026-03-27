@@ -95,7 +95,7 @@ body {
   height: 400%;
   background: url('../images/noise.png') repeat;
   background-size: 300px 300px;
-  opacity: 0.4;
+  opacity: 0.3;
   animation: grain 2.5s steps(1) infinite;
 }
 
