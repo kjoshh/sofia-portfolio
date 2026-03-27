@@ -144,13 +144,13 @@ for (let i = 0; i < sofiaChars.length; i++) {
 
   const sofiaEl = document.createElement('img');
   sofiaEl.className = 'letter-el';
-  sofiaEl.src = `images-neu/${sc}.png`;
+  sofiaEl.src = `https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/${sc}.png`;
   sofiaEl.alt = sc;
   letterField.appendChild(sofiaEl);
 
   const sybilEl = document.createElement('img');
   sybilEl.className = 'letter-el';
-  sybilEl.src = `images-neu/${yc}.png`;
+  sybilEl.src = `https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/${yc}.png`;
   sybilEl.alt = yc;
   letterField.appendChild(sybilEl);
 
@@ -902,8 +902,8 @@ window.addEventListener('resize', () => {
 function preloadImages() {
   const mobile = isMobile();
   const srcs = [
-    'images-neu/heroimg-sofia.jpg',
-    mobile ? 'images-neu/frame-mobile.png' : 'images-neu/frame-desk.png',
+    'https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/heroimg-sofia.jpg',
+    mobile ? 'https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/frame-mobile.png' : 'https://cdn.jsdelivr.net/gh/kjoshh/sofia-portfolio@main/images-neu/frame-desk.png',
   ];
 
   const promises = srcs.map(src => new Promise(resolve => {
