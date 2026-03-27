@@ -1,4 +1,16 @@
 /* ── Cloudinary responsive upgrade ── */
+// Preload w_1600 variants in background after initial page load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.imgholder img').forEach(img => {
+      const src = img.getAttribute('src');
+      if (!src || !src.includes('res.cloudinary.com')) return;
+      const big = src.replace(/\/w_\d+,/, '/w_1600,');
+      if (big !== src) new Image().src = big;
+    });
+  }, 1000);
+});
+
 function upgradeCloudinaryImages(selector, targetWidth) {
   document.querySelectorAll(selector).forEach(img => {
     const src = img.getAttribute('src');
