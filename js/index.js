@@ -909,7 +909,7 @@ function preloadImages() {
   const promises = srcs.map(src => new Promise(resolve => {
     const img = new Image();
     img.onload = resolve;
-    img.onerror = resolve;   // don't block on failure
+    img.onerror = () => { console.warn('Failed to preload:', src); resolve(); };
     img.src = src;
   }));
 
@@ -975,8 +975,11 @@ preloadImages().then(() => {
   let W, H;
 
   function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    requestAnimationFrame(() => {
+      W = canvas.width = vw;
+      H = canvas.height = vh;
+    });
   }
   resize();
   window.addEventListener('resize', resize);
