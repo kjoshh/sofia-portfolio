@@ -80,46 +80,71 @@ gsap.registerPlugin(ScrollTrigger);
 const items = document.querySelectorAll(".archive-grid-item");
 gsap.set(items, { y: 24, opacity: 0 });
 
-/* Gate reveal on both viewport entry AND image loaded */
-const entered = new Set();
-const loaded  = new Set();
+const entered  = new Set();
+const loaded   = new Set();
+const revealed = new Set();
 
-function revealItem(item, delay) {
-  if (entered.has(item) && loaded.has(item)) {
+/* ---- Batched stagger queue ---- */
+let staggerQueue = [];
+let staggerTimer = null;
+const STAGGER_DELAY = 0.06;
+const BATCH_WINDOW  = 120;
+
+function flushStaggerQueue() {
+  staggerTimer = null;
+  if (!staggerQueue.length) return;
+
+  staggerQueue.sort((a, b) =>
+    a.getBoundingClientRect().left - b.getBoundingClientRect().left
+  );
+
+  staggerQueue.forEach((item, i) => {
+    if (revealed.has(item)) return;
+    revealed.add(item);
     gsap.to(item, {
       y: 0,
       opacity: 1,
       duration: 0.7,
-      delay: delay || 0,
+      delay: i * STAGGER_DELAY,
       ease: "power3.out",
     });
+  });
+
+  staggerQueue = [];
+}
+
+function enqueueReveal(item) {
+  if (revealed.has(item)) return;
+  if (!entered.has(item) || !loaded.has(item)) return;
+  staggerQueue.push(item);
+  if (!staggerTimer) {
+    staggerTimer = setTimeout(flushStaggerQueue, BATCH_WINDOW);
   }
 }
 
+/* ---- Image load tracking ---- */
 items.forEach(item => {
   const img = item.querySelector("img");
   if (!img) return;
+
   if (img.complete && img.naturalHeight > 0) {
     loaded.add(item);
   } else {
-    img.addEventListener("load", () => {
+    function onReady() {
       loaded.add(item);
-      revealItem(item, 0);
-    }, { once: true });
+      enqueueReveal(item);
+    }
+    img.addEventListener("load", onReady, { once: true });
+    img.addEventListener("error", onReady, { once: true });
   }
 });
 
+/* ---- Scroll entry tracking ---- */
 ScrollTrigger.batch(items, {
   onEnter: (batch) => {
-    batch.sort((a, b) =>
-      a.getBoundingClientRect().left - b.getBoundingClientRect().left
-    );
-    batch.forEach((item, i) => {
+    batch.forEach(item => {
       entered.add(item);
-      const staggerDelay = i * 0.06;
-      /* store delay so the load callback can use it */
-      item._revealDelay = staggerDelay;
-      gsap.delayedCall(staggerDelay, () => revealItem(item, 0));
+      enqueueReveal(item);
     });
   },
   once: true,
