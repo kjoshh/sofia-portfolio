@@ -157,6 +157,14 @@ body.is-transitioning * {
   overflow: hidden;
 }
 
+/* Firefox: push grain behind the transition overlay to prevent flash */
+@supports (-moz-appearance: none) {
+  .grain,
+  .dusti {
+    z-index: calc(var(--z-loader) - 1);
+  }
+}
+
 .grain::after {
   content: "";
   position: absolute;
