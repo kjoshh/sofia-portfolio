@@ -157,11 +157,10 @@ body.is-transitioning * {
   overflow: hidden;
 }
 
-/* Firefox: push grain behind the transition overlay to prevent flash */
+/* Firefox: raise transition above grain to prevent flash */
 @supports (-moz-appearance: none) {
-  .grain,
-  .dusti {
-    z-index: calc(var(--z-loader) - 1);
+  .page-transition {
+    z-index: calc(var(--z-grain) + 1);
   }
 }
 
