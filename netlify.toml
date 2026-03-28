@@ -8,7 +8,7 @@
   to = "/404.html"
   status = 404
 
-# Cache Cloudinary images aggressively (they have unique hashes)
+# Cache headers
 [[headers]]
   for = "/*.html"
   [headers.values]

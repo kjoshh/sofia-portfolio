@@ -2,88 +2,86 @@
 /**
  * build.js — Static site generator for Sofia Portfolio
  *
- * Reads CMS data from _data/ and generates final HTML into dist/.
- * Triggered automatically by Netlify on every push (including Decap CMS edits).
+ * Fetches CMS data from Sanity and generates final HTML into dist/.
+ * Triggered automatically by Netlify on every push.
  *
  * Usage: node build.js
  */
 
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 
 const ROOT = __dirname;
 const DIST = path.join(ROOT, 'dist');
-const DATA = path.join(ROOT, '_data');
-const CLOUD = 'dnvwadmaj';
-const CDN = `https://res.cloudinary.com/${CLOUD}/image/upload`;
+const SANITY_PROJECT = '4g1grp0d';
+const SANITY_DATASET = 'production';
+const SANITY_CDN = `https://cdn.sanity.io/images/${SANITY_PROJECT}/${SANITY_DATASET}`;
 
 // ── Helpers ─────────────────────────────────────────────────────
 
 /**
- * Check if a value is a local file path (e.g. /uploads/photo.jpg)
- * vs a Cloudinary public ID or URL.
+ * Parse a Sanity image asset ref (e.g. "image-abc123-300x200-jpg")
+ * into a CDN-usable path segment ("abc123-300x200.jpg").
  */
-function isLocalPath(value) {
-  return value && (value.startsWith('/') || value.startsWith('./'));
+function sanityRefToPath(ref) {
+  // ref format: image-{id}-{dimensions}-{ext}
+  const parts = ref.replace(/^image-/, '');
+  const lastDash = parts.lastIndexOf('-');
+  const ext = parts.substring(lastDash + 1);
+  const rest = parts.substring(0, lastDash);
+  return `${rest}.${ext}`;
 }
 
 /**
- * Extract Cloudinary public ID from a full URL or return as-is if already an ID.
- */
-function parseCloudinaryValue(value) {
-  if (!value) return { id: '', ext: 'jpg' };
-  if (value.startsWith('http')) {
-    const match = value.match(/\/upload\/(?:v\d+\/)?(.+)$/);
-    if (match) {
-      const fullPath = match[1];
-      const dotIdx = fullPath.lastIndexOf('.');
-      if (dotIdx > -1) {
-        return { id: fullPath.substring(0, dotIdx), ext: fullPath.substring(dotIdx + 1) };
-      }
-      return { id: fullPath, ext: 'jpg' };
-    }
-  }
-  const dotIdx = value.lastIndexOf('.');
-  if (dotIdx > -1 && dotIdx > value.length - 6) {
-    return { id: value.substring(0, dotIdx), ext: value.substring(dotIdx + 1) };
-  }
-  return { id: value, ext: 'jpg' };
-}
-
-/**
- * Generate image src — handles both local paths and Cloudinary IDs.
- * Local paths are used as-is; Cloudinary IDs get transformed URLs.
+ * Generate image src from a Sanity image object.
+ * Accepts { asset: { _ref } } or a raw URL string.
  */
 function imgSrc(value, { width } = {}) {
-  if (isLocalPath(value)) return value;
-  const { id, ext } = parseCloudinaryValue(value);
-  const transforms = width ? `w_${width},f_auto,q_auto` : 'f_auto,q_auto';
-  return `${CDN}/${transforms}/${id}.${ext}`;
+  if (!value) return '';
+  if (typeof value === 'string') return value; // already a URL
+  const ref = value.asset?._ref || value.asset?._id;
+  if (!ref) return '';
+  const imgPath = sanityRefToPath(ref);
+  const params = width ? `?w=${width}&auto=format` : '?auto=format';
+  return `${SANITY_CDN}/${imgPath}${params}`;
 }
 
 /**
- * Generate srcset attribute — for Cloudinary images generates responsive widths,
- * for local images just uses the path directly.
+ * Generate srcset attribute from a Sanity image object.
  */
 function srcset(value, { sizes = '20vw' } = {}) {
-  if (isLocalPath(value)) {
-    return `src="${value}" sizes="${sizes}"`;
-  }
-  const { id, ext } = parseCloudinaryValue(value);
+  if (!value) return 'src=""';
+  if (typeof value === 'string') return `src="${value}" sizes="${sizes}"`;
+  const ref = value.asset?._ref || value.asset?._id;
+  if (!ref) return 'src=""';
+  const imgPath = sanityRefToPath(ref);
   const widths = [500, 800, 1200, 1600, 2400];
   const set = widths
-    .map(w => `${CDN}/w_${w},f_auto,q_auto/${id}.${ext} ${w}w`)
+    .map(w => `${SANITY_CDN}/${imgPath}?w=${w}&auto=format ${w}w`)
     .join(',\n             ');
-  return `src="${CDN}/w_400,f_auto,q_auto/${id}.${ext}"
+  return `src="${SANITY_CDN}/${imgPath}?w=400&auto=format"
          srcset="${set}"
          sizes="${sizes}"`;
 }
 
-// Keep cloudUrl as alias for imgSrc (used in archive data-full etc.)
-function cloudUrl(value, opts) { return imgSrc(value, opts); }
+function cloudUrl(value) { return imgSrc(value); }
 
-function readJSON(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+/**
+ * Fetch data from Sanity GROQ API (read-only, no token needed for public dataset).
+ */
+function groq(query) {
+  return new Promise((resolve, reject) => {
+    const url = `https://${SANITY_PROJECT}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent(query)}`;
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', (c) => data += c);
+      res.on('end', () => {
+        if (res.statusCode >= 400) return reject(new Error(`Sanity ${res.statusCode}: ${data}`));
+        resolve(JSON.parse(data).result);
+      });
+    }).on('error', reject);
+  });
 }
 
 function ensureDir(dir) {
@@ -107,30 +105,36 @@ function copyRecursive(src, dest, skip = new Set()) {
   }
 }
 
-// ── Load CMS Data ───────────────────────────────────────────────
+// ── Load CMS Data from Sanity ───────────────────────────────────
 
-function loadProjects() {
-  const dir = path.join(DATA, 'projects');
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir)
-    .filter(f => f.endsWith('.json'))
-    .map(f => readJSON(path.join(dir, f)))
-    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+async function loadProjects() {
+  const results = await groq(`*[_type == "project"] | order(sortOrder asc) {
+    title,
+    "slug": slug.current,
+    thumbnail,
+    gallery,
+    "info_text": infoText,
+    "sort_order": sortOrder
+  }`);
+  return results;
 }
 
-function loadArchive() {
-  const file = path.join(DATA, 'archive.json');
-  if (!fs.existsSync(file)) return [];
-  const data = readJSON(file);
-  // Support both array (direct) and {body: [...]} (Decap CMS wraps file collections)
-  const items = Array.isArray(data) ? data : (data.body || []);
-  return items.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+async function loadArchive() {
+  const results = await groq(`*[_type == "archiveImage"] | order(sortOrder asc) {
+    image,
+    "is_bw": isBw,
+    "sort_order": sortOrder
+  }`);
+  return results;
 }
 
-function loadSettings() {
-  const file = path.join(DATA, 'settings.json');
-  if (!fs.existsSync(file)) return {};
-  return readJSON(file);
+async function loadSettings() {
+  const result = await groq(`*[_type == "siteSettings"][0] {
+    "greeting_line1": greetingLine1,
+    "greeting_line2": greetingLine2,
+    "about_hero": aboutHero
+  }`);
+  return result || {};
 }
 
 // ── HTML Generators ─────────────────────────────────────────────
@@ -152,9 +156,9 @@ function genMobNav(projects, sizes = '20vw') {
 }
 
 function genGalleryImages(gallery) {
-  return gallery.map((id, i) => {
+  return gallery.map((img, i) => {
     const num = i + 1;
-    return `      <div id="img${num}" class="imgholder hovv"><img ${srcset(id)}
+    return `      <div id="img${num}" class="imgholder hovv"><img ${srcset(img)}
          loading="lazy" alt="" class="pro-img hovv">
       </div>`;
   }).join('\n');
@@ -172,7 +176,7 @@ function genInfoText(text) {
 function genArchiveGrid(items) {
   return items.map(item => {
     const bwClass = item.is_bw ? ' bw' : '';
-    return `    <div class="archive-grid-item${bwClass}" data-full="${cloudUrl(item.image)}"><img crossorigin="anonymous" ${srcset(item.image, { sizes: '(max-width: 768px) 50vw, 25vw' })}
+    return `    <div class="archive-grid-item${bwClass}" data-full="${imgSrc(item.image)}"><img crossorigin="anonymous" ${srcset(item.image, { sizes: '(max-width: 768px) 50vw, 25vw' })}
          loading="lazy" alt=""></div>`;
   }).join('\n');
 }
@@ -246,7 +250,7 @@ function buildAboutPage(projects, settings) {
   }
 
   // Replace about hero image
-  if (settings.about_hero) {
+  if (settings.about_hero && settings.about_hero.asset) {
     html = html.replace(
       /(<div class="about-bg">\s*<img[^>]*?)src="[^"]*"[\s\S]*?sizes="[^"]*"/,
       `$1${srcset(settings.about_hero, { sizes: '50vw' })}`
@@ -320,13 +324,15 @@ function buildJS(settings) {
 
 // ── Main ────────────────────────────────────────────────────────
 
-function main() {
+async function main() {
   console.log('Building Sofia Portfolio...\n');
 
-  // Load data
-  const projects = loadProjects();
-  const archiveItems = loadArchive();
-  const settings = loadSettings();
+  // Load data from Sanity
+  const [projects, archiveItems, settings] = await Promise.all([
+    loadProjects(),
+    loadArchive(),
+    loadSettings(),
+  ]);
 
   console.log(`  ${projects.length} projects`);
   console.log(`  ${archiveItems.length} archive images`);
@@ -339,21 +345,14 @@ function main() {
 
   // Copy static files to dist (skip build artifacts and source-only dirs)
   const skip = new Set([
-    'dist', 'node_modules', '_data', 'templates', 'admin',
+    'dist', 'node_modules', '_data', 'templates', 'admin', 'studio',
     'build.js', 'serve.mjs', 'screenshot.mjs', 'migrate-images.js',
-    'cloudinary-map.json', 'cms-migration-plan.md',
+    'migrate-to-sanity.js', 'cloudinary-map.json', 'cms-migration-plan.md',
     'temporary screenshots', '.git', '.claude', 'CLAUDE.md',
     'skills-lock.json', 'package.json', 'package-lock.json'
   ]);
   copyRecursive(ROOT, DIST, skip);
   console.log('  Copied static files to dist/\n');
-
-  // Copy admin panel to dist
-  const adminSrc = path.join(ROOT, 'admin');
-  if (fs.existsSync(adminSrc)) {
-    copyRecursive(adminSrc, path.join(DIST, 'admin'));
-    console.log('  Copied admin/ panel\n');
-  }
 
   // Generate pages
   buildProjectPages(projects);
@@ -378,4 +377,4 @@ function main() {
   console.log('\nDone! Output in dist/');
 }
 
-main();
+main().catch(err => { console.error(err); process.exit(1); });
