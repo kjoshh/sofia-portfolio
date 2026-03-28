@@ -348,11 +348,16 @@ function switchLayoutHandler(newLayout) {
   activeLayout = newLayout;
   const imgholders = Array.from(gall3ry.querySelectorAll(".imgholder"));
 
-  // Update sizes attribute so browser picks correct srcset variant per layout
-  if (newLayout === "layout-2-gall3ry") {
-    updateImageSizes('.imgholder img', '70vw');
-  } else if (newLayout === "layout-1-gall3ry" || newLayout === "layout-0-gall3ry") {
-    updateImageSizes('.imgholder img', '20vw');
+  // Update sizes attribute so browser picks correct srcset variant per layout.
+  // On mobile, defer the update until after the Flip animation completes —
+  // changing sizes mid-animation triggers a visible srcset swap on real devices.
+  const isMob = isMobile();
+  if (!isMob) {
+    if (newLayout === "layout-2-gall3ry") {
+      updateImageSizes('.imgholder img', '70vw');
+    } else if (newLayout === "layout-1-gall3ry" || newLayout === "layout-0-gall3ry") {
+      updateImageSizes('.imgholder img', '20vw');
+    }
   }
 
   // Sequence counter: show/hide based on layout
@@ -371,7 +376,6 @@ function switchLayoutHandler(newLayout) {
   // Safety: if a previous transition was interrupted mid-Flip, Lenis may still be stopped
   // and container may still have a stale inline height lock. Clean up before proceeding.
   const container = document.querySelector(".gall3ry-container");
-  const isMob = isMobile();
   if (isMob) {
     lenis.start();
     container.style.height = "";
@@ -399,7 +403,10 @@ function switchLayoutHandler(newLayout) {
       proNav.classList.remove("transparent");
       gsap.fromTo(imgholders,
         { opacity: 0 },
-        { opacity: 1, duration: 0.6, stagger: 0.03, ease: "power2.out", onComplete: () => { lenis.resize(); } }
+        { opacity: 1, duration: 0.6, stagger: 0.03, ease: "power2.out", onComplete: () => {
+          updateImageSizes('.imgholder img', newLayout === "layout-2-gall3ry" ? '70vw' : '20vw');
+          lenis.resize();
+        } }
       );
     }, 350);
     return;
@@ -499,7 +506,15 @@ function switchLayoutHandler(newLayout) {
           container.style.height = "";
           container.style.overflow = "";
         }
-        if (isMob) lenis.start();
+        if (isMob) {
+          lenis.start();
+          // Deferred sizes update on mobile — avoids visible srcset swap during animation
+          if (newLayout === "layout-2-gall3ry") {
+            updateImageSizes('.imgholder img', '70vw');
+          } else if (newLayout === "layout-1-gall3ry" || newLayout === "layout-0-gall3ry") {
+            updateImageSizes('.imgholder img', '20vw');
+          }
+        }
         lenis.resize();
       });
     }
