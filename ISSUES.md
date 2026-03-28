@@ -24,8 +24,8 @@
 
 ## Medium Priority
 
-### 7. Inline z-index `99999` vs CSS variable `--z-loader: 10003`
-The inline `<style>` in HTML files uses `z-index:99999` for `.page-transition`, conflicting with the CSS variable system.
+### ~~7. Inline z-index `99999` vs CSS variable `--z-loader: 10003`~~ ✅ (non-issue)
+~~Intentional: inline style ensures loader covers everything before CSS loads. `custom.css` overrides it once parsed.~~
 
 ### ~~8. WebGL breakpoint mismatch in `js/about.js`~~ ✅
 ~~Hardcoded `768px` check for disabling WebGL, but CSS breakpoints use `991px`. WebGL may load on tablets where it shouldn't.~~
