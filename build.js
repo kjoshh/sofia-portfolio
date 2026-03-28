@@ -14,6 +14,7 @@ const https = require('https');
 
 const ROOT = __dirname;
 const DIST = path.join(ROOT, 'dist');
+const BUILD_VERSION = Date.now();
 const SANITY_PROJECT = '4g1grp0d';
 const SANITY_DATASET = 'production';
 const SANITY_CDN = `https://cdn.sanity.io/images/${SANITY_PROJECT}/${SANITY_DATASET}`;
@@ -373,6 +374,16 @@ async function main() {
     fs.writeFileSync(path.join(DIST, '404.html'), html404);
     console.log('  Built: 404.html');
   }
+
+  // Cache-bust: append ?v=TIMESTAMP to local JS and CSS references in all HTML
+  const htmlFiles = fs.readdirSync(DIST).filter(f => f.endsWith('.html'));
+  for (const file of htmlFiles) {
+    const filePath = path.join(DIST, file);
+    let html = fs.readFileSync(filePath, 'utf8');
+    html = html.replace(/(src|href)="(js\/[^"]+|css\/[^"]+)"/g, `$1="$2?v=${BUILD_VERSION}"`);
+    fs.writeFileSync(filePath, html);
+  }
+  console.log(`  Cache-busted assets with v=${BUILD_VERSION}`);
 
   console.log('\nDone! Output in dist/');
 }
