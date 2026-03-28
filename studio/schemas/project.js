@@ -47,6 +47,13 @@ export default defineType({
       rows: 8,
     }),
     defineField({
+      name: 'infoTabLabel',
+      title: 'Info Tab Label',
+      type: 'string',
+      description: 'The label for the third tab (defaults to "Info"). Change this if you want to call it something else.',
+      initialValue: 'Info',
+    }),
+    defineField({
       name: 'sortOrder',
       title: 'Sort Order',
       type: 'number',

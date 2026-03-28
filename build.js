@@ -115,6 +115,7 @@ async function loadProjects() {
     thumbnail,
     gallery,
     "info_text": infoText,
+    "info_tab_label": coalesce(infoTabLabel, "Info"),
     "sort_order": sortOrder
   }`);
   return results;
@@ -209,6 +210,7 @@ function buildProjectPages(projects) {
     let html = template;
     html = html.replace(/\{\{TITLE\}\}/g, project.title);
     html = html.replace(/\{\{TITLE_UPPER\}\}/g, project.title.toUpperCase());
+    html = html.replace(/\{\{INFO_TAB_LABEL\}\}/g, project.info_tab_label || 'Info');
     html = html.replace(/\{\{SLUG\}\}/g, project.slug);
     html = html.replace(/\{\{IMAGE_COUNT\}\}/g, String(project.gallery.length));
     html = html.replace('{{GALLERY_IMAGES}}', genGalleryImages(project.gallery));
