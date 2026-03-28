@@ -136,7 +136,9 @@ async function loadArchive() {
 
 async function loadSettings() {
   const result = await groq(`*[_type == "siteSettings"][0] {
-    "greeting_line2": greetingLine2
+    "greeting_line2": greetingLine2,
+    exhibitions,
+    publications
   }`);
   return result || {};
 }
@@ -251,6 +253,24 @@ function buildAboutPage(projects, settings) {
     html = html.replace(
       /<div class="about-greeting">[\s\S]*?<\/div>/,
       `<div class="about-greeting">\n      <span class="greet-line1">Hi, I'm Sofia Cartuccia,</span><span class="greet-line2">${settings.greeting_line2}</span>\n    </div>`
+    );
+  }
+
+  // Replace exhibitions
+  if (settings.exhibitions && settings.exhibitions.length) {
+    const exHtml = settings.exhibitions.map(e => `          <p>${e}</p>`).join('\n');
+    html = html.replace(
+      /(<span class="about-section-title"[^>]*>SELECTED EXHIBITIONS<\/span>\s*<div class="about-section-body">)[\s\S]*?(<\/div>)/,
+      `$1\n${exHtml}\n        $2`
+    );
+  }
+
+  // Replace publications
+  if (settings.publications && settings.publications.length) {
+    const pubHtml = settings.publications.map(p => `          <p>${p}</p>`).join('\n');
+    html = html.replace(
+      /(<span class="about-section-title"[^>]*>SELECTED PUBLICATIONS<\/span>\s*<div class="about-section-body">)[\s\S]*?(<\/div>)/,
+      `$1\n${pubHtml}\n        $2`
     );
   }
 
