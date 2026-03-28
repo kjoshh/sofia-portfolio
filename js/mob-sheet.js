@@ -112,12 +112,15 @@
     isDragging = true;
     startX = e.clientX;
     scrollStart = grid.scrollLeft;
-    grid.classList.add('is-dragging');
-    grid.setPointerCapture(e.pointerId);
   });
 
   grid.addEventListener('pointermove', function(e) {
     if (!isDragging) return;
+    // Only capture pointer + show drag state once actual movement starts
+    if (!grid.classList.contains('is-dragging')) {
+      grid.classList.add('is-dragging');
+      grid.setPointerCapture(e.pointerId);
+    }
     grid.scrollLeft = scrollStart - (e.clientX - startX);
   });
 
