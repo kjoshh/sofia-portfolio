@@ -2422,14 +2422,14 @@ html:has(body.landing-page) {
   }
   body.landing-page .frame-photo {
     inset: 3% 4%;
-    background-image: url('https://res.cloudinary.com/dnvwadmaj/image/upload/w_600,f_auto,q_auto/heroimg-sofia_mnrhrb.jpg');
+    background-image: url('https://res.cloudinary.com/dnvwadmaj/image/upload/w_1000,f_auto,q_auto/heroimg-sofia_mnrhrb.jpg');
     background-size: cover;
     background-position: center 30%;
   }
   body.landing-page .frame-photo-sybil {
     inset: 3% 4%;
     margin: 0;
-    background-image: url('https://res.cloudinary.com/dnvwadmaj/image/upload/w_600,f_auto,q_auto/heroimg-sybil_zfmylo.jpg');
+    background-image: url('https://res.cloudinary.com/dnvwadmaj/image/upload/w_1000,f_auto,q_auto/heroimg-sybil_zfmylo.jpg');
     background-size: cover;
     background-position: center;
     transition: opacity 0.6s ease;

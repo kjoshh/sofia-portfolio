@@ -921,7 +921,7 @@ function preloadAssets() {
 
   // Hero + frame images (new Image() to trigger fetch)
   const imgSrcs = [
-    cloudUrl('heroimg-sofia', 'jpg', mobile ? 'w_600,f_auto,q_auto' : 'w_1200,f_auto,q_auto'),
+    cloudUrl('heroimg-sofia', 'jpg', mobile ? 'w_1000,f_auto,q_auto' : 'w_1200,f_auto,q_auto'),
     mobile ? cloudUrl('frame-mobile', 'png', 'w_1050,f_auto,q_auto') : cloudUrl('frame-desk', 'png', 'w_1300,f_auto,q_auto'),
   ];
   const imgPromises = imgSrcs.map(src => new Promise(resolve => {
