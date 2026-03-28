@@ -18,6 +18,7 @@ const lenis = new Lenis(isMobile() ? { wrapper: document.body } : {});
 
     const canvas = document.createElement("canvas");
     canvas.className = "ink-canvas";
+    canvas.style.filter = filmFilter;
     item.appendChild(canvas);
     const ctx = canvas.getContext("2d");
 
@@ -38,9 +39,7 @@ const lenis = new Lenis(isMobile() ? { wrapper: document.body } : {});
         ctx.beginPath();
         ctx.rect(0, h - revealH, w, revealH);
         ctx.clip();
-        ctx.filter = filmFilter;
         ctx.drawImage(img, 0, 0, w, h);
-        ctx.filter = "none";
         ctx.restore();
       }
     }
