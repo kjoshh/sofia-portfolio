@@ -13,6 +13,9 @@ const cloudImg = {
 function cloudUrl(key, ext = 'png', transforms = 'f_auto,q_auto') {
   return `${CLOUD_BASE}/${transforms}/${cloudImg[key]}.${ext}`;
 }
+function letterUrl(key) {
+  return `${CLOUD_BASE}/w_80,f_auto,q_auto/${cloudImg[key]}.png`;
+}
 
 /* ── Refs ── */
 
@@ -158,13 +161,13 @@ for (let i = 0; i < sofiaChars.length; i++) {
 
   const sofiaEl = document.createElement('img');
   sofiaEl.className = 'letter-el';
-  sofiaEl.src = cloudUrl(sc);
+  sofiaEl.src = letterUrl(sc);
   sofiaEl.alt = sc;
   letterField.appendChild(sofiaEl);
 
   const sybilEl = document.createElement('img');
   sybilEl.className = 'letter-el';
-  sybilEl.src = cloudUrl(yc);
+  sybilEl.src = letterUrl(yc);
   sybilEl.alt = yc;
   letterField.appendChild(sybilEl);
 
@@ -918,8 +921,8 @@ function preloadAssets() {
 
   // Hero + frame images (new Image() to trigger fetch)
   const imgSrcs = [
-    cloudUrl('heroimg-sofia', 'jpg'),
-    mobile ? cloudUrl('frame-mobile') : cloudUrl('frame-desk'),
+    cloudUrl('heroimg-sofia', 'jpg', 'w_1200,f_auto,q_auto'),
+    mobile ? cloudUrl('frame-mobile', 'png', 'w_1050,f_auto,q_auto') : cloudUrl('frame-desk', 'png', 'w_1300,f_auto,q_auto'),
   ];
   const imgPromises = imgSrcs.map(src => new Promise(resolve => {
     const img = new Image();
