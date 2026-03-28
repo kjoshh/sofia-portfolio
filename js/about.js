@@ -10,7 +10,7 @@ if (isMobile()) {
 
 /* ── WebGL shader background (vanilla WebGL, no Three.js) ── */
 (function () {
-  if (window.matchMedia('(pointer: coarse)').matches && window.innerWidth < 768) return;
+  if (window.matchMedia('(pointer: coarse)').matches && window.innerWidth < 991) return;
 
   const vsSource = `
     attribute vec2 a_position;

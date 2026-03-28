@@ -119,9 +119,12 @@ function initLightbox({ items, getSrc, canOpen }) {
     });
   });
 
-  document.getElementById("lb-close").addEventListener("click", close);
-  document.getElementById("lb-prev").addEventListener("click", prev);
-  document.getElementById("lb-next").addEventListener("click", next);
+  const lbClose = document.getElementById("lb-close");
+  const lbPrev = document.getElementById("lb-prev");
+  const lbNext = document.getElementById("lb-next");
+  if (lbClose) lbClose.addEventListener("click", close);
+  if (lbPrev) lbPrev.addEventListener("click", prev);
+  if (lbNext) lbNext.addEventListener("click", next);
   overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
 
   /* Keyboard */

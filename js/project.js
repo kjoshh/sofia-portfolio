@@ -67,7 +67,8 @@ function updateOverviewCellHeight() {
     }
     const rows = Math.ceil(imgCount / bestCols);
     const cellH = (availH - gap * (rows - 1)) / rows;
-    document.querySelector(".gall3ry-container").style.setProperty("--overview-cell-h", cellH + "px");
+    const gc1 = document.querySelector(".gall3ry-container");
+    if (gc1) gc1.style.setProperty("--overview-cell-h", cellH + "px");
     if (grid) grid.style.gridTemplateColumns = `repeat(${bestCols}, 1fr)`;
   } else {
     const cols = 5;
@@ -77,13 +78,16 @@ function updateOverviewCellHeight() {
     const padBot = 110;   // pro-nav clearance (~90px from bottom) + 20px gap
     const availH = window.innerHeight - padTop - padBot;
     const cellH = (availH - gap * (rows - 1)) / rows;
-    document.querySelector(".gall3ry-container").style.setProperty("--overview-cell-h", cellH + "px");
+    const gc2 = document.querySelector(".gall3ry-container");
+    if (gc2) gc2.style.setProperty("--overview-cell-h", cellH + "px");
     if (grid) grid.style.gridTemplateColumns = "";
   }
 }
 updateOverviewCellHeight();
 window.addEventListener("resize", debounce(updateOverviewCellHeight, 150));
 
+
+let activeLayout = "layout-0-gall3ry";
 
 /* ── Imgholder cursor grow (overview layout only) ── */
 const cursor = document.getElementById("cursor");
@@ -126,17 +130,19 @@ const infoParas = document.querySelectorAll(".info-para");
 const proNav = document.querySelector(".pro-nav");
 
 // Temporarily show container so SplitText can measure rendered lines
-textContainer.style.visibility = "hidden";
-textContainer.style.display = "block";
 const infoLines = [];
-infoParas.forEach(p => {
-  const split = new SplitText(p, { type: "lines" });
-  p.style.maxWidth = "";
-  infoLines.push(...split.lines);
-});
-gsap.set(infoLines, { opacity: 0, y: 10 });
-textContainer.style.display = "none";
-textContainer.style.visibility = "";
+if (textContainer) {
+  textContainer.style.visibility = "hidden";
+  textContainer.style.display = "block";
+  infoParas.forEach(p => {
+    const split = new SplitText(p, { type: "lines" });
+    p.style.maxWidth = "";
+    infoLines.push(...split.lines);
+  });
+  gsap.set(infoLines, { opacity: 0, y: 10 });
+  textContainer.style.display = "none";
+  textContainer.style.visibility = "";
+}
 
 // Compute nav Y offset for layout-0: position nav just below the centered image cluster
 function getLayout0NavY() {
@@ -172,8 +178,6 @@ if (!isMobile()) {
     gsap.set(mobProjTabs, { y: getMobTabsLayout0Y() });
   }
 }
-let activeLayout = "layout-0-gall3ry";
-
 // Reposition nav on resize when in layout-0
 window.addEventListener("resize", debounce(() => {
   if (activeLayout === "layout-0-gall3ry" && !isMobile()) {
