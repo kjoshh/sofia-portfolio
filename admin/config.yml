@@ -7,7 +7,7 @@ media_library:
   name: cloudinary
   config:
     cloud_name: dnvwadmaj
-    api_key: REPLACE_WITH_API_KEY
+    api_key: "399427893316375"
 
 publish_mode: editorial_workflow
 
