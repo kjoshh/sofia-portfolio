@@ -95,9 +95,11 @@ function flushStaggerQueue() {
   staggerTimer = null;
   if (!staggerQueue.length) return;
 
-  staggerQueue.sort((a, b) =>
-    a.getBoundingClientRect().left - b.getBoundingClientRect().left
-  );
+  staggerQueue.sort((a, b) => {
+    const ar = a.getBoundingClientRect();
+    const br = b.getBoundingClientRect();
+    return ar.top - br.top || ar.left - br.left;
+  });
 
   staggerQueue.forEach((item, i) => {
     if (revealed.has(item)) return;
