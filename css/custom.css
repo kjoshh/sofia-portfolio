@@ -1695,6 +1695,8 @@ text-decoration: none;
   overflow: hidden;
   border-top: 1px solid rgba(233, 229, 221, 0);
   transition: border-color 0.25s ease;
+  width: 0;
+  min-width: 100%;
 }
 
 .nav-dropdown.is-open {
@@ -1722,7 +1724,6 @@ text-decoration: none;
   display: flex;
   gap: 5px;
   padding: 5px 8px 8px;
-  max-width: 80vw;
   overflow-x: auto;
 }
 
