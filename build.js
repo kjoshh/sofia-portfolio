@@ -349,7 +349,7 @@ async function main() {
   // Copy static files to dist (skip build artifacts and source-only dirs)
   const skip = new Set([
     'dist', 'node_modules', '_data', 'templates', 'admin', 'studio',
-    'build.js', 'serve.mjs', 'screenshot.mjs', 'migrate-images.js',
+    'build.js', 'dev.js', 'serve.mjs', 'screenshot.mjs', 'migrate-images.js',
     'migrate-to-sanity.js', 'cloudinary-map.json', 'cms-migration-plan.md', 'netlify.toml',
     'temporary screenshots', '.git', '.claude', 'CLAUDE.md',
     'skills-lock.json', 'package.json', 'package-lock.json'
