@@ -100,11 +100,11 @@ body {
 }
 
 /* Firefox: hide loader grain to prevent flash during page transition */
-/* @supports (-moz-appearance: none) {
+@supports (-moz-appearance: none) {
   .loader-grain {
     display: none;
   }
-} */
+}
 
 /* ── Spinning star loader ── */
 .loader-star {
@@ -157,12 +157,6 @@ body.is-transitioning * {
   overflow: hidden;
 }
 
-/* Firefox: raise transition above grain to prevent flash */
-@supports (-moz-appearance: none) {
-  .page-transition {
-    z-index: calc(var(--z-grain) + 10);
-  }
-}
 
 .grain::after {
   content: "";
