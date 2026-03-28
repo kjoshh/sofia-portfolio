@@ -23,11 +23,11 @@ collections:
     fields:
       - { name: title, label: Title, widget: string }
       - { name: slug, label: Slug, widget: string, pattern: ['^[a-z0-9-]+$', 'Only lowercase letters, numbers, and hyphens'] }
-      - { name: thumbnail, label: Thumbnail (Cloudinary public ID), widget: string }
+      - { name: thumbnail, label: Thumbnail, widget: image }
       - name: gallery
         label: Gallery Images
         widget: list
-        field: { name: image, label: Cloudinary Public ID, widget: string }
+        field: { name: image, label: Image, widget: image }
       - name: info_text
         label: Info Paragraphs
         widget: list
@@ -46,7 +46,7 @@ collections:
             label: Images
             widget: list
             fields:
-              - { name: image, label: Cloudinary Public ID, widget: string }
+              - { name: image, label: Image, widget: image }
               - { name: is_bw, label: Black & White, widget: boolean, default: false }
               - { name: sort_order, label: Sort Order, widget: number, default: 0, value_type: int }
 
@@ -60,6 +60,6 @@ collections:
         fields:
           - { name: greeting_line1, label: Greeting Line 1, widget: string }
           - { name: greeting_line2, label: Greeting Line 2, widget: string }
-          - { name: index_hero_sofia, label: "Index Hero Sofia (Cloudinary ID)", widget: string }
-          - { name: index_hero_sybil, label: "Index Hero Sybil (Cloudinary ID)", widget: string }
-          - { name: about_hero, label: "About Hero Image (Cloudinary ID)", widget: string }
+          - { name: index_hero_sofia, label: "Index Hero Sofia", widget: image }
+          - { name: index_hero_sybil, label: "Index Hero Sybil", widget: image }
+          - { name: about_hero, label: "About Hero Image", widget: image }

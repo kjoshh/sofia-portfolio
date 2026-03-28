@@ -19,17 +19,46 @@ const CDN = `https://res.cloudinary.com/${CLOUD}/image/upload`;
 
 // ── Helpers ─────────────────────────────────────────────────────
 
-function cloudUrl(publicId, { width, ext = 'jpg' } = {}) {
-  const transforms = width ? `w_${width},f_auto,q_auto` : 'f_auto,q_auto';
-  return `${CDN}/${transforms}/${publicId}.${ext}`;
+/**
+ * Extract Cloudinary public ID from a full URL or return as-is if already an ID.
+ * Full URL example: https://res.cloudinary.com/dnvwadmaj/image/upload/v1234/public-id.jpg
+ * Returns: { id: 'public-id', ext: 'jpg' }
+ */
+function parseCloudinaryValue(value) {
+  if (!value) return { id: '', ext: 'jpg' };
+  if (value.startsWith('http')) {
+    // Extract public ID from full Cloudinary URL
+    const match = value.match(/\/upload\/(?:v\d+\/)?(.+)$/);
+    if (match) {
+      const fullPath = match[1];
+      const dotIdx = fullPath.lastIndexOf('.');
+      if (dotIdx > -1) {
+        return { id: fullPath.substring(0, dotIdx), ext: fullPath.substring(dotIdx + 1) };
+      }
+      return { id: fullPath, ext: 'jpg' };
+    }
+  }
+  // Already a public ID — check for extension
+  const dotIdx = value.lastIndexOf('.');
+  if (dotIdx > -1 && dotIdx > value.length - 6) {
+    return { id: value.substring(0, dotIdx), ext: value.substring(dotIdx + 1) };
+  }
+  return { id: value, ext: 'jpg' };
 }
 
-function srcset(publicId, { ext = 'jpg', sizes = '20vw' } = {}) {
+function cloudUrl(value, { width } = {}) {
+  const { id, ext } = parseCloudinaryValue(value);
+  const transforms = width ? `w_${width},f_auto,q_auto` : 'f_auto,q_auto';
+  return `${CDN}/${transforms}/${id}.${ext}`;
+}
+
+function srcset(value, { sizes = '20vw' } = {}) {
+  const { id, ext } = parseCloudinaryValue(value);
   const widths = [500, 800, 1200, 1600, 2400];
   const set = widths
-    .map(w => `${cloudUrl(publicId, { width: w, ext })} ${w}w`)
+    .map(w => `${CDN}/w_${w},f_auto,q_auto/${id}.${ext} ${w}w`)
     .join(',\n             ');
-  return `src="${cloudUrl(publicId, { width: 400, ext })}"
+  return `src="${CDN}/w_400,f_auto,q_auto/${id}.${ext}"
          srcset="${set}"
          sizes="${sizes}"`;
 }
