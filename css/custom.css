@@ -1722,9 +1722,9 @@ text-decoration: none;
 
 .desk-nav-grid {
   display: flex;
+  flex-wrap: wrap;
   gap: 5px;
   padding: 5px 8px 8px;
-  overflow-x: auto;
 }
 
 .desk-nav-cell {
