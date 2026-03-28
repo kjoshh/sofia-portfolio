@@ -6,4 +6,7 @@ export default defineCliConfig({
     dataset: 'production',
   },
   studioHost: 'sofia-cartuccia',
+  deployment: {
+    appId: 'w1hj0oeosors3a97e7kv2fj9',
+  },
 })
