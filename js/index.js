@@ -75,14 +75,12 @@ function hoverOut() {
 /* ── Viewport-aware listener binding ── */
 let hoverBound = false;
 let tapBound = false;
-let lastTapTime = 0;
-
 function handleTap(e) {
   if (!revealComplete) return;
   if (e.target.closest('.mob-sheet')) return;
-  const now = Date.now();
-  if (e.type === 'click' && now - lastTapTime < 500) return;
-  if (e.type === 'touchend') lastTapTime = now;
+  if (e.type === 'touchend') {
+    e.preventDefault(); // suppress ghost click
+  }
   swapTo(currentName === 'sofia' ? 'sybil' : 'sofia');
 }
 

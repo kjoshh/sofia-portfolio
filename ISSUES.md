@@ -30,8 +30,8 @@
 ### ~~8. WebGL breakpoint mismatch in `js/about.js`~~ ✅
 ~~Hardcoded `768px` check for disabling WebGL, but CSS breakpoints use `991px`. WebGL may load on tablets where it shouldn't.~~
 
-### 9. Touch double-fire in `js/index.js`
-The 500ms guard between `touchend` and `click` isn't bulletproof and can cause double character swaps on mobile.
+### ~~9. Touch double-fire in `js/index.js`~~ ✅
+~~The 500ms guard between `touchend` and `click` isn't bulletproof and can cause double character swaps on mobile.~~
 
 ## Low Priority
 
