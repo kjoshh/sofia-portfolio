@@ -1,26 +1,34 @@
-/* ── Cloudinary responsive upgrade ── */
+/* ── Responsive image helpers ── */
+function isSanityUrl(url) {
+  return url && url.includes('cdn.sanity.io');
+}
+
+function sanitySwapWidth(url, newWidth) {
+  return url.replace(/([?&])w=\d+/, `$1w=${newWidth}`);
+}
+
 // Preload w_1600 variants in background after initial page load
 window.addEventListener('load', () => {
   setTimeout(() => {
     document.querySelectorAll('.imgholder img').forEach(img => {
       const src = img.getAttribute('src');
-      if (!src || !src.includes('res.cloudinary.com')) return;
-      const big = src.replace(/\/w_\d+,/, '/w_1600,');
-      if (big !== src) new Image().src = big;
+      if (!src) return;
+      let big;
+      if (isSanityUrl(src)) {
+        big = sanitySwapWidth(src, 1600);
+      } else if (src.includes('res.cloudinary.com')) {
+        big = src.replace(/\/w_\d+,/, '/w_1600,');
+      }
+      if (big && big !== src) new Image().src = big;
     });
   }, 1000);
 });
 
-function upgradeCloudinaryImages(selector, targetWidth) {
+// Update sizes attribute so browser picks the right srcset variant per layout
+function updateImageSizes(selector, newSizes) {
   document.querySelectorAll(selector).forEach(img => {
-    const src = img.getAttribute('src');
-    if (!src || !src.includes('res.cloudinary.com')) return;
-    const upgraded = src.replace(/\/w_\d+,/, `/w_${targetWidth},`);
-    if (upgraded !== src) {
-      img.setAttribute('src', upgraded);
-      // Also update srcset entries
-      const srcset = img.getAttribute('srcset');
-      if (srcset) img.removeAttribute('srcset');
+    if (img.getAttribute('srcset')) {
+      img.setAttribute('sizes', newSizes);
     }
   });
 }
@@ -336,9 +344,11 @@ function switchLayoutHandler(newLayout) {
   activeLayout = newLayout;
   const imgholders = Array.from(gall3ry.querySelectorAll(".imgholder"));
 
-  // Upgrade image resolution when entering larger layouts
-  if (newLayout !== "layout-0-gall3ry" && previousLayout === "layout-0-gall3ry") {
-    upgradeCloudinaryImages('.imgholder img', 1600);
+  // Update sizes attribute so browser picks correct srcset variant per layout
+  if (newLayout === "layout-2-gall3ry") {
+    updateImageSizes('.imgholder img', '70vw');
+  } else if (newLayout === "layout-1-gall3ry" || newLayout === "layout-0-gall3ry") {
+    updateImageSizes('.imgholder img', '20vw');
   }
 
   // Sequence counter: show/hide based on layout
@@ -637,7 +647,7 @@ initLightbox({
   items: document.querySelectorAll(".imgholder"),
   getSrc: (holder) => {
     const src = holder.querySelector("img").src;
-    // Swap Cloudinary w_800 for w_2400 in lightbox for full-res
+    if (isSanityUrl(src)) return sanitySwapWidth(src, 2400);
     return src.replace(/\/w_\d+,/, '/w_2400,');
   },
   canOpen: () => activeLayout === "layout-1-gall3ry"
