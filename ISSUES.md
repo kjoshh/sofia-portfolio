@@ -38,5 +38,5 @@
 ### ~~10. Hardcoded Sanity project ID in `build.js`~~ ✅ (won't fix)
 ~~Public read-only dataset — ID is visible in browser requests anyway. No security benefit from env vars.~~
 
-### 11. Lenis resize called multiple times without debouncing in `js/project.js`
-Could cause frame drops during rapid layout changes.
+### ~~11. Lenis resize called multiple times without debouncing in `js/project.js`~~ ✅ (non-issue)
+~~Each call is in an onComplete callback — fires once per animation, not in a loop. No debouncing needed.~~
