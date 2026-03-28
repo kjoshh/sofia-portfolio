@@ -74,14 +74,16 @@ function cloudUrl(value) { return imgSrc(value); }
 function groq(query) {
   return new Promise((resolve, reject) => {
     const url = `https://${SANITY_PROJECT}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}?query=${encodeURIComponent(query)}`;
-    https.get(url, (res) => {
+    const req = https.get(url, (res) => {
       let data = '';
       res.on('data', (c) => data += c);
       res.on('end', () => {
         if (res.statusCode >= 400) return reject(new Error(`Sanity ${res.statusCode}: ${data}`));
         resolve(JSON.parse(data).result);
       });
-    }).on('error', reject);
+    });
+    req.on('error', reject);
+    req.setTimeout(30000, () => { req.destroy(); reject(new Error('Sanity API timeout (30s)')); });
   });
 }
 
