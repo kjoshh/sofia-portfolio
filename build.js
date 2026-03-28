@@ -132,9 +132,7 @@ async function loadArchive() {
 
 async function loadSettings() {
   const result = await groq(`*[_type == "siteSettings"][0] {
-    "greeting_line1": greetingLine1,
-    "greeting_line2": greetingLine2,
-    "about_hero": aboutHero
+    "greeting_line2": greetingLine2
   }`);
   return result || {};
 }
@@ -244,19 +242,11 @@ function buildArchivePage(projects, archiveItems) {
 function buildAboutPage(projects, settings) {
   let html = fs.readFileSync(path.join(ROOT, 'about.html'), 'utf8');
 
-  // Replace greeting text
-  if (settings.greeting_line1 && settings.greeting_line2) {
+  // Replace greeting line 2
+  if (settings.greeting_line2) {
     html = html.replace(
       /<div class="about-greeting">[\s\S]*?<\/div>/,
-      `<div class="about-greeting">\n      <span class="greet-line1">${settings.greeting_line1}</span><span class="greet-line2">${settings.greeting_line2}</span>\n    </div>`
-    );
-  }
-
-  // Replace about hero image
-  if (settings.about_hero && settings.about_hero.asset) {
-    html = html.replace(
-      /(<div class="about-bg">\s*<img[^>]*?)src="[^"]*"[\s\S]*?sizes="[^"]*"/,
-      `$1${srcset(settings.about_hero, { sizes: '50vw' })}`
+      `<div class="about-greeting">\n      <span class="greet-line1">Hi, I'm Sofia Cartuccia,</span><span class="greet-line2">${settings.greeting_line2}</span>\n    </div>`
     );
   }
 
