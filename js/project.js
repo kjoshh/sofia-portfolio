@@ -455,7 +455,8 @@ function switchLayoutHandler(newLayout) {
   // during Flip animation (absolute: true takes images out of flow)
   const needsHeightLock = isMob && (
     previousLayout === "layout-0-gall3ry" ||
-    newLayout === "layout-2-gall3ry"
+    newLayout === "layout-2-gall3ry" ||
+    newLayout === "layout-1-gall3ry"
   );
   if (needsHeightLock) {
     container.style.height = container.offsetHeight + "px";
