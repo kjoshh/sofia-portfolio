@@ -176,7 +176,7 @@ function genInfoText(text) {
 function genArchiveGrid(items) {
   return items.map(item => {
     const bwClass = item.is_bw ? ' bw' : '';
-    return `    <div class="archive-grid-item${bwClass}" data-full="${imgSrc(item.image)}"><img crossorigin="anonymous" ${srcset(item.image, { sizes: '(max-width: 768px) 50vw, 25vw' })}
+    return `    <div class="archive-grid-item${bwClass}" data-full="${imgSrc(item.image)}"><img ${srcset(item.image, { sizes: '(max-width: 768px) 50vw, 25vw' })}
          loading="lazy" alt=""></div>`;
   }).join('\n');
 }
