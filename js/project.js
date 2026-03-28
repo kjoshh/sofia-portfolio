@@ -131,7 +131,7 @@ const proNav = document.querySelector(".pro-nav");
 
 // Temporarily show container so SplitText can measure rendered lines
 const infoLines = [];
-if (textContainer) {
+if (textContainer && typeof SplitText !== "undefined") {
   textContainer.style.visibility = "hidden";
   textContainer.style.display = "block";
   infoParas.forEach(p => {

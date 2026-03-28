@@ -19,8 +19,8 @@
 ### ~~5. Image preload has no error/timeout fallback~~ ✅ (false positive)
 ~~Already handled: `transition.js` has a 4s safety timeout (line 34) and error listeners on images (line 83).~~
 
-### 6. CDN dependency on SplitText
-If the Webflow CDN fails, `new SplitText()` throws a ReferenceError, breaking project page info sections entirely.
+### ~~6. CDN dependency on SplitText~~ ✅
+~~If the Webflow CDN fails, `new SplitText()` throws a ReferenceError, breaking project page info sections entirely.~~
 
 ## Medium Priority
 
