@@ -160,8 +160,13 @@ function genGalleryImages(gallery) {
   }).join('\n');
 }
 
-function genInfoText(paragraphs) {
-  return paragraphs.map(p => `      <p class="info-para">${p}</p>`).join('\n');
+function genInfoText(text) {
+  if (Array.isArray(text)) {
+    return text.map(p => `      <p class="info-para">${p}</p>`).join('\n');
+  }
+  // Markdown string — split on double newlines into paragraphs
+  return String(text || '').split(/\n\n+/).filter(Boolean)
+    .map(p => `      <p class="info-para">${p.trim()}</p>`).join('\n');
 }
 
 function genArchiveGrid(items) {
