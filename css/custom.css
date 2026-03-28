@@ -93,7 +93,7 @@ body {
   inset: -200%;
   width: 400%;
   height: 400%;
-  background: url('https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/noise_le2aba.png') repeat;
+  background: url('https://res.cloudinary.com/dnvwadmaj/image/upload/v1774700248/noise-200_tgo0p0.webp') repeat;
   background-size: 300px 300px;
   opacity: 0.3;
   animation: grain 2.5s steps(1) infinite;
@@ -164,8 +164,8 @@ body.is-transitioning * {
   height: 300%;
   inset: -150% 0% 0% -150%;
   max-width: none;
-  background-image: url('https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/noise_le2aba.png');
-  background-size: 300px 300px;
+  background-image: url('https://res.cloudinary.com/dnvwadmaj/image/upload/v1774700248/noise-200_tgo0p0.webp');
+  background-size: 200px 200px;
   background-repeat: repeat;
   opacity: 0.25;
   animation: grain 2.5s steps(1) infinite;
