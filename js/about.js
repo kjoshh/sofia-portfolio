@@ -185,18 +185,11 @@ if (isMobile()) {
     startLoop();
   };
 
-  /* load image into WebGL — re-fetch with CORS to avoid tainted canvas */
-  function loadCorsImage() {
-    const corsImg = new Image();
-    corsImg.crossOrigin = "anonymous";
-    corsImg.onload = () => init(corsImg);
-    corsImg.onerror = () => console.warn("WebGL: CORS image load failed");
-    corsImg.src = img.currentSrc || img.src;
-  }
+  /* load image into WebGL */
   if (img.complete && img.naturalWidth) {
-    loadCorsImage();
+    init(img);
   } else {
-    img.addEventListener("load", loadCorsImage);
+    img.addEventListener("load", () => init(img));
   }
 
   document.addEventListener("mousemove", (e) => {
