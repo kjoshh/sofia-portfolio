@@ -1,6 +1,5 @@
 backend:
-  name: github
-  repo: kjoshh/sofia-portfolio
+  name: git-gateway
   branch: main
 
 media_library:
