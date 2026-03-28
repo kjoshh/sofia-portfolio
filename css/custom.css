@@ -4,6 +4,12 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgba(233, 229, 221, 0.25);
+  color: inherit;
 }
 
 html {
