@@ -185,13 +185,18 @@ if (isMobile()) {
     startLoop();
   };
 
-  /* load image into WebGL — fetch separately with CORS for texImage2D;
-     if CORS fails (e.g. localhost), shader is skipped and the plain <img> shows */
+  /* load image into WebGL — the HTML <img> already has crossorigin="anonymous",
+     so we can use it directly for texImage2D */
   function loadForWebGL() {
-    const corsImg = new Image();
-    corsImg.crossOrigin = "anonymous";
-    corsImg.onload = () => init(corsImg);
-    corsImg.src = img.currentSrc || img.src;
+    if (img.crossOrigin === "anonymous") {
+      init(img);
+    } else {
+      /* fallback: re-fetch with CORS if HTML attr missing */
+      const corsImg = new Image();
+      corsImg.crossOrigin = "anonymous";
+      corsImg.onload = () => init(corsImg);
+      corsImg.src = img.currentSrc || img.src;
+    }
   }
   if (img.complete && img.naturalWidth) {
     loadForWebGL();
