@@ -16,8 +16,8 @@
 ### ~~4. No timeout on Sanity API in `build.js`~~ ✅
 ~~If the Sanity API hangs, the build hangs forever. No timeout or abort controller.~~
 
-### 5. Image preload has no error/timeout fallback
-In `js/project.js` and `js/transition.js` — if a single image fails to load, the page transition overlay can get stuck permanently since the "ready" check requires all images to have `naturalHeight > 0`.
+### ~~5. Image preload has no error/timeout fallback~~ ✅ (false positive)
+~~Already handled: `transition.js` has a 4s safety timeout (line 34) and error listeners on images (line 83).~~
 
 ### 6. CDN dependency on SplitText
 If the Webflow CDN fails, `new SplitText()` throws a ReferenceError, breaking project page info sections entirely.
