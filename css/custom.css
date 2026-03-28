@@ -100,11 +100,11 @@ body {
 }
 
 /* Firefox: hide loader grain to prevent flash during page transition */
-@supports (-moz-appearance: none) {
+/* @supports (-moz-appearance: none) {
   .loader-grain {
     display: none;
   }
-}
+} */
 
 /* ── Spinning star loader ── */
 .loader-star {
@@ -1722,6 +1722,8 @@ text-decoration: none;
   display: flex;
   gap: 5px;
   padding: 5px 8px 8px;
+  max-width: 80vw;
+  overflow-x: auto;
 }
 
 .desk-nav-cell {
