@@ -366,7 +366,8 @@ async function main() {
     'build.js', 'dev.js', 'serve.mjs', 'screenshot.mjs', 'migrate-images.js',
     'migrate-to-sanity.js', 'cloudinary-map.json', 'cms-migration-plan.md', 'netlify.toml',
     'temporary screenshots', '.git', '.claude', 'CLAUDE.md',
-    'skills-lock.json', 'package.json', 'package-lock.json'
+    'skills-lock.json', 'package.json', 'package-lock.json',
+    'sitemap.xml'
   ]);
   copyRecursive(ROOT, DIST, skip);
   console.log('  Copied static files to dist/\n');
@@ -423,6 +424,29 @@ async function main() {
     fs.writeFileSync(filePath, html);
   }
   console.log(`  Cache-busted assets with v=${BUILD_VERSION}`);
+
+  // Generate sitemap.xml with all pages (static + CMS projects)
+  const today = new Date().toISOString().split('T')[0];
+  const projectSlugs = new Set(projects.map(p => p.slug));
+  // Add hand-coded project pages that may not be in CMS
+  for (const s of ['hard-coded', 'forgetting-dreams']) projectSlugs.add(s);
+  const sitemapPages = [
+    { loc: '/', priority: '1.0' },
+    { loc: '/about.html', priority: '0.8' },
+    { loc: '/archive.html', priority: '0.8' },
+    ...[...projectSlugs].map(s => ({ loc: `/${s}.html`, priority: '0.7' })),
+  ];
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapPages.map(p => `  <url>
+    <loc>https://sofiacartuccia.com${p.loc}</loc>
+    <lastmod>${today}</lastmod>
+    <priority>${p.priority}</priority>
+  </url>`).join('\n')}
+</urlset>
+`;
+  fs.writeFileSync(path.join(DIST, 'sitemap.xml'), sitemapXml);
+  console.log(`  Generated sitemap.xml with ${sitemapPages.length} URLs`);
 
   // Write Cloudflare Pages _headers and _redirects
   fs.writeFileSync(path.join(DIST, '_headers'), `/*.html
