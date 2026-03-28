@@ -4,14 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Photography/art portfolio for Sofia Cartuccia (alias "Sybil Sometimes"). Static site with no build step — vanilla HTML, CSS, and JS. Originally scaffolded from Webflow, now hand-maintained.
+Photography/art portfolio for Sofia Cartuccia (alias "Sybil Sometimes"). Static site built with `node build.js` (fetches Sanity CMS data, outputs to `dist/`). Vanilla HTML, CSS, and JS. Originally scaffolded from Webflow, now hand-maintained. Hosted on Cloudflare Pages (sofia-portfolio-ytr.pages.dev), deployed from GitHub on every push. Sanity webhook triggers rebuilds on content changes.
 
 ## Commands
 
 - **Dev server:** `node serve.mjs` (serves project root at `http://localhost:3000`). Run in background before screenshotting. Don't start a second instance if already running.
 - **Alt dev server:** `npm start` (browser-sync, auto-reloads on HTML/CSS/JS changes)
 - **Screenshot:** `node screenshot.mjs http://localhost:3000 [optional-label]` — saves auto-incremented PNGs to `./temporary screenshots/`. Uses Puppeteer with local Chrome at `/Applications/Google Chrome.app`. Viewport: 1440×900 @2x.
-- **No build, lint, or test commands.**
+- **Build:** `node build.js` — fetches Sanity data, generates HTML into `dist/`. Run by Cloudflare Pages on deploy.
+- **No lint or test commands.**
 
 ## Architecture
 

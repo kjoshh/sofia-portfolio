@@ -3,7 +3,7 @@
  * build.js — Static site generator for Sofia Portfolio
  *
  * Fetches CMS data from Sanity and generates final HTML into dist/.
- * Triggered automatically by Netlify on every push.
+ * Triggered automatically by Cloudflare Pages on every push.
  *
  * Usage: node build.js
  */
@@ -348,7 +348,7 @@ async function main() {
   const skip = new Set([
     'dist', 'node_modules', '_data', 'templates', 'admin', 'studio',
     'build.js', 'serve.mjs', 'screenshot.mjs', 'migrate-images.js',
-    'migrate-to-sanity.js', 'cloudinary-map.json', 'cms-migration-plan.md',
+    'migrate-to-sanity.js', 'cloudinary-map.json', 'cms-migration-plan.md', 'netlify.toml',
     'temporary screenshots', '.git', '.claude', 'CLAUDE.md',
     'skills-lock.json', 'package.json', 'package-lock.json'
   ]);
