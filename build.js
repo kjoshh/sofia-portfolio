@@ -20,14 +20,19 @@ const CDN = `https://res.cloudinary.com/${CLOUD}/image/upload`;
 // ── Helpers ─────────────────────────────────────────────────────
 
 /**
+ * Check if a value is a local file path (e.g. /uploads/photo.jpg)
+ * vs a Cloudinary public ID or URL.
+ */
+function isLocalPath(value) {
+  return value && (value.startsWith('/') || value.startsWith('./'));
+}
+
+/**
  * Extract Cloudinary public ID from a full URL or return as-is if already an ID.
- * Full URL example: https://res.cloudinary.com/dnvwadmaj/image/upload/v1234/public-id.jpg
- * Returns: { id: 'public-id', ext: 'jpg' }
  */
 function parseCloudinaryValue(value) {
   if (!value) return { id: '', ext: 'jpg' };
   if (value.startsWith('http')) {
-    // Extract public ID from full Cloudinary URL
     const match = value.match(/\/upload\/(?:v\d+\/)?(.+)$/);
     if (match) {
       const fullPath = match[1];
@@ -38,7 +43,6 @@ function parseCloudinaryValue(value) {
       return { id: fullPath, ext: 'jpg' };
     }
   }
-  // Already a public ID — check for extension
   const dotIdx = value.lastIndexOf('.');
   if (dotIdx > -1 && dotIdx > value.length - 6) {
     return { id: value.substring(0, dotIdx), ext: value.substring(dotIdx + 1) };
@@ -46,13 +50,25 @@ function parseCloudinaryValue(value) {
   return { id: value, ext: 'jpg' };
 }
 
-function cloudUrl(value, { width } = {}) {
+/**
+ * Generate image src — handles both local paths and Cloudinary IDs.
+ * Local paths are used as-is; Cloudinary IDs get transformed URLs.
+ */
+function imgSrc(value, { width } = {}) {
+  if (isLocalPath(value)) return value;
   const { id, ext } = parseCloudinaryValue(value);
   const transforms = width ? `w_${width},f_auto,q_auto` : 'f_auto,q_auto';
   return `${CDN}/${transforms}/${id}.${ext}`;
 }
 
+/**
+ * Generate srcset attribute — for Cloudinary images generates responsive widths,
+ * for local images just uses the path directly.
+ */
 function srcset(value, { sizes = '20vw' } = {}) {
+  if (isLocalPath(value)) {
+    return `src="${value}" sizes="${sizes}"`;
+  }
   const { id, ext } = parseCloudinaryValue(value);
   const widths = [500, 800, 1200, 1600, 2400];
   const set = widths
@@ -62,6 +78,9 @@ function srcset(value, { sizes = '20vw' } = {}) {
          srcset="${set}"
          sizes="${sizes}"`;
 }
+
+// Keep cloudUrl as alias for imgSrc (used in archive data-full etc.)
+function cloudUrl(value, opts) { return imgSrc(value, opts); }
 
 function readJSON(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
