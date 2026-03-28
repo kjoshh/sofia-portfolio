@@ -256,6 +256,7 @@ body.is-transitioning * {
   cursor: pointer;
   padding: 20px;
   opacity: 0;
+  outline: none;
   transition: opacity 0.25s ease;
 }
 
