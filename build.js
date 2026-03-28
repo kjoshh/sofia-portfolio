@@ -11,6 +11,8 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const CleanCSS = require('clean-css');
+const { minify: terserMinify } = require('terser');
 
 const ROOT = __dirname;
 const DIST = path.join(ROOT, 'dist');
@@ -367,6 +369,29 @@ async function main() {
     html404 = replaceNavs(html404, projects, '20vw');
     fs.writeFileSync(path.join(DIST, '404.html'), html404);
     console.log('  Built: 404.html');
+  }
+
+  // Minify CSS
+  const cssPath = path.join(DIST, 'css', 'custom.css');
+  if (fs.existsSync(cssPath)) {
+    const cssSource = fs.readFileSync(cssPath, 'utf8');
+    const minCSS = new CleanCSS().minify(cssSource);
+    fs.writeFileSync(cssPath, minCSS.styles);
+    console.log(`  Minified CSS: ${cssSource.length} → ${minCSS.styles.length} bytes (${Math.round((1 - minCSS.styles.length / cssSource.length) * 100)}% reduction)`);
+  }
+
+  // Minify JS
+  const jsDir = path.join(DIST, 'js');
+  if (fs.existsSync(jsDir)) {
+    for (const file of fs.readdirSync(jsDir).filter(f => f.endsWith('.js'))) {
+      const jsPath = path.join(jsDir, file);
+      const jsSource = fs.readFileSync(jsPath, 'utf8');
+      const result = await terserMinify(jsSource);
+      if (result.code) {
+        fs.writeFileSync(jsPath, result.code);
+        console.log(`  Minified ${file}: ${jsSource.length} → ${result.code.length} bytes`);
+      }
+    }
   }
 
   // Cache-bust: append ?v=TIMESTAMP to local JS and CSS references in all HTML

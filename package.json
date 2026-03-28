@@ -21,5 +21,9 @@
   "homepage": "https://github.com/kjoshh/sofia-portfolio#readme",
   "devDependencies": {
     "browser-sync": "^3.0.4"
+  },
+  "dependencies": {
+    "clean-css": "^5.3.3",
+    "terser": "^5.46.1"
   }
 }
