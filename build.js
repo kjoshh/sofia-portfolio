@@ -385,6 +385,23 @@ async function main() {
   }
   console.log(`  Cache-busted assets with v=${BUILD_VERSION}`);
 
+  // Write Cloudflare Pages _headers and _redirects
+  fs.writeFileSync(path.join(DIST, '_headers'), `/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/css/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/js/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+`);
+  fs.writeFileSync(path.join(DIST, '_redirects'), `/* /404.html 404
+`);
+  console.log('  Wrote _headers and _redirects for Cloudflare Pages');
+
   console.log('\nDone! Output in dist/');
 }
 
