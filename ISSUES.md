@@ -35,8 +35,8 @@
 
 ## Low Priority
 
-### 10. Hardcoded Sanity project ID in `build.js`
-Should use env vars for flexibility, though since this is a public dataset read it's not a security risk.
+### ~~10. Hardcoded Sanity project ID in `build.js`~~ ✅ (won't fix)
+~~Public read-only dataset — ID is visible in browser requests anyway. No security benefit from env vars.~~
 
 ### 11. Lenis resize called multiple times without debouncing in `js/project.js`
 Could cause frame drops during rapid layout changes.
