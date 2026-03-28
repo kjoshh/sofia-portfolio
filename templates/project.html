@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>{{TITLE}} — Sofia Cartuccia</title>
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta name="theme-color" content="#292823">
+  <meta name="description" content="{{TITLE}} — a photography project by Sofia Cartuccia.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sofiacartuccia.com/{{SLUG}}.html">
+  <meta property="og:title" content="{{TITLE}} — Sofia Cartuccia">
+  <meta property="og:description" content="{{TITLE}} — a photography project by Sofia Cartuccia.">
+  <meta property="og:image" content="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/og-image_kgrf1k.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://sofiacartuccia.com/{{SLUG}}.html">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="preload" href="fonts/Post.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+  <link rel="preload" href="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/noise_le2aba.png" as="image" fetchpriority="high">
+  <link rel="preload" href="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/dust_a5pqg4.jpg" as="image" fetchpriority="high">
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <link rel="dns-prefetch" href="https://cdn.prod.website-files.com">
+  <style>html,body{background:#292823}.page-transition{position:fixed;inset:0;z-index:99999;background:#292823;display:flex;align-items:center;justify-content:center}</style>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"></noscript>
+  <link href="favicon/favicon.ico" rel="shortcut icon" type="image/x-icon">
+  <link href="favicon/apple-touch-icon.png" rel="apple-touch-icon">
+  <link href="css/custom.css" rel="stylesheet" type="text/css">
+  <meta name="view-transition" content="same-origin">
+  <link rel="preload" href="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/star_vir8ah.png" as="image">
+</head>
+
+<body>
+  <div class="page-transition" style="display: flex; opacity: 1;">
+    <div class="loader-grain"></div>
+    <img src="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/star_vir8ah.png" alt="" class="loader-star" style="position:absolute;width:28px;height:28px">
+  </div>
+  <div class="dusti"></div>
+  <div class="grain"></div>
+  <div class="header">
+    <div class="wrapedu">
+      <div data-collapse="medium" class="navbar main-nav">
+        <div class="wrapin">
+
+          <nav role="navigation" class="nav-menu">
+            <a href="index.html" class="nav-link logo-link">
+              <span class="nav-logo-wrap">
+                <img src="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/logo_c52rsa.png" alt="Sofia Cartuccia" class="nav-logo-img nav-logo-top">
+              </span>
+            </a>
+            <img src="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/star_vir8ah.png" class="nav-star-sep" alt="">
+            <div class="nav-dropdown-wrap" aria-haspopup="true" aria-expanded="false">
+              <a href="#" class="nav-link" role="button" aria-expanded="false">Projects</a>
+            </div>
+            <a href="archive.html" class="nav-link">Archive</a>
+            <a href="about.html" class="nav-link">About</a>
+          </nav>
+          <div class="nav-dropdown" id="projects-dropdown">
+            <div class="desk-nav-inner">
+              <p class="desk-nav-label">Projects</p>
+              <div class="desk-nav-grid">
+{{DESK_NAV}}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div data-collapse="medium" class="navbar pro-nav">
+      <div class="wrapin">
+        <div class="nav-menu">
+          <nav role="navigation" class="logo">
+            <a href="#" class="nav-link project">{{TITLE_UPPER}}</a>
+          </nav>
+
+          <nav role="navigation" class="nav-menu pro">
+            <a id="layout-2-gall3ry" href="#" class="nav-link">Sequence</a>
+            <a id="layout-1-gall3ry" href="#" class="nav-link">Overview</a>
+            <a id="layout-3-gall3ry" href="#" class="nav-link">Info</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+  <main>
+  <div class="gall3ry-container">
+    <div id="hover-preview"><img alt=""></div>
+    <div class="gall3ry layout-0-gall3ry">
+      <div id="img100"><img src="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/rolle_cqkji9.png" alt="Film roll" class="pro-img hovv"></div>
+
+{{GALLERY_IMAGES}}
+    </div>
+    <div class="seq-counter" id="seqCounter">
+      <span class="seq-counter-current">01</span>
+      <span class="seq-counter-sep">/</span>
+      <span class="seq-counter-total"></span>
+    </div>
+    <div class="text-container">
+{{INFO_TEXT}}
+    </div>
+  </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lb-overlay" id="lb-overlay" role="dialog" aria-label="Image lightbox" aria-modal="true">
+
+    <div class="lb-counter" id="lbCounter">
+      <span class="lb-counter-current">01</span>
+      <span class="lb-counter-sep">/</span>
+      <span class="lb-counter-total">{{IMAGE_COUNT}}</span>
+    </div>
+    <button class="lb-btn lb-close" id="lb-close"><img src="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/cross_f26ano.png" alt="close"></button>
+    <button class="lb-btn lb-prev" id="lb-prev"><img src="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/arrow_rilqye.png" alt="prev"></button>
+    <img class="lb-spinner" id="lb-spinner" src="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/star_vir8ah.png" alt="">
+    <img class="lb-img" id="lb-img" src="" alt="">
+    <button class="lb-btn lb-next" id="lb-next"><img src="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/arrow_rilqye.png" alt="next"></button>
+  </div>
+
+  <div class="mob-proj-tabs" id="mobProjTabs">
+    <span class="mob-proj-title">{{TITLE_UPPER}}</span>
+    <div class="mob-proj-tabs-row">
+      <button class="mob-proj-tab active" data-layout="layout-2-gall3ry">Sequence</button>
+      <button class="mob-proj-tab" data-layout="layout-1-gall3ry">Overview</button>
+      <button class="mob-proj-tab" data-layout="layout-3-gall3ry">Info</button>
+    </div>
+  </div>
+
+  <div class="mob-sheet mob-sheet--top" id="mobSheet">
+    <div class="mob-sheet-header" id="mobSheetToggle" role="button" tabindex="0" aria-expanded="false" aria-label="Navigation menu">
+      <a href="index.html" class="mob-sheet-logo-link" onclick="event.stopPropagation()">
+        <img src="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/logo_c52rsa.png" class="mob-sheet-logo" alt="Sofia Cartuccia">
+      </a>
+      <div class="mob-sheet-header-right">
+        <img src="https://res.cloudinary.com/dnvwadmaj/image/upload/f_auto,q_auto/star_vir8ah.png" class="mob-sheet-icon" alt="menu">
+        <span class="mob-sheet-menu-label" data-closed="MENU" data-open="CLOSE"></span>
+      </div>
+      <div class="mob-sheet-header-links">
+        <a href="archive.html" class="mob-sheet-link" onclick="event.stopPropagation()">Archive</a>
+        <a href="about.html" class="mob-sheet-link" onclick="event.stopPropagation()">About</a>
+      </div>
+    </div>
+    <div class="mob-sheet-body">
+      <p class="mob-sheet-section-label">Projects</p>
+      <div class="mob-sheet-grid">
+{{MOB_NAV}}
+      </div>
+    </div>
+  </div>
+
+  <script defer src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" integrity="sha384-O55L/6rhHr9CFvrxqv5luxOCcmVaBmETbZbJDP+Do8T0pztTACsFBD/IXCNkj7DV" crossorigin="anonymous"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
+  <script defer src="js/nav.js"></script>
+  <script defer src="js/mob-sheet.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js" integrity="sha384-CHvG5TSBYWY4gs18D+se5IrGOZ6r8JlhAWob7LbkaUcfqD8PWzaYz2pqZdH7LsXQ" crossorigin="anonymous"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js" integrity="sha384-BXj4dUwqsTW7BsafEOy150542LwVf57RoKjTk3Ay1dXyFXRwipZgJWd1QKIxStwq" crossorigin="anonymous"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js" integrity="sha384-RVPQwTb0fPz9kI8s5GwAq1Qioto9fnEQt1aKGSQSm8xV6+DIdBSgcCShoHqfKnhv" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.prod.website-files.com/gsap/3.14.2/SplitText.min.js" type="text/javascript" integrity="sha384-iJQU/7haAHHrfeX4o0uooRF7Po6K7IhD+YU5dustu1NfalmSBYI7pbX6wAtx2f9j" crossorigin="anonymous"></script>
+  <script defer src="js/lightbox.js"></script>
+  <script defer src="js/project.js"></script>
+  <script defer src="js/transition.js"></script>
+</body>
+
+</html>

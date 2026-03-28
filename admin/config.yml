@@ -1,0 +1,66 @@
+backend:
+  name: github
+  repo: kjoshh/sofia-portfolio
+  branch: main
+
+media_library:
+  name: cloudinary
+  config:
+    cloud_name: dnvwadmaj
+    api_key: REPLACE_WITH_API_KEY
+
+publish_mode: editorial_workflow
+
+collections:
+  # ── Projects ──
+  - name: projects
+    label: Projects
+    folder: _data/projects
+    create: true
+    extension: json
+    format: json
+    slug: "{{fields.slug}}"
+    sortable_fields: [sort_order, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: slug, label: Slug, widget: string, pattern: ['^[a-z0-9-]+$', 'Only lowercase letters, numbers, and hyphens'] }
+      - { name: thumbnail, label: Thumbnail (Cloudinary public ID), widget: string }
+      - name: gallery
+        label: Gallery Images
+        widget: list
+        field: { name: image, label: Cloudinary Public ID, widget: string }
+      - name: info_text
+        label: Info Paragraphs
+        widget: list
+        field: { name: paragraph, label: Paragraph, widget: text }
+      - { name: sort_order, label: Sort Order, widget: number, default: 0, value_type: int }
+
+  # ── Archive ──
+  - name: archive
+    label: Archive
+    files:
+      - name: archive
+        label: Archive Images
+        file: _data/archive.json
+        fields:
+          - name: body
+            label: Images
+            widget: list
+            fields:
+              - { name: image, label: Cloudinary Public ID, widget: string }
+              - { name: is_bw, label: Black & White, widget: boolean, default: false }
+              - { name: sort_order, label: Sort Order, widget: number, default: 0, value_type: int }
+
+  # ── Site Settings ──
+  - name: settings
+    label: Site Settings
+    files:
+      - name: general
+        label: General
+        file: _data/settings.json
+        fields:
+          - { name: greeting_line1, label: Greeting Line 1, widget: string }
+          - { name: greeting_line2, label: Greeting Line 2, widget: string }
+          - { name: index_hero_sofia, label: "Index Hero Sofia (Cloudinary ID)", widget: string }
+          - { name: index_hero_sybil, label: "Index Hero Sybil (Cloudinary ID)", widget: string }
+          - { name: about_hero, label: "About Hero Image (Cloudinary ID)", widget: string }

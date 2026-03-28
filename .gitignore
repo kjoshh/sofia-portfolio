@@ -4,3 +4,4 @@ Thumbs.db
 .claude/
 node_modules/
 temporary screenshots/
+dist/
