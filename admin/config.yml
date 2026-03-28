@@ -2,8 +2,11 @@ backend:
   name: git-gateway
   branch: main
 
-media_folder: "uploads"
-public_folder: "/uploads"
+media_library:
+  name: cloudinary
+  config:
+    cloud_name: dnvwadmaj
+    api_key: "399427893316375"
 
 publish_mode: editorial_workflow
 
