@@ -185,15 +185,26 @@ if (isMobile()) {
     startLoop();
   };
 
-  /* load image into WebGL — re-fetch with CORS + cache-bust to guarantee
-     a fresh CORS response (avoids stale non-CORS cached copy) */
+  /* load image into WebGL — fetch as blob to guarantee clean CORS,
+     bypassing any tainted image cache issues */
   function loadForWebGL() {
-    const corsImg = new Image();
-    corsImg.crossOrigin = "anonymous";
-    corsImg.onload = () => init(corsImg);
-    corsImg.onerror = () => console.warn("WebGL CORS image failed to load — shader disabled");
     const src = img.currentSrc || img.src;
-    corsImg.src = src + (src.includes("?") ? "&" : "?") + "_v=1";
+    fetch(src, { mode: "cors" })
+      .then(r => r.blob())
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        const corsImg = new Image();
+        corsImg.onload = () => {
+          init(corsImg);
+          URL.revokeObjectURL(blobUrl);
+        };
+        corsImg.onerror = () => {
+          console.warn("WebGL blob image failed to load — shader disabled");
+          URL.revokeObjectURL(blobUrl);
+        };
+        corsImg.src = blobUrl;
+      })
+      .catch(() => console.warn("WebGL fetch CORS failed — shader disabled"));
   }
   if (img.complete && img.naturalWidth) {
     loadForWebGL();
