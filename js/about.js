@@ -185,11 +185,18 @@ if (isMobile()) {
     startLoop();
   };
 
-  /* load image into WebGL */
+  /* load image into WebGL — fetch separately with CORS for texImage2D;
+     if CORS fails (e.g. localhost), shader is skipped and the plain <img> shows */
+  function loadForWebGL() {
+    const corsImg = new Image();
+    corsImg.crossOrigin = "anonymous";
+    corsImg.onload = () => init(corsImg);
+    corsImg.src = img.currentSrc || img.src;
+  }
   if (img.complete && img.naturalWidth) {
-    init(img);
+    loadForWebGL();
   } else {
-    img.addEventListener("load", () => init(img));
+    img.addEventListener("load", loadForWebGL);
   }
 
   document.addEventListener("mousemove", (e) => {
