@@ -353,7 +353,6 @@ body.is-transitioning * {
     height: 100%;
     max-width: none;
     max-height: none;
-    object-fit: cover;
   }
 }
 
