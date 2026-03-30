@@ -395,6 +395,39 @@ function flyToFinalPositions(onAllSettled) {
   });
 }
 
+/* ── First-load: fade letters in at final positions (no rain) ── */
+function revealLettersDirectly() {
+  revealStarted = true;
+  const m = getLetterMetrics();
+  calcPositions();
+  buildWalls();
+  const mobile = isMobile();
+  let completed = 0;
+  slots.forEach((slot, idx) => {
+    gsap.set(slot.sofiaEl, {
+      x: slot.x - m.offsetX,
+      y: slot.y - m.offsetY,
+      rotation: slot.restRot,
+      opacity: 0,
+    });
+    gsap.to(slot.sofiaEl, {
+      opacity: 0.9,
+      duration: 0.8,
+      ease: 'power2.out',
+      delay: idx * 0.03,
+      onComplete: () => {
+        completed++;
+        if (completed >= slots.length) {
+          markRevealComplete();
+          loadingPhase = 0;
+          frameWrap.style.cursor = '';
+          if (mobile) startBreathe();
+        }
+      },
+    });
+  });
+}
+
 /* ── Mobile: settle individual letter from physics to final pos ── */
 function settleLetter(pair) {
   if (pair.settled) return;
@@ -953,11 +986,8 @@ preloadAssets().then(() => {
   // Trigger overlay fade — transition.js waits for this on landing page
   if (window.__revealOverlay) window.__revealOverlay();
 
-  // Show wait cursor on frame until letter rain finishes
-  frameWrap.style.cursor = 'wait';
-
   if (mobile) {
-    /* ── Mobile entrance: scale-up frame + letter rain ── */
+    /* ── Mobile entrance: scale-up frame + letters fade in together ── */
     gsap.set(frameWrap, { scale: 0.85, opacity: 0, y: 30 });
 
     const revealTL = gsap.timeline({ delay: 0.3 });
@@ -967,12 +997,11 @@ preloadAssets().then(() => {
       duration: 1.4, ease: 'power2.out',
     }, 0);
 
-    // Build walls + start letter rain after frame arrives
+    // Fade letters in with the frame
     revealTL.call(() => {
-      calcPositions();
-      buildWalls();
-      startRain();
-    }, null, 1.2);
+      initPositions();
+      revealLettersDirectly();
+    }, null, 0.4);
 
   } else {
     /* ── Desktop entrance: animated reveal + letter rain ── */
@@ -988,12 +1017,11 @@ preloadAssets().then(() => {
     entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
     entranceTL.to('.nav-star-sep', { opacity: 0.55, duration: 0.5 }, 0.5);
 
-    // Start letter rain once frame is mostly visible
-    setTimeout(() => {
+    // Fade letters in while frame is scaling up
+    entranceTL.call(() => {
       initPositions();
-      buildWalls();
-      startRain();
-    }, 1900);
+      revealLettersDirectly();
+    }, null, 0.5);
   }
 });
 
