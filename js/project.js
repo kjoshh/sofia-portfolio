@@ -56,20 +56,25 @@ function updateOverviewCellHeight() {
   const grid = document.querySelector(".gall3ry");
 
   if (window.innerWidth <= 991) {
-    const gap = 8;
     const availH = window.innerHeight - 88 - 120 - _safeAreaBottom; // below mob-sheet, above tab pill + safe area
-    // Find minimum cols so cell height >= 70px
+    // Find minimum cols so cell height >= 70px (use 8px gap estimate for column search)
     let bestCols = 2;
     for (let c = 2; c <= 6; c++) {
       bestCols = c;
       const rows = Math.ceil(imgCount / c);
-      if ((availH - gap * (rows - 1)) / rows >= 70) break;
+      if ((availH - 8 * (rows - 1)) / rows >= 70) break;
     }
     const rows = Math.ceil(imgCount / bestCols);
+    // Scale gap proportionally to cell height — tighter grid when cells are small
+    const rawCellH = availH / rows;
+    const gap = Math.max(2, Math.round(rawCellH * 0.1));
     const cellH = (availH - gap * (rows - 1)) / rows;
     const gc1 = document.querySelector(".gall3ry-container");
     if (gc1) gc1.style.setProperty("--overview-cell-h", cellH + "px");
-    if (grid) grid.style.gridTemplateColumns = `repeat(${bestCols}, 1fr)`;
+    if (grid) {
+      grid.style.gridTemplateColumns = `repeat(${bestCols}, 1fr)`;
+      grid.style.gap = gap + "px";
+    }
   } else {
     const cols = 5;
     const rows = Math.ceil(imgCount / cols);
@@ -88,6 +93,9 @@ window.addEventListener("resize", debounce(updateOverviewCellHeight, 150));
 
 
 let activeLayout = "layout-0-gall3ry";
+let entranceComplete = false;
+let entranceTl = null;
+let flipping = false;
 
 /* ── Imgholder cursor grow (overview layout only) ── */
 const cursor = document.getElementById("cursor");
@@ -203,6 +211,7 @@ window.addEventListener("resize", debounce(() => {
   if (!isMobile()) {
     /* ── Desktop timeline ── */
     const tl = gsap.timeline({ delay: 0.25 });
+    entranceTl = tl;
 
     // Step 1: Hero fade + gentle zoom-out
     gsap.set(img100, { scale: 1.25, opacity: 0 });
@@ -247,6 +256,8 @@ window.addEventListener("resize", debounce(() => {
       gsap.set(img100, { clearProps: "scale,opacity" });
       // Re-apply GSAP-managed proNav positioning (these are not CSS-managed)
       gsap.set(proNav, { xPercent: -50, y: getLayout0NavY(), yPercent: 50, opacity: 1, clearProps: "filter" });
+      entranceComplete = true;
+      entranceTl = null;
     });
 
   } else {
@@ -254,6 +265,7 @@ window.addEventListener("resize", debounce(() => {
     const mobSheet = document.getElementById("mobSheet");
     const mobProjTabs = document.getElementById("mobProjTabs");
     const tl = gsap.timeline({ delay: 0.2 });
+    entranceTl = tl;
 
     // Step 1: Film roll fade-in + gentle zoom
     gsap.set(img100, { scale: 1.15, opacity: 0 });
@@ -303,31 +315,79 @@ window.addEventListener("resize", debounce(() => {
       gsap.set(img100, { clearProps: "scale,opacity" });
       if (mobSheet) gsap.set(mobSheet, { clearProps: "opacity,y" });
       // Keep tabs Y offset — don't clear it
+      entranceComplete = true;
+      entranceTl = null;
     });
   }
 
   // bfcache: on back-nav, show everything immediately (no animation)
   window.addEventListener("pageshow", (e) => {
     if (e.persisted) {
+      // Entrance already played before we left
+      entranceComplete = true;
+      entranceTl = null;
+      flipping = false;
+
       document.body.classList.add("entrance-revealed");
       gsap.set(img100, { clearProps: "opacity,scale" });
       gsap.set(imgholders, { clearProps: "all" });
+
+      // Clear stale inline styles from interrupted animations
+      const container = document.querySelector(".gall3ry-container");
+      if (container) {
+        container.style.height = "";
+        container.style.overflow = "";
+      }
+      if (gall3ry) {
+        gall3ry.style.gridTemplateColumns = "";
+        gall3ry.style.gap = "";
+      }
+
       if (!isMobile()) {
         gsap.set(proNav, { opacity: 1, xPercent: -50, y: getLayout0NavY(), yPercent: 50 });
       } else {
+        // Recalculate overview cell height
+        updateOverviewCellHeight();
+
         const mobProjTabs = document.getElementById("mobProjTabs");
-        if (mobProjTabs && activeLayout === "layout-0-gall3ry") {
-          mobProjTabs.classList.add("layout-0-tabs");
-          gsap.set(mobProjTabs, { y: getMobTabsLayout0Y() });
+        if (mobProjTabs) {
+          if (activeLayout === "layout-0-gall3ry") {
+            mobProjTabs.classList.add("layout-0-tabs");
+            gsap.set(mobProjTabs, { y: getMobTabsLayout0Y() });
+          } else {
+            mobProjTabs.classList.remove("layout-0-tabs");
+            gsap.set(mobProjTabs, { clearProps: "y,background,borderColor,padding" });
+          }
         }
+
+        // Sync tab active states to match current layout
+        document.querySelectorAll(".mob-proj-tab").forEach(b => {
+          b.classList.toggle("active", b.dataset.layout === activeLayout);
+        });
+
+        // Ensure Lenis is running
+        lenis.start();
       }
     }
   });
 })();
 
 
+function finishEntrance() {
+  if (entranceComplete) return;
+  // Kill the entrance timeline and snap to final state
+  if (entranceTl) {
+    entranceTl.progress(1, false);
+    entranceTl = null;
+  }
+  entranceComplete = true;
+}
+
 function switchLayout(newLayout) {
   if (newLayout === activeLayout) return;
+  if (flipping) return;
+  // If entrance is still animating, snap it to completion first
+  if (!entranceComplete) finishEntrance();
   if (activeLayout === "layout-2-gall3ry" && lenis.scroll > 0) {
     lenis.scrollTo(0, {
       duration: 0.6,
@@ -486,6 +546,7 @@ function switchLayoutHandler(newLayout) {
 
   // Stop Lenis during Flip on mobile to prevent scroll jitter
   if (isMob) lenis.stop();
+  flipping = true;
 
   Flip.from(state, {
     duration: 1.75,
@@ -493,6 +554,7 @@ function switchLayoutHandler(newLayout) {
     stagger: staggerOption,
     absolute: true,
     onComplete: () => {
+      flipping = false;
       // Delay unlock to next frame so browser finishes Flip's last paint first
       requestAnimationFrame(() => {
         if (needsHeightLock) {
