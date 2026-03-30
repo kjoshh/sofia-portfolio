@@ -212,6 +212,15 @@ if (isMobile()) {
     img.addEventListener("load", loadForWebGL);
   }
 
+  document.addEventListener("mouseleave", () => {
+    if (!revealDone) return;
+    targetRadius = 0;
+    mouseMoving = true;
+    clearTimeout(mouseIdleTimer);
+    mouseIdleTimer = setTimeout(() => { mouseMoving = false; }, 300);
+    startLoop();
+  });
+
   document.addEventListener("mousemove", (e) => {
     if (!revealDone) return;
 
@@ -278,7 +287,12 @@ if (isMobile()) {
   }
   window.addEventListener("beforeunload", cleanupWebGL);
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") cleanupWebGL();
+    if (!gl) return;
+    if (document.visibilityState === "hidden") {
+      stopLoop();
+    } else {
+      startLoop();
+    }
   });
 
   window.addEventListener("resize", () => {
