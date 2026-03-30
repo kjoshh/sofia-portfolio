@@ -403,6 +403,13 @@ function revealLettersDirectly() {
   buildWalls();
   const mobile = isMobile();
   let completed = 0;
+
+  // Enable interaction 1s before fade finishes
+  setTimeout(() => {
+    markRevealComplete();
+    frameWrap.style.cursor = '';
+  }, 1000);
+
   slots.forEach((slot, idx) => {
     gsap.set(slot.sofiaEl, {
       x: slot.x - m.offsetX,
@@ -410,17 +417,16 @@ function revealLettersDirectly() {
       rotation: slot.restRot,
       opacity: 0,
     });
+    const isInstant = idx === Math.floor(Math.random() * slots.length);
     gsap.to(slot.sofiaEl, {
       opacity: 0.9,
-      duration: 0.8,
+      duration: 2.5,
+      delay: isInstant ? 0 : 0.2 + Math.random() * 0.6,
       ease: 'power2.out',
-      delay: idx * 0.03,
       onComplete: () => {
         completed++;
         if (completed >= slots.length) {
-          markRevealComplete();
           loadingPhase = 0;
-          frameWrap.style.cursor = '';
           if (mobile) startBreathe();
         }
       },
@@ -997,11 +1003,11 @@ preloadAssets().then(() => {
       duration: 1.4, ease: 'power2.out',
     }, 0);
 
-    // Fade letters in with the frame
+    // Fade letters in after frame has finished scaling
     revealTL.call(() => {
       initPositions();
       revealLettersDirectly();
-    }, null, 0.4);
+    }, null, 1.4);
 
   } else {
     /* ── Desktop entrance: animated reveal + letter rain ── */
@@ -1017,11 +1023,11 @@ preloadAssets().then(() => {
     entranceTL.to('.main-nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.3);
     entranceTL.to('.nav-star-sep', { opacity: 0.55, duration: 0.5 }, 0.5);
 
-    // Fade letters in while frame is scaling up
+    // Fade letters in after frame has finished scaling
     entranceTL.call(() => {
       initPositions();
       revealLettersDirectly();
-    }, null, 0.5);
+    }, null, 1.5);
   }
 });
 
