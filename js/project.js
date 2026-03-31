@@ -50,13 +50,19 @@ document.body.appendChild(_sabEl);
 const _safeAreaBottom = _sabEl.offsetHeight;
 _sabEl.remove();
 
+// Stable viewport height — immune to mobile browser toolbar show/hide
+const _vhEl = document.createElement('div');
+_vhEl.style.cssText = 'position:fixed;top:0;bottom:0;width:0;pointer-events:none;visibility:hidden';
+document.body.appendChild(_vhEl);
+function stableViewportHeight() { return _vhEl.offsetHeight; }
+
 function updateOverviewCellHeight() {
   const imgCount = document.querySelectorAll(".imgholder").length;
   if (imgCount === 0) return;
   const grid = document.querySelector(".gall3ry");
 
   if (window.innerWidth <= 991) {
-    const availH = window.innerHeight - 88 - 120 - _safeAreaBottom; // below mob-sheet, above tab pill + safe area
+    const availH = stableViewportHeight() - 88 - 120 - _safeAreaBottom; // below mob-sheet, above tab pill + safe area
     // Find minimum cols so cell height >= 70px (use 8px gap estimate for column search)
     let bestCols = 2;
     for (let c = 2; c <= 6; c++) {
@@ -81,7 +87,7 @@ function updateOverviewCellHeight() {
     const gap = 10;
     const padTop = 88;    // nav bottom (~68px) + 20px gap
     const padBot = 110;   // pro-nav clearance (~90px from bottom) + 20px gap
-    const availH = window.innerHeight - padTop - padBot;
+    const availH = stableViewportHeight() - padTop - padBot;
     const cellH = (availH - gap * (rows - 1)) / rows;
     const gc2 = document.querySelector(".gall3ry-container");
     if (gc2) gc2.style.setProperty("--overview-cell-h", cellH + "px");
@@ -158,7 +164,7 @@ function getLayout0NavY() {
   const clusterHalfH = 235 / 2;
   const gap = -10;
   // Nav base is at bottom:45px; shift it so it sits (gap)px below the centered cluster
-  return -(window.innerHeight * 0.57) + clusterHalfH + gap + 45;
+  return -(stableViewportHeight() * 0.57) + clusterHalfH + gap + 45;
 }
 
 // Compute mob-proj-tabs Y offset for layout-0: position tabs just below the centered cluster
@@ -166,11 +172,11 @@ function getMobTabsLayout0Y() {
   // Cluster center is at 38% from top. Film roll width is responsive via clamp.
   const vw = window.innerWidth;
   const rollWidth = Math.min(180, Math.max(140, vw * 0.22));
-  const clusterBottom = window.innerHeight * 0.38 + rollWidth / 2;
+  const clusterBottom = stableViewportHeight() * 0.38 + rollWidth / 2;
   // Tabs natural position: bottom: 24px → top = innerHeight - 24 - tabsHeight
   const mobProjTabs = document.getElementById("mobProjTabs");
   const tabsH = mobProjTabs ? mobProjTabs.offsetHeight : 70;
-  const tabsNaturalTop = window.innerHeight - 16 - tabsH;
+  const tabsNaturalTop = stableViewportHeight() - 16 - tabsH;
   // Negative Y to pull tabs up from their fixed-bottom position
   const gap = 10;
   return -(tabsNaturalTop - clusterBottom - gap);
@@ -558,8 +564,26 @@ function switchLayoutHandler(newLayout) {
       // Delay unlock to next frame so browser finishes Flip's last paint first
       requestAnimationFrame(() => {
         if (needsHeightLock) {
-          container.style.height = "";
-          container.style.overflow = "";
+          // Animate container to its natural height to avoid a visible snap
+          const currentH = container.offsetHeight;
+          container.style.height = 'auto';
+          const targetH = container.offsetHeight;
+          container.style.height = currentH + 'px';
+          if (Math.abs(currentH - targetH) > 2) {
+            gsap.to(container, {
+              height: targetH,
+              duration: 0.3,
+              ease: 'power2.out',
+              onComplete: () => {
+                container.style.height = '';
+                container.style.overflow = '';
+                lenis.resize();
+              }
+            });
+          } else {
+            container.style.height = '';
+            container.style.overflow = '';
+          }
         }
         if (isMob) lenis.start();
         // Deferred sizes update — avoids visible srcset swap during animation
