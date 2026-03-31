@@ -62,7 +62,7 @@ function updateOverviewCellHeight() {
   const grid = document.querySelector(".gall3ry");
 
   if (window.innerWidth <= 991) {
-    const availH = stableViewportHeight() - 88 - 120 - _safeAreaBottom; // below mob-sheet, above tab pill + safe area
+    const availH = stableViewportHeight() - 88 - 100 - _safeAreaBottom; // below nav, above tab pill + safe area
     // Find minimum cols so cell height >= 70px (use 8px gap estimate for column search)
     let bestCols = 2;
     for (let c = 2; c <= 6; c++) {
