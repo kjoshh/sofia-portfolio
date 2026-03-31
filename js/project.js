@@ -759,6 +759,7 @@ if (isMobile()) {
 document.querySelectorAll(".mob-proj-tab").forEach(btn => {
   btn.addEventListener("click", () => {
     const layout = btn.dataset.layout;
+    if (layout === activeLayout || flipping) return;
     switchLayout(layout);
     document.querySelectorAll(".mob-proj-tab").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
