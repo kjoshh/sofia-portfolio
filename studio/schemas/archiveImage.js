@@ -11,6 +11,14 @@ export default defineType({
       type: 'image',
       description: 'The photo to display in the archive grid.',
       options: {hotspot: true},
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Alt Text',
+          type: 'string',
+          description: 'Describe the image for accessibility and SEO.',
+        }),
+      ],
       validation: (Rule) => Rule.required(),
     }),
     defineField({

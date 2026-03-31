@@ -146,26 +146,33 @@ async function loadSettings() {
 // ── HTML Generators ─────────────────────────────────────────────
 
 function genDeskNav(projects, sizes = '20vw') {
-  return projects.map(p => `                <a href="${p.slug}.html" class="desk-nav-cell">
+  return projects.map(p => {
+    const alt = (p.thumbnail?.alt || p.title).replace(/"/g, '&quot;');
+    return `                <a href="${p.slug}.html" class="desk-nav-cell">
                   <img ${srcset(p.thumbnail, { sizes })}
-         loading="lazy" class="desk-nav-cell-img" alt="${p.title}">
+         loading="lazy" class="desk-nav-cell-img" alt="${alt}">
                   <span class="desk-nav-cell-label">${p.title}</span>
-                </a>`).join('\n');
+                </a>`;
+  }).join('\n');
 }
 
 function genMobNav(projects, sizes = '20vw') {
-  return projects.map(p => `        <a href="${p.slug}.html" class="mob-sheet-cell">
+  return projects.map(p => {
+    const alt = (p.thumbnail?.alt || p.title).replace(/"/g, '&quot;');
+    return `        <a href="${p.slug}.html" class="mob-sheet-cell">
           <img ${srcset(p.thumbnail, { sizes })}
-         loading="lazy" class="mob-sheet-cell-img" alt="${p.title}">
+         loading="lazy" class="mob-sheet-cell-img" alt="${alt}">
           <span class="mob-sheet-cell-label">${p.title}</span>
-        </a>`).join('\n');
+        </a>`;
+  }).join('\n');
 }
 
 function genGalleryImages(gallery) {
   return gallery.map((img, i) => {
     const num = i + 1;
+    const alt = (img.alt || '').replace(/"/g, '&quot;');
     return `      <div id="img${num}" class="imgholder hovv"><img ${srcset(img)}
-         loading="lazy" alt="" class="pro-img hovv">
+         loading="lazy" alt="${alt}" class="pro-img hovv">
       </div>`;
   }).join('\n');
 }
@@ -182,8 +189,9 @@ function genInfoText(text) {
 function genArchiveGrid(items) {
   return items.map(item => {
     const bwClass = item.is_bw ? ' bw' : '';
+    const alt = (item.image?.alt || '').replace(/"/g, '&quot;');
     return `    <div class="archive-grid-item${bwClass}" data-full="${imgSrc(item.image)}"><img ${srcset(item.image, { sizes: '(max-width: 768px) 50vw, 25vw' })}
-         loading="lazy" alt=""></div>`;
+         loading="lazy" alt="${alt}"></div>`;
   }).join('\n');
 }
 

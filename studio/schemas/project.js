@@ -26,6 +26,14 @@ export default defineType({
       type: 'image',
       description: 'The preview image shown in the navigation menu. Use a vertical/portrait photo that represents the project.',
       options: {hotspot: true},
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Alt Text',
+          type: 'string',
+          description: 'Describe the image for accessibility and SEO.',
+        }),
+      ],
       validation: (Rule) => Rule.required(),
     }),
     defineField({
@@ -36,6 +44,14 @@ export default defineType({
       of: [{
         type: 'image',
         options: {hotspot: true},
+        fields: [
+          defineField({
+            name: 'alt',
+            title: 'Alt Text',
+            type: 'string',
+            description: 'Describe the image for accessibility and SEO.',
+          }),
+        ],
       }],
       validation: (Rule) => Rule.required().min(1),
     }),
