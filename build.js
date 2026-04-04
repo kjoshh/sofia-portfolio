@@ -375,7 +375,8 @@ async function main() {
     'migrate-to-sanity.js', 'cloudinary-map.json', 'cms-migration-plan.md', 'netlify.toml',
     'temporary screenshots', '.git', '.claude', 'CLAUDE.md',
     'skills-lock.json', 'package.json', 'package-lock.json',
-    'sitemap.xml'
+    'sitemap.xml',
+    'ISSUES.md', 'TODO-client-feedback.md'
   ]);
   copyRecursive(ROOT, DIST, skip);
   console.log('  Copied static files to dist/\n');
