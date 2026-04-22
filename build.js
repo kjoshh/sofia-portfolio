@@ -20,17 +20,6 @@ const BUILD_VERSION = Date.now();
 const SANITY_PROJECT = '4g1grp0d';
 const SANITY_DATASET = 'production';
 const SANITY_CDN = `https://cdn.sanity.io/images/${SANITY_PROJECT}/${SANITY_DATASET}`;
-const GA_MEASUREMENT_ID = 'G-WGGH74B1R5';
-const GA_SNIPPET = `<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', '${GA_MEASUREMENT_ID}');
-</script>
-</head>`;
-
 // ── Helpers ─────────────────────────────────────────────────────
 
 /**
@@ -434,18 +423,15 @@ async function main() {
     }
   }
 
-  // Cache-bust + inject Google Analytics snippet into every HTML file
+  // Cache-bust asset URLs in every HTML file
   const htmlFiles = fs.readdirSync(DIST).filter(f => f.endsWith('.html'));
   for (const file of htmlFiles) {
     const filePath = path.join(DIST, file);
     let html = fs.readFileSync(filePath, 'utf8');
     html = html.replace(/(src|href)="(js\/[^"]+|css\/[^"]+)"/g, `$1="$2?v=${BUILD_VERSION}"`);
-    if (!html.includes(GA_MEASUREMENT_ID)) {
-      html = html.replace('</head>', GA_SNIPPET);
-    }
     fs.writeFileSync(filePath, html);
   }
-  console.log(`  Cache-busted assets with v=${BUILD_VERSION} + injected GA (${GA_MEASUREMENT_ID})`);
+  console.log(`  Cache-busted assets with v=${BUILD_VERSION}`);
 
   // Generate sitemap.xml with all pages (static + CMS projects)
   const today = new Date().toISOString().split('T')[0];
